@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-name="ahadu_hr.HRAnalyticsDashboard" owl="1">
+        <div class="hr_analytics_dashboard p-4 h-100 overflow-auto">
+            <div t-if="state.loading" class="o_loading_indicator text-center py-5">
+                <i class="fa fa-spinner fa-spin fa-3x text-muted"/>
+                <p class="mt-3">Loading Analytics Data...</p>
+            </div>
+            
+            <div t-if="!state.loading">
+                <!-- Vacancy Analysis Section -->
+                <h2 class="mb-3"><i class="fa fa-briefcase text-primary me-2"/>Position Analysis</h2>
+                <div class="row mb-5">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-total">
+                            <div class="kpi-icon"><i class="fa fa-sitemap"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" t-esc="state.data.vacancy_stats.total_positions"/>
+                                <div class="kpi-label">Total Positions</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-filled">
+                            <div class="kpi-icon"><i class="fa fa-user-check"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" t-esc="state.data.vacancy_stats.filled_positions"/>
+                                <div class="kpi-label">Filled Positions</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-vacant">
+                            <div class="kpi-icon"><i class="fa fa-user-plus"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" t-esc="state.data.vacancy_stats.vacant_positions"/>
+                                <div class="kpi-label">Vacant Positions</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-rate">
+                            <div class="kpi-icon"><i class="fa fa-percent"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value"><t t-esc="state.data.vacancy_stats.vacancy_rate.toFixed(1)"/>%</div>
+                                <div class="kpi-label">Vacancy Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Span of Control Section -->
+                <h2 class="mb-3"><i class="fa fa-users text-success me-2"/>Management Structure Analysis</h2>
+                 <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-staff">
+                            <div class="kpi-icon"><i class="fa fa-user"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" t-esc="state.data.span_of_control_stats.non_manager_count"/>
+                                <div class="kpi-label">Total Staff (Non-Managers)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-manager">
+                            <div class="kpi-icon"><i class="fa fa-user-tie"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" t-esc="state.data.span_of_control_stats.manager_count"/>
+                                <div class="kpi-label">Total Managers</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-ratio">
+                            <div class="kpi-icon"><i class="fa fa-balance-scale"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value">
+                                    1 : <t t-esc="state.data.span_of_control_stats.span_of_control.toFixed(1)"/>
+                                </div>
+                                <div class="kpi-label">Manager-to-Staff Ratio</div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-total-staff">
+                            <div class="kpi-icon"><i class="fa fa-users"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" t-esc="state.data.span_of_control_stats.total_staff_count"/>
+                                <div class="kpi-label">Total Active Headcount</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </t>
+</templates>

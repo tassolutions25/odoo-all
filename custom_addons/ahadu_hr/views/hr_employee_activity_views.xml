@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+        <record id="view_employee_activity_kanban" model="ir.ui.view">
+            <field name="name">hr.employee.activity.kanban</field>
+            <field name="model">hr.employee.activity</field>
+            <field name="arch" type="xml">
+                <kanban class="o_employee_activity_kanban">
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_card oe_kanban_global_click">
+                                <div class="o_kanban_image">
+                                    <t t-if="record.activity_type.raw_value == 'promotion'">
+                                        <i class="fa fa-arrow-up fa-2x text-success"/>
+                                    </t>
+                                    <t t-if="record.activity_type.raw_value == 'transfer'">
+                                        <i class="fa fa-exchange fa-2x text-info"/>
+                                    </t>
+                                    <!-- <t t-if="record.activity_type.raw_value == 'lateral'">
+                                        <i class="fa fa-arrows-h fa-2x text-warning"/>
+                                    </t> -->
+                                    
+                                    <t t-if="record.activity_type.raw_value == 'demotion'">
+                                        <i class="fa fa-arrow-down fa-2x text-danger"/>
+                                    </t>
+                                    <t t-if="record.activity_type.raw_value == 'disciplinary'">
+                                        <i class="fa fa-gavel fa-2x text-danger"/>
+                                    </t>
+                                    <t t-if="record.activity_type.raw_value == 'guarantee'">
+                                        <i class="fa fa-shield fa-2x text-primary"/>
+                                    </t>
+                                    <t t-if="record.activity_type.raw_value == 'acting'">
+                                        <i class="fa fa-arrows-h fa-2x text-info"/>
+                                    </t>
+                                    <t t-if="record.activity_type.raw_value == 'temporary'">
+                                        <i class="fa fa-user-clock fa-2x text-info"/>
+                                    </t>
+                                    <t t-if="record.activity_type.raw_value == 'document_request'">
+                                <i class="fa fa-file-alt fa-2x text-purple"/>
+                            </t>
+                                    <t t-if="record.activity_type.raw_value == 'retirement'">
+                                <i class="fa fa-file-alt fa-2x text-purple"/>
+                            </t>
+                            <t t-if="record.activity_type.raw_value == 'ctc'">
+                        <i class="fa fa-money fa-2x text-success" title="CTC Adjustment"/>
+                    </t>
+                            <t t-if="record.activity_type.raw_value == 'data_change'">
+                                <i class="fa fa-pencil-square-o fa-2x text-warning" title="Data Change"/>
+                            </t>
+
+                            <t t-if="record.activity_type.raw_value == 'confirmation'">
+                                <i class="fa fa-check-circle fa-2x text-success" title="Probation Confirmation"/>
+                            </t>
+
+                            <t t-if="record.activity_type.raw_value == 'reassign_reportees'">
+                                <i class="fa fa-users fa-2x text-primary" title="Reassign Reportees"/>
+                            </t>
+
+                            <t t-if="record.activity_type.raw_value == 'employee_reinitiate'">
+                                <i class="fa fa-refresh fa-2x text-info" title="Reinitiate"/>
+                            </t>
+                                </div>
+                                <div class="oe_kanban_details">
+                                    <strong><field name="activity_type"/></strong>
+                                    <div><field name="employee_id"/></div>
+                                    <div><field name="date"/></div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <span class="badge" t-att-class="record.state.raw_value == 'approved' ? 'badge-success' : record.state.raw_value == 'rejected' ? 'badge-danger' : 'badge-warning'">
+                                            <field name="state"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="view_employee_activity_tree_in_form" model="ir.ui.view">
+            <field name="name">hr.employee.activity.tree.in.form</field>
+            <field name="model">hr.employee.activity</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="activity_type"/>
+                    <field name="date"/>
+                    <field name="state" widget="badge"/>
+                    <field name="description"/>
+                    <button name="action_open_related_record" type="object" icon="fa-external-link" title="View Original Document"
+                        class="float-end"/>
+                </list>
+            </field>
+        </record>
+        </data>
+
+    
+</odoo>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sample District Data -->
+        <record id="district_addis_ababa" model="hr.district">
+            <field name="name">Addis Ababa</field>
+            <field name="code">AA</field>
+        </record>
+        
+        <record id="district_oromia" model="hr.district">
+            <field name="name">Oromia</field>
+            <field name="code">OR</field>
+        </record>
+        
+        <record id="district_amhara" model="hr.district">
+            <field name="name">Amhara</field>
+            <field name="code">AM</field>
+        </record>
+        
+        <record id="district_tigray" model="hr.district">
+            <field name="name">Tigray</field>
+            <field name="code">TG</field>
+        </record>
+        
+        <record id="district_snnp" model="hr.district">
+            <field name="name">Southern Nations, Nationalities, and Peoples</field>
+            <field name="code">SNNP</field>
+        </record>
+        
+        <record id="district_somali" model="hr.district">
+            <field name="name">Somali</field>
+            <field name="code">SO</field>
+        </record>
+        
+        <record id="district_afar" model="hr.district">
+            <field name="name">Afar</field>
+            <field name="code">AF</field>
+        </record>
+        
+        <record id="district_benishangul" model="hr.district">
+            <field name="name">Benishangul-Gumuz</field>
+            <field name="code">BG</field>
+        </record>
+        
+        <record id="district_gambela" model="hr.district">
+            <field name="name">Gambela</field>
+            <field name="code">GA</field>
+        </record>
+        
+        <record id="district_harari" model="hr.district">
+            <field name="name">Harari</field>
+            <field name="code">HA</field>
+        </record>
+        
+        <record id="district_dire_dawa" model="hr.district">
+            <field name="name">Dire Dawa</field>
+            <field name="code">DD</field>
+        </record>
+    </data>
+</odoo>

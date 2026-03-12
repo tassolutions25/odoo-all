@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Scheduled Action for Retirement Check -->
+        <record id="ir_cron_check_retirement" model="ir.cron">
+            <field name="name">HR: Check for Upcoming Retirements</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="state">code</field>
+            <field name="code">model._check_retirement_notifications()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Email Template for Retirement Notification -->
+        <record id="email_template_retirement_notification" model="mail.template">
+            <field name="name">Retirement Notification</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="subject">Retirement Reminder: ${object.name}</field>
+            <field name="email_from">${(user.email_formatted or user.company_id.email_formatted) | safe}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Dear ${ctx.get('recipient_name')},
+                        <br/><br/>
+                        This is an automated reminder from the HR system.
+                        <br/><br/>
+                        The employee <strong>${ctx.get('employee_name')}</strong> is scheduled to reach the retirement age of 60 in <strong>${ctx.get('timeframe')}</strong>.
+                        <br/><br/>
+                        Retirement Date: <strong>${ctx.get('retirement_date')}</strong>
+                        <br/><br/>
+                        Please take the necessary actions to prepare for the upcoming retirement process.
+                        <br/><br/>
+                        Thank you,
+                        <br/>
+                        <em>Ahadu HR System</em>
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+        <record id="ir_cron_check_employee_retirements" model="ir.cron">
+            <field name="name">HR: Check &amp; Process Employee Retirements</field>
+            <field name="model_id" ref="model_hr_employee"/>
+            <field name="state">code</field>
+            <field name="code">model._check_and_process_retirements()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+            <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 03:00:00')"/>
+        </record>
+
+    </data>
+</odoo>

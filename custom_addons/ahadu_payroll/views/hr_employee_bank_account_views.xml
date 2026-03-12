@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Employee Form to add Sync button and Last Sync Date in Bank Details tab -->
+    <record id="view_employee_form_inherit_ahadu_bank_sync" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.ahadu.bank.sync</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="ahadu_hr.view_employee_form_extended" />
+        <field name="arch" type="xml">
+            <!-- 1. Add fields to the inline list view -->
+            <xpath expr="//field[@name='bank_account_ids']/list/field[@name='balance']" position="after">
+                <field name="last_sync_date" readonly="1" optional="show"/>
+                <button name="action_sync_core_balance" string="Sync" type="object" icon="fa-refresh" 
+                        invisible="account_type != 'cash_indemnity'"
+                        help="Sync balance with Core Banking API"/>
+            </xpath>
+
+            <!-- 2. Add fields to the inline form view -->
+            <xpath expr="//field[@name='bank_account_ids']/form//field[@name='balance']" position="after">
+                <field name="last_sync_date" readonly="1" invisible="account_type != 'cash_indemnity'"/>
+                <button name="action_sync_core_balance" string="Sync Balance" type="object" class="btn-primary" 
+                        invisible="account_type != 'cash_indemnity'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

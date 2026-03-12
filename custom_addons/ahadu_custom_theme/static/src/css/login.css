@@ -1,0 +1,136 @@
+/* =====================================================
+   Ahadu Custom Theme - Login Page CSS
+   Applied via web.assets_frontend on ALL frontend pages
+   ===================================================== */
+
+/* Only target the login/reset-password pages */
+body:not(.o_web_client) {
+    /* Full-screen custom background */
+    background-image: url('/ahadu_custom_theme/static/src/img/AHADU_ERP.jpg') !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+    min-height: 100vh;
+}
+
+/* Hide website header, footer, and their decoration on login page */
+body:not(.o_web_client) #top,
+body:not(.o_web_client) header,
+body:not(.o_web_client) #bottom,
+body:not(.o_web_client) footer,
+body:not(.o_web_client) .o_footer_copyright {
+    display: none !important;
+}
+
+/* Remove padding/margin from the website layout wrapper */
+body:not(.o_web_client) #wrapwrap {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+body:not(.o_web_client) main {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+/* Center the login container */
+body:not(.o_web_client) .oe_website_login_container,
+body:not(.o_web_client) .o_ahadu_bg {
+    min-height: 100vh;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Style the login card */
+body:not(.o_web_client) .o_database_list,
+body:not(.o_web_client) .o_ahadu_card {
+    width: 100%;
+    max-width: 380px;
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45) !important;
+    padding: 28px !important;
+    border: none !important;
+}
+
+/* Logo size */
+body:not(.o_web_client) .o_ahadu_logo {
+    max-height: 80px;
+    max-width: 160px;
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* ==========================================================
+   CRITICAL FIX: Force the login form visible.
+   Odoo 18 adds 'd-none' to the form until the OWL
+   'web.user_switch' component processes it. On login pages
+   where OWL might not fully initialize (custom layout),
+   we override this to always show the form.
+   ========================================================== */
+body:not(.o_web_client) form.oe_login_form {
+    display: block !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Hide the OWL user_switch since we're showing the form directly */
+body:not(.o_web_client) owl-component[name="web.user_switch"] {
+    display: none !important;
+}
+
+/* Password toggle cursor */
+#rt_toggle_password,
+#rt_toggle_confirm_password {
+    cursor: pointer;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+    body:not(.o_web_client) {
+        background-attachment: scroll !important;
+    }
+
+    body:not(.o_web_client) .oe_website_login_container,
+    body:not(.o_web_client) .o_ahadu_bg {
+        align-items: flex-start;
+        padding-top: 5vh;
+    }
+
+    body:not(.o_web_client) .o_database_list,
+    body:not(.o_web_client) .o_ahadu_card {
+        padding: 20px !important;
+    }
+}
+
+/* ==========================================================
+   Ahadu Brand Colors for Login Button (Burgundy)
+   ========================================================== */
+body:not(.o_web_client) .o_ahadu_login_card .oe_login_buttons button[type="submit"].btn-primary.btn {
+    background-color: #800020 !important;
+    border-color: #800020 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease;
+}
+
+body:not(.o_web_client) .o_ahadu_login_card .oe_login_buttons button[type="submit"].btn-primary.btn:hover,
+body:not(.o_web_client) .o_ahadu_login_card .oe_login_buttons button[type="submit"].btn-primary.btn:focus,
+body:not(.o_web_client) .o_ahadu_login_card .oe_login_buttons button[type="submit"].btn-primary.btn:active {
+    background-color: #5c0017 !important;
+    border-color: #5c0017 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(128, 0, 32, 0.5) !important;
+}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+    Step 1: Define our custom list view. It now includes the Ethiopian date fields.
+    The <header> has been REMOVED as it was incorrect.
+    -->
+    <record id="ahadu_hr_leave_my_requests_tree_view" model="ir.ui.view">
+        <field name="name">ahadu.hr.leave.my.requests.tree</field>
+        <field name="model">hr.leave</field>
+        <field name="arch" type="xml">
+            <list string="My Leave Requests" create="false">
+                <field name="holiday_status_id" />
+                <field name="name" string="Title" />
+                <field name="number_of_days" string="Duration" />
+                <field name="request_date_from" string="Start Date" />
+                <field name="request_date_to" string="End Date" />
+                <!-- ADDING THE ETHIOPIAN DATE COLUMNS -->
+                <field name="ethiopian_date_from" optional="show" />
+                <field name="ethiopian_date_to" optional="show" />
+                <field name="state" widget="badge" decoration-success="state == 'validate'"
+                    decoration-info="state == 'confirm'" />
+            </list>
+        </field>
+    </record>
+
+    <!--
+    Step 2: Define the Window Action.
+    THIS IS THE KEY FIX: The <control> tag inside the 'help' message is the
+    correct way to add a global button to the control panel.
+    -->
+    <record id="action_ahadu_my_time_off_hub" model="ir.actions.act_window">
+        <field name="name">My Leaves</field>
+        <field name="res_model">hr.leave</field>
+        <field name="view_mode">list,calendar</field>
+        <field name="context">{'search_default_my_leaves': 1, 'search_default_year': 1}</field>
+        <field name="domain">[('employee_id', '!=', False)]</field>
+        <field name="view_id" ref="ahadu_hr_leave.ahadu_hr_leave_my_requests_tree_view" />
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                You have no leave requests yet.
+            </p>
+            <p>
+                Click the button below to start.
+            </p>
+            <!-- This <control> block places the button at the top of the view -->
+            <control>
+                <button name="%(ahadu_hr_leave.action_ahadu_leave_request_wizard)d"
+                    string="New Request" type="action" class="btn-primary" />
+            </control>
+        </field>
+    </record>
+</odoo>

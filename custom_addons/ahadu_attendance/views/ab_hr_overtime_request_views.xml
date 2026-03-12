@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Overtime Request Form View -->
+    <record id="view_ab_hr_overtime_request_form" model="ir.ui.view">
+        <field name="name">ab.hr.overtime.request.form</field>
+        <field name="model">ab.hr.overtime.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve" type="object" class="btn-primary" groups="hr.group_hr_manager" invisible="state != 'to_approve'"/>
+                    <button name="action_reject" string="Reject" type="object" groups="hr.group_hr_manager" invisible="state != 'to_approve'"/>
+                    <button name="action_to_draft" string="Set to Draft" type="object" invisible="state in ['draft', 'approved']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,to_approve,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="e.g., Month-End Closing Overtime" readonly="state != 'draft'"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="overtime_date" readonly="state != 'draft'"/>
+                            <field name="manager_id"/>
+                        </group>
+                        <group string="Calculated Time Details">
+                            <field name="actual_worked_hours" widget="float_time"/>
+                            <field name="scheduled_hours" widget="float_time"/>
+                            <field name="duration" widget="float_time" class="fs-5 fw-bold"/>
+                            <field name="payable_hours" widget="float_time" class="fs-5 fw-bold text-success" invisible="state == 'draft'"/>
+                            <field name="overtime_policy_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="reason" placeholder="Explain the reason for this overtime..." readonly="state != 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="Related Attendances" name="attendances">
+                            <!-- <field name="attendance_ids" readonly="1"> -->
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="check_in"/>
+                                    <field name="check_out"/>
+                                    <field name="worked_hours" widget="float_time"/>
+                                    <field name="calculated_extra_hours" string="Overtime" widget="float_time" sum="Total Overtime"/>
+                                    <button name="action_open_attendance_form" type="object" icon="fa-external-link" class="btn-open-record" aria-label="Open Record"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Overtime Request Tree View -->
+    <record id="view_ab_hr_overtime_request_tree" model="ir.ui.view">
+        <field name="name">ab.hr.overtime.request.tree</field>
+        <field name="model">ab.hr.overtime.request</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="overtime_date"/>
+                <field name="duration" widget="float_time" sum="Total OT"/>
+                <field name="payable_hours" widget="float_time" sum="Total Payable"/>
+                <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-warning="state == 'to_approve'" decoration-danger="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Your Action and Menu Items should be in other files, but here they are for completeness -->
+    <record id="action_ab_hr_overtime_request" model="ir.actions.act_window">
+        <field name="name">Overtime Requests</field>
+        <field name="res_model">ab.hr.overtime.request</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

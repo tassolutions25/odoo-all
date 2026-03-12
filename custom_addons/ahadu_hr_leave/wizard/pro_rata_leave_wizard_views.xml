@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pro_rata_leave_calculator_wizard_view_form" model="ir.ui.view">
+        <field name="name">ahadu.pro_rata.leave.wizard.form</field>
+        <field name="model">ahadu.pro_rata.leave.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <div class="alert alert-info" role="alert">
+                    <i class="fa fa-info-circle me-2" /> This tool calculates the total number of
+                    annual leave days you will have accrued by a specific date. </div>
+
+                <group>
+                    <group>
+                        <field name="employee_id" />
+                        <field name="date_of_joining" />
+                        <field name="calculation_date" />
+                    </group>
+                    <group>
+                        <field name="current_balance" />
+                        <field name="leaves_taken" />
+                    </group>
+                </group>
+                <hr />
+                <div class="text-center">
+                    <h4>Total Predicted Balance by Selected Date</h4>
+                    <h1 class="display-4 text-primary">
+                        <field name="total_accrued_days" nolabel="1" />
+                    </h1>
+                </div>
+
+                <footer>
+                    <!-- The "Create Allocation" button has been REMOVED -->
+                    <button string="Close" class="btn-primary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to open the calculator wizard -->
+    <record id="action_pro_rata_leave_calculator" model="ir.actions.act_window">
+        <field name="name">Annual Leave Calculator</field>
+        <field name="res_model">ahadu.pro_rata.leave.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

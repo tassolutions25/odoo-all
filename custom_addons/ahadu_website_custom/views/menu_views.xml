@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- 1. Your Custom Root Menu - Ahadu Website -->
+    <!-- This will be your main app icon on the dashboard. -->
+    <!-- It will open the main website list/dashboard view. -->
+    <menuitem
+        id="menu_ahadu_website_custom_root"
+        name="Ahadu Website"
+        sequence="1"
+        action="website.action_website_list"  
+    />
+
+    <!--
+    =====================================================
+    Re-parenting and Grouping Existing Website Menus
+    =====================================================
+    We will take existing Odoo 'website' and 'website_blog' menu items
+    and make them children of 'menu_ahadu_website_custom_root'.
+    This effectively moves them into your custom app's sidebar.
+    -->
+
+    <!-- Home Group (Example: if you need a "Home" sub-menu under your app) -->
+    <!-- If 'website.menu_site' directly goes to the website frontend,
+         and you want a backend "Home" item, you might need a new action.
+         For simplicity, let's assume 'website.action_website_list' is suitable for "Home". -->
+    <menuitem
+        id="website.menu_site"
+        name="Site"
+        parent="menu_ahadu_website_custom_root"
+        sequence="10"
+        action="website.action_website_list"
+        groups="website.group_website_designer"
+        />
+
+         <!-- New additions for Home sub-menu -->
+    <menuitem
+        id="website.menu_website_configuration"
+        name="Homepage"
+        parent="website.menu_site"
+        sequence="10"
+    />
+    <menuitem
+        id="website.menu_edit_menu"
+        name="Menu Editor"
+        parent="website.menu_site"
+        sequence="20"
+    />
+    
+      <!-- New "This page" group -->
+    <menuitem
+        id="menu_ahadu_website_this_page_group"
+        name="This page"
+        parent="website.menu_site"
+        sequence="30"
+    />
+       <menuitem
+        id="website.menu_page_properties"
+        name="Properties"
+        parent="menu_ahadu_website_this_page_group"
+        sequence="10"
+    />
+    <menuitem
+        id="website.menu_optimize_seo"
+        name="Optimize SEO"
+        parent="menu_ahadu_website_this_page_group"
+        sequence="20"
+    />
+    <menuitem
+        id="website.menu_ace_editor"
+        name="HTML/CSS Editor"
+        parent="menu_ahadu_website_this_page_group"
+        sequence="30"
+    />
+
+
+    <!-- Reporting/Analytics Group -->
+    <menuitem
+        id="menu_ahadu_website_reporting_parent"
+        name="Reporting"
+        parent="menu_ahadu_website_custom_root"
+        sequence="20"
+    />
+
+    <menuitem
+        id="website.menu_website_analytics"
+        name="Analytics"
+        parent="menu_ahadu_website_reporting_parent"
+        sequence="10"
+    />
+    <menuitem
+        id="website.website_visitor_menu"
+        name="Visitors"
+        parent="menu_ahadu_website_reporting_parent"
+        sequence="20"
+    />
+    <menuitem
+        id="website.menu_visitor_view_menu"
+        name="Page Views"
+        parent="menu_ahadu_website_reporting_parent"
+        sequence="30"
+    />
+
+    <!-- Configuration Group -->
+    <menuitem
+        id="menu_ahadu_website_configuration_parent"
+        name="Configuration"
+        parent="menu_ahadu_website_custom_root"
+        sequence="30"
+    />
+
+    <menuitem
+        id="website.menu_website_website_settings"
+        name="Settings"
+        parent="menu_ahadu_website_configuration_parent"
+        sequence="10"
+    />
+    <menuitem
+        id="website.menu_website_websites_list"
+        name="websites"
+        parent="menu_ahadu_website_configuration_parent"
+        sequence="20"
+    />
+    <menuitem
+        id="website.menu_website_add_features"
+        name="Apps"
+        parent="menu_ahadu_website_configuration_parent"
+        sequence="30"
+    />
+    <menuitem
+        id="website.menu_website_rewrite"
+        name="Redirects"
+        parent="menu_ahadu_website_configuration_parent"
+        sequence="40"
+    />
+    <menuitem
+        id="website.menu_website_menu_list"
+        name="Menus"
+        parent="menu_ahadu_website_configuration_parent"
+        sequence="50"
+    />
+
+    <!-- Blog Group (under Configuration) -->
+    <menuitem
+        id="menu_ahadu_website_blog_group"
+        name="Blogs"
+        parent="menu_ahadu_website_configuration_parent"
+        sequence="60"
+    />
+
+    <menuitem
+        id="website_blog.menu_blog_global"
+        name="Blogs"
+        parent="menu_ahadu_website_blog_group"
+        sequence="10"
+    />
+    <menuitem
+        id="website_blog.menu_blog_tag_global"
+        name="Tags"
+        parent="menu_ahadu_website_blog_group"
+        sequence="20"
+    />
+    <menuitem
+        id="website_blog.menu_website_blog_tag_category_global"
+        name="Tag Categories"
+        parent="menu_ahadu_website_blog_group"
+        sequence="30"
+    />
+
+    <!-- IMPORTANT: If there are other website menu items you *don't* want to move,
+         they will remain in their original locations or disappear if their original
+         parent is also moved. You must explicitly re-parent every menu item you want to see
+         under your new structure.
+    -->
+
+</odoo>

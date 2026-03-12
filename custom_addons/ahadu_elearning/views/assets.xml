@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Register the fullscreen local video patch as a frontend asset via ir.asset -->
+    <record id="ahadu_elearning_fullscreen_patch" model="ir.asset">
+        <field name="name">Ahadu eLearning - Fullscreen Local Video Patch</field>
+        <field name="bundle">web.assets_frontend</field>
+        <field name="path">ahadu_elearning/static/src/js/slides_fullscreen_local_video.js</field>
+    </record>
+</odoo>

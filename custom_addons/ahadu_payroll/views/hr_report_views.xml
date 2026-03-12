@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- 1. Newly Updated Employee Report -->
+    <record id="action_report_newly_updated_employee" model="ir.actions.act_window">
+        <field name="name">Newly Updated Employees</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{'search_default_filter_write_date': 1, 'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <!-- 2. Resignation or Termination Report -->
+    <record id="action_report_employee_termination" model="ir.actions.act_window">
+        <field name="name">Resignation/Termination Report</field>
+        <field name="res_model">hr.employee.termination</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <!-- 3. Transfer Report -->
+    <record id="action_report_employee_transfer" model="ir.actions.act_window">
+        <field name="name">Transfer Report</field>
+        <field name="res_model">hr.employee.transfer</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <!-- 4. Promotion Report -->
+    <record id="action_report_employee_promotion" model="ir.actions.act_window">
+        <field name="name">Promotion Report</field>
+        <field name="res_model">hr.employee.promotion</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <!-- 5. Demotion Report -->
+    <record id="action_report_employee_demotion" model="ir.actions.act_window">
+        <field name="name">Demotion Report</field>
+        <field name="res_model">hr.employee.demotion</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <!-- 6. Acting Assignment Report -->
+    <record id="action_report_employee_acting" model="ir.actions.act_window">
+        <field name="name">Acting Assignment Report</field>
+        <field name="res_model">hr.employee.acting</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <!-- 7. Temporary Assignment Report -->
+    <record id="action_report_employee_temporary_assignment" model="ir.actions.act_window">
+        <field name="name">Temporary Assignment Report</field>
+        <field name="res_model">hr.employee.temporary.assignment</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <!-- 8. Staff Penalization (Penalty) Report -->
+    <record id="action_report_employee_disciplinary" model="ir.actions.act_window">
+        <field name="name">Staff Penalization Report</field>
+        <field name="res_model">hr.employee.disciplinary</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- 9. Benefit Package Report -->
+    <record id="action_report_benefit_package" model="ir.actions.act_window">
+        <field name="name">Benefit Package Report</field>
+        <field name="res_model">hr.benefit.package</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <!-- 10. Contractual Staff Payroll Report -->
+    <record id="action_report_contractual_payroll" model="ir.actions.act_window">
+        <field name="name">Contractual Staff Payroll Report</field>
+        <field name="res_model">hr.payslip</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('contract_id.pay_group_id.code', 'in', ['CONTEMP', 'CONTEMPWOP'])]</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
+    <!-- REPORT MENUS -->
+    <menuitem id="menu_report_newly_updated_employee" name="Newly Updated Employees" parent="ahadu_payroll.menu_ahadu_reports_root" action="action_report_newly_updated_employee" sequence="10" />
+    <menuitem id="menu_report_employee_termination" name="Resignation/Termination" parent="ahadu_payroll.menu_ahadu_reports_root" action="action_report_employee_termination" sequence="20" />
+    <menuitem id="menu_report_employee_transfer" name="Transfer" parent="ahadu_payroll.menu_ahadu_reports_root" action="action_report_employee_transfer" sequence="30" />
+    <menuitem id="menu_report_employee_promotion" name="Promotion" parent="ahadu_payroll.menu_ahadu_reports_root" action="action_report_employee_promotion" sequence="40" />
+    <menuitem id="menu_report_employee_demotion" name="Demotion" parent="ahadu_payroll.menu_ahadu_reports_root" action="action_report_employee_demotion" sequence="45" />
+    <menuitem id="menu_report_employee_acting" name="Acting Assignment" parent="ahadu_payroll.menu_ahadu_reports_root" action="action_report_employee_acting" sequence="50" />
+    <menuitem id="menu_report_employee_temporary_assignment" name="Temporary Assignment" parent="ahadu_payroll.menu_ahadu_reports_root" action="action_report_employee_temporary_assignment" sequence="60" />
+    <menuitem id="menu_report_employee_disciplinary" name="Staff Penalization (Penalty)" parent="ahadu_payroll.menu_ahadu_reports_root" action="action_report_employee_disciplinary" sequence="70" />
+    <menuitem id="menu_report_benefit_package" name="Benefit Package" parent="ahadu_payroll.menu_ahadu_reports_root" action="action_report_benefit_package" sequence="80" />
+    <menuitem id="menu_report_contractual_payroll" name="Contractual Staff Payroll" parent="ahadu_payroll.menu_ahadu_reports_root" action="action_report_contractual_payroll" sequence="90" />
+
+</odoo>

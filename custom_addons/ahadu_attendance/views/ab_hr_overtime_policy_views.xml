@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ab_hr_overtime_policy_tree" model="ir.ui.view">
+        <field name="name">ab.hr.overtime.policy.tree</field>
+        <field name="model">ab.hr.overtime.policy</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="day_type"/>
+                <field name="rate_multiplier"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_ab_hr_overtime_policy" model="ir.actions.act_window">
+        <field name="name">Overtime Policies</field>
+        <field name="res_model">ab.hr.overtime.policy</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- <menuitem
+        id="menu_ab_hr_overtime_policy"
+        name="Overtime Policies"
+        parent="ahadu_attendance.menu_ahadu_management_root"
+        action="action_ab_hr_overtime_policy"
+        sequence="15"/> -->
+</odoo>

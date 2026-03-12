@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ahadu_fuel_price_history_tree" model="ir.ui.view">
+        <field name="name">ahadu.fuel.price.history.tree</field>
+        <field name="model">ahadu.fuel.price.history</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="price"/>
+                <field name="effective_date"/>
+                <field name="company_id" optional="hide"/>
+                <field name="user_id"/>
+                <field name="create_date" string="Changed Date" readonly="1"/>
+            </list>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== TREE VIEW ==================== -->
+    <record id="migrated_leave_history_view_list" model="ir.ui.view">
+        <field name="name">ahadu.migrated.leave.history.list</field>
+        <field name="model">ahadu.migrated.leave.history</field>
+        <field name="arch" type="xml">
+            <list string="Migrated History" editable="bottom">
+                <field name="employee_id_code" />
+                <field name="employee_name" />
+                <field name="qu_name" />
+                <field name="leave_type" />
+                <field name="leave_name" />
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="total_days" />
+                <field name="reason" />
+                <field name="status" />
+                <field name="approved_by" />
+                <field name="approved_on" />
+            </list>
+        </field>
+    </record>
+
+    <!-- ==================== FORM VIEW ==================== -->
+    <record id="migrated_leave_history_view_form" model="ir.ui.view">
+        <field name="name">ahadu.migrated.leave.history.form</field>
+        <field name="model">ahadu.migrated.leave.history</field>
+        <field name="arch" type="xml">
+            <form string="Migrated Leave History">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="employee_name" placeholder="Employee Name" />
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Employee Info">
+                            <field name="employee_id_code" />
+                            <field name="employee_name" />
+                            <field name="qu_name" />
+                        </group>
+                        <group string="Leave Details">
+                            <field name="leave_type" />
+                            <field name="leave_name" />
+                            <field name="total_days" />
+                            <field name="reason" />
+                            <field name="status" />
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Dates">
+                            <field name="date_from" />
+                            <field name="date_to" />
+                        </group>
+                        <group string="Approval">
+                            <field name="approved_by" />
+                            <field name="approved_on" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== SEARCH VIEW ==================== -->
+    <record id="migrated_leave_history_view_search" model="ir.ui.view">
+        <field name="name">ahadu.migrated.leave.history.search</field>
+        <field name="model">ahadu.migrated.leave.history</field>
+        <field name="arch" type="xml">
+            <search string="Migrated History">
+                <field name="employee_id_code" />
+                <field name="employee_name" />
+                <field name="leave_type" />
+                <field name="leave_name" />
+                <field name="status" />
+                <separator />
+                <group expand="0" string="Group By">
+                    <filter string="Employee" name="group_employee" context="{'group_by': 'employee_name'}" />
+                    <filter string="Leave Type" name="group_leave_type" context="{'group_by': 'leave_type'}" />
+                    <filter string="Leave Name" name="group_leave_name" context="{'group_by': 'leave_name'}" />
+                    <filter string="Status" name="group_status" context="{'group_by': 'status'}" />
+                    <filter string="QU Name" name="group_qu" context="{'group_by': 'qu_name'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================== ACTION ==================== -->
+    <record id="action_migrated_leave_history" model="ir.actions.act_window">
+        <field name="name">Migrated History</field>
+        <field name="res_model">ahadu.migrated.leave.history</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="migrated_leave_history_view_search" />
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No migrated leave history records yet.
+            </p>
+            <p>
+                Import your historical leave data from Excel to populate this view.
+            </p>
+        </field>
+    </record>
+
+</odoo>

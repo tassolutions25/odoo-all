@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+    <record id="view_employee_lateral_form" model="ir.ui.view">
+        <field name="name">hr.employee.lateral.form</field>
+        <field name="model">hr.employee.lateral</field>
+        <field name="arch" type="xml">
+             <form string="Employee Lateral Movement">
+                 <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve_step" string="Approve" type="object" class="btn-success" invisible="can_approve == False"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="can_approve == False"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Employee Lateral Movement (Role Change)</h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="lateral_date"/>
+                        </group>
+                        <group>
+                            <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                            <field name="can_approve" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <group string="Current Information">
+                                <field name="current_department_id"/>
+                                <field name="current_job_id"/>
+                                <field name="current_grade_id"/>
+                                <field name="current_branch_id"/>
+                            </group>
+                        </div>
+                        <div class="col-md-6">
+                            <group string="New Information">
+                                <field name="new_department_id" required="1"/>
+                                <field name="new_job_id" required="1"/>
+                                <field name="new_grade_id" readonly="1" force_save="1" help="A lateral move keeps the employee at the same grade. To change the grade, please use the Promotion or Demotion process."/>
+                                <field name="new_branch_id"/>
+                            </group>
+                        </div>
+                    </div>
+                    
+                    <group>
+                        <field name="reason"/>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Approval History">
+                            <field name="approval_line_ids">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="approver_id"/>
+                                    <field name="status"/>
+                                    <field name="approval_date"/>
+                                    <field name="comments"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Attachments">
+                           <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_employee_lateral_tree" model="ir.ui.view">
+        <field name="name">hr.employee.lateral.tree</field>
+        <field name="model">hr.employee.lateral</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="employee_id"/>
+                <field name="lateral_date"/>
+                <field name="current_job_id"/>
+                <field name="new_job_id"/>
+                <field name="current_department_id"/>
+                <field name="new_department_id"/>
+                <field name="current_grade_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    </data>
+</odoo>

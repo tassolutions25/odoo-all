@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Define the Report Action -->
+    <record id="action_report_leave_balance_by_year" model="ir.actions.report">
+        <field name="name">Leave Balance by Year</field>
+        <field name="model">ahadu.leave.balance.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <!-- The name of our new, clean QWeb template -->
+        <field name="report_name">ahadu_hr_leave.template_leave_balance_by_year</field>
+        <field name="report_file">ahadu_hr_leave.template_leave_balance_by_year</field>
+        <field name="print_report_name">'Leave Balance - %s' % object.employee_id.name</field>
+        <field name="binding_model_id" eval="False"/>
+    </record>
+
+    <!-- Define the QWeb Report Template -->
+    <template id="template_leave_balance_by_year">
+        <t t-call="web.html_container">
+            <!-- Use Odoo's standard professional layout with company header/footer -->
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <h2 class="mt-4 text-center">Employee Leave Balance Report</h2>
+
+                    <!-- Report Header Information -->
+                    <div class="row mt-5 mb-4">
+                        <div class="col-6">
+                            <strong>Employee:</strong> <span t-esc="data['employee_name']"/><br/>
+                            <strong>Department:</strong> <span t-esc="data['department_name']"/><br/>
+                            <strong>Job Title:</strong> <span t-esc="data['job_title']"/>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong>Report Date:</strong>
+                            <span t-esc="data['report_date']" t-options="{'widget': 'date'}"/>
+                        </div>
+                    </div>
+
+                    <!-- Data Display Table -->
+                    <table class="table table-sm table-bordered">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="text-center" style="width: 20%;">Accrual Year</th>
+                                <th class="text-center" style="width: 20%;">Granted</th>
+                                <th class="text-center" style="width: 20%;">Used</th>
+                                <th class="text-center" style="width: 20%;">Expired</th>
+                                <th class="text-center" style="width: 20%;"><strong>Current Balance</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loop through the pre-processed lines from the Python wizard -->
+                            <tr t-foreach="data['lines']" t-as="line">
+                                <td class="text-center"><t t-esc="line['year']"/></td>
+                                <td class="text-center"><t t-esc="'%.2f' % line['granted']"/></td>
+                                <td class="text-center"><t t-esc="'%.2f' % line['used']"/></td>
+                                <td class="text-center text-danger"><t t-esc="'%.2f' % line['expired']"/></td>
+                                <td class="text-center"><strong><t t-esc="'%.2f' % line['balance']"/></strong></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <!-- Display the totals calculated in the Python wizard -->
+                            <tr class="bg-light fw-bold">
+                                <td class="text-center">Total</td>
+                                <td class="text-center"><t t-esc="'%.2f' % data['total_granted']"/></td>
+                                <td class="text-center"><t t-esc="'%.2f' % data['total_used']"/></td>
+                                <td class="text-center text-danger"><t t-esc="'%.2f' % data['total_expired']"/></td>
+                                <td class="text-center">
+                                    <h5 class="my-0">
+                                        <span class="badge bg-success"><t t-esc="'%.2f' % data['total_balance']"/> Days</span>
+                                    </h5>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="mt-5">
+                        <p><strong>Note:</strong> Leave consumption follows a First-In, First-Out (FIFO) policy. Days are deducted from the earliest available accrual year first. This report reflects the leave balance as of the report date indicated above.</p>
+                    </div>
+
+                    <div class="row mt-5 pt-5">
+                        <div class="col-6">
+                            <hr class="w-75"/>
+                            <p class="text-center">HR Manager Signature</p>
+                        </div>
+                        <div class="col-6">
+                             <hr class="w-75"/>
+                            <p class="text-center">Employee Signature</p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

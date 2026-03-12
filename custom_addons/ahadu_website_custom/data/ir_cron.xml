@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="ir_cron_auto_unpublish_jobs" model="ir.cron">
+            <field name="name">Auto Unpublish Expired Jobs</field>
+            <field name="model_id" ref="hr.model_hr_job"/>
+            <field name="state">code</field>
+            <field name="code">model._auto_unpublish_expired_jobs()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <!-- <field name="numbercall">-1</field> -->
+            <!-- <field name="doall" eval="False"/> -->
+            <field name="active" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

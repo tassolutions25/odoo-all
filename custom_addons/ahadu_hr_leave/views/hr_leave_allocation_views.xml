@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        We inherit the view and redefine its architecture completely.
+        This is the most stable method as it does not rely on finding
+        unstable anchor points in the parent view.
+    -->
+    <record id="hr_leave_allocation_view_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">hr.leave.allocation.form.inherit.ahadu.rework</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form_manager" />
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" string="Confirm" class="oe_highlight"
+                        invisible="state != 'draft'" />
+                    <button name="action_validate" string="Approve" class="oe_highlight"
+                        invisible="state != 'confirm'" />
+                    <button name="action_refuse" string="Refuse"
+                        invisible="state not in ['confirm', 'validate']" />
+                    <button name="action_draft" string="Reset to Draft"
+                        invisible="state not in ['confirm', 'refuse']" />
+                    <field name="state" widget="statusbar" statusbar_visible="confirm,validate" />
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="e.g. Annual Leave Allocation" />
+                        </h1>
+                    </div>
+                    <group>
+                        <!-- Left Column: Standard Odoo fields -->
+                        <group>
+                            <field name="holiday_status_id" />
+                            <field name="employee_id" widget="many2one_avatar_employee" />
+                            <field name="department_id" />
+                            <field name="number_of_days" string="Allocation" />
+                            <field name="date_to" />
+                        </group>
+                        <!-- Right Column: Our Custom Fields -->
+                        <group string="Expiry Information">
+                            <field name="date_of_joining" />
+                            <field name="date_from" />
+                            <field name="expiry_date" />
+                            <field name="expired_leaves" class="text-danger" />
+                            <field name="effective_remaining_leaves" class="fw-bold" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Reason">
+                            <field name="notes" placeholder="Add a reason..." />
+                        </page>
+                    </notebook>
+                </sheet>
+                <!-- Odoo Chatter -->
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" />
+                    <field name="activity_ids" />
+                    <field name="message_ids" />
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!--
+        We inherit the tree view and use the correct field name 'duration_display' as our anchor.
+    -->
+    <!-- <record id="hr_leave_allocation_view_tree_inherit_ahadu" model="ir.ui.view">
+        <field name="name">hr.leave.allocation.tree.inherit.ahadu.rework</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_tree" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='duration_display']" position="after">
+                <field name="effective_remaining_leaves" string="Effective Balance" optional="show"
+                    class="fw-bold" />
+                <field name="expiry_date" optional="show" />
+                <field name="expired_leaves" optional="show" />
+                <field name="date_of_joining" optional="show" />
+            </xpath>
+        </field>
+    </record> -->
+    <record id="hr_leave_allocation_view_tree_inherit_ahadu_final" model="ir.ui.view">
+        <field name="name">hr.leave.allocation.tree.inherit.ahadu.final</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_tree" />
+        <field name="arch" type="xml">
+            <!--
+                THE FIX: The correct field name in the tree view is 'duration_display', not 'number_of_days'.
+            -->
+            <xpath expr="//field[@name='duration_display']" position="after">
+                <field name="leaves_taken" string="Days Taken" />
+                <field name="effective_remaining_leaves" string="Days Remaining" class="fw-bold" />
+            </xpath>
+
+            <!-- This second xpath for other fields is still good practice -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="expiry_date" optional="show" />
+                <field name="expired_leaves" optional="show" />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

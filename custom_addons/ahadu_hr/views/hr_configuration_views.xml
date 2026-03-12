@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_grade_tree" model="ir.ui.view">
+        <field name="name">hr.grade.tree</field>
+        <field name="model">hr.grade</field>
+        <field name="arch" type="xml">
+            <list string="Grades">
+                <field name="name" />
+                <field name="description" optional="hide" />
+                <field name="active" widget="boolean_toggle" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_grade_form" model="ir.ui.view">
+        <field name="name">hr.grade.form</field>
+        <field name="model">hr.grade</field>
+        <field name="arch" type="xml">
+            <form string="Grade">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" />
+                        <h1>
+                            <field name="name" placeholder="e.g., Grade 8" />
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <!-- <field name="level"/> -->
+                            <field name="active" />
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_grade" model="ir.actions.act_window">
+        <field name="name">Grades</field>
+        <field name="res_model">hr.grade</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new employee grade.
+            </p>
+            <p>
+                Grades are used to classify job positions and salary levels.
+            </p>
+        </field>
+    </record>
+
+
+    <!-- ==================== -->
+    <!-- HR District Interface -->
+    <!-- ==================== -->
+    <record id="view_hr_district_tree" model="ir.ui.view">
+        <field name="name">hr.district.tree</field>
+        <field name="model">hr.district</field>
+        <field name="arch" type="xml">
+            <list string="Districts">
+                <field name="name" />
+                <field name="code" />
+                <field name="active" widget="boolean_toggle" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_district_form" model="ir.ui.view">
+        <field name="name">hr.district.form</field>
+        <field name="model">hr.district</field>
+        <field name="arch" type="xml">
+            <form string="District">
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="code" />
+                        <field name="active" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_district" model="ir.actions.act_window">
+        <field name="name">Districts</field>
+        <field name="res_model">hr.district</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+
+    <!-- =================== -->
+    <!-- HR Branch Interface -->
+    <!-- =================== -->
+    <record id="view_hr_branch_tree" model="ir.ui.view">
+        <field name="name">hr.branch.tree</field>
+        <field name="model">hr.branch</field>
+        <field name="arch" type="xml">
+            <list string="Branches">
+                <field name="name" />
+                <field name="code" />
+                <field name="district_id" />
+                <field name="region_id" />
+                <field name="city_id" />
+                <field name="cost_center_id" />
+                <field name="active" widget="boolean_toggle" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_branch_form" model="ir.ui.view">
+        <field name="name">hr.branch.form</field>
+        <field name="model">hr.branch</field>
+        <field name="arch" type="xml">
+            <form string="Branch">
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="code" />
+                        <field name="district_id" />
+                        <field name="region_id" />
+                        <field name="city_id" options="{'no_create': True}" />
+                        <field name="cost_center_id" />
+                        <field name="address" />
+                        <field name="active" />
+                    </group>
+                    <notebook>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_branch" model="ir.actions.act_window">
+        <field name="name">Branches</field>
+        <field name="res_model">hr.branch</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+
+    <!-- ===================== -->
+    <!-- HR Division Interface -->
+    <!-- ===================== -->
+    <record id="view_hr_division_tree" model="ir.ui.view">
+        <field name="name">hr.division.tree</field>
+        <field name="model">hr.division</field>
+        <field name="arch" type="xml">
+            <list string="Divisions">
+                <field name="sequence" widget="handle" />
+                <field name="name" />
+                <field name="department_id" />
+                <field name="manager_id" />
+                <field name="parent_id" optional="hide" />
+                <field name="active" widget="boolean_toggle" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_division_form" model="ir.ui.view">
+        <field name="name">hr.division.form</field>
+        <field name="model">hr.division</field>
+        <field name="arch" type="xml">
+            <form string="Division">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" />
+                        <h1>
+                            <field name="name" placeholder="e.g., Retail Banking Division" />
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="department_id" />
+                            <field name="manager_id" />
+                        </group>
+                        <group>
+                            <field name="parent_id" />
+                            <field name="active" />
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_division" model="ir.actions.act_window">
+        <field name="name">Divisions</field>
+        <field name="res_model">hr.division</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new division.
+            </p>
+            <p>
+                Divisions help you structure your departments into smaller, manageable units.
+            </p>
+        </field>
+    </record>
+
+
+    <!-- ======================= -->
+    <!-- HR Cost Center Interface -->
+    <!-- ======================= -->
+
+    <!-- <record id="action_hr_cost_center" model="ir.actions.act_window">
+        <field name="name">Cost Centers</field>
+        <field name="res_model">account.analytic.account</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="ahadu_hr.view_hr_cost_center_tree_simple"/>
+        <field name="domain">[]</field>
+        <field name="context">{"search_default_active": 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Cost Center.
+            </p><p>
+                Cost Centers are used to track costs and revenues
+                for specific departments or projects.
+            </p>
+        </field>
+    </record>
+
+    <menuitem 
+        id="menu_hr_cost_center" 
+        name="Cost Centers" 
+        parent="hr.menu_hr_customfield_group" 
+        action="action_hr_cost_center" 
+        sequence="5"/> -->
+
+</odoo>

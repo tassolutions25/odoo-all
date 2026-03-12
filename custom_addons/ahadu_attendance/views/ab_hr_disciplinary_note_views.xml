@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Disciplinary Note Tree View -->
+    <record id="view_ab_hr_disciplinary_note_tree" model="ir.ui.view">
+        <field name="name">ab.hr.disciplinary.note.tree</field>
+        <field name="model">ab.hr.disciplinary.note</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="reason_type"/>
+                <field name="manager_id"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'sent'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Disciplinary Note Form View -->
+    <record id="view_ab_hr_disciplinary_note_form" model="ir.ui.view">
+        <field name="name">ab.hr.disciplinary.note.form</field>
+        <field name="model">ab.hr.disciplinary.note</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <!-- Corrected: Replaced 'attrs' with 'invisible' -->
+                    <button name="action_send_note" string="Send by Email" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="manager_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="reason_type"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Details">
+                            <field name="details" widget="html"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for Disciplinary Notes -->
+    <record id="action_ab_hr_disciplinary_note" model="ir.actions.act_window">
+        <field name="name">Disciplinary Notes</field>
+        <field name="res_model">ab.hr.disciplinary.note</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu Item for Disciplinary Notes under Management -->
+    <!-- <menuitem
+        id="menu_hr_disciplinary_note"
+        name="Disciplinary Notes"
+        parent="ahadu_attendance.menu_hr_attendance_management_root"
+        action="action_ab_hr_disciplinary_note"
+        sequence="20"/> -->
+</odoo>

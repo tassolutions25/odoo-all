@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_channel_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">slide.channel.view.form.inherit.ahadu</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+        <field name="arch" type="xml">
+            <!-- Example: Add a field to the form view -->
+            <!-- <xpath expr="//field[@name='user_id']" position="after">
+                <field name="example_field"/>
+            </xpath> -->
+            <xpath expr="//sheet" position="inside">
+                <!-- Placeholder for future customizations -->
+            </xpath>
+        </field>
+    </record>
+</odoo>

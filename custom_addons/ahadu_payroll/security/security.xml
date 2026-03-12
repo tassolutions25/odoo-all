@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Payroll Category -->
+        <record id="module_category_ahadu_payroll" model="ir.module.category">
+            <field name="name">Ahadu Payroll</field>
+            <field name="description">Access levels for Ahadu Payroll</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- 1. GROUPS -->
+        
+        <!-- Reusing original ID 'group_branch_payroll' for Branch Officer -->
+        <record id="group_branch_payroll" model="res.groups">
+            <field name="name">Branch Payroll Officer</field>
+            <!-- Explicitly UNSET category to hide from User Form Checkboxes -->
+            <field name="category_id" eval="False"/>
+            <!-- Inherits Standard Payroll Officer -->
+            <field name="implied_ids" eval="[(4, ref('payroll.group_payroll_user'))]"/> 
+            <field name="comment">Restricted to Branch. Officer Rights.</field>
+        </record>
+
+        <record id="group_branch_payroll_manager" model="res.groups">
+            <field name="name">Branch Payroll Manager</field>
+            <field name="category_id" eval="False"/>
+            <!-- Inherits Branch Officer AND Standard Payroll Manager -->
+            <field name="implied_ids" eval="[(4, ref('group_branch_payroll')), (4, ref('payroll.group_payroll_manager'))]"/>
+            <field name="comment">Restricted to Branch. Manager Rights.</field>
+        </record>
+
+        <!-- B. Head Office Scope Groups -->
+
+        <record id="group_head_office_payroll_officer" model="res.groups">
+            <field name="name">Head Office Payroll Officer</field>
+            <field name="category_id" eval="False"/>
+            <!-- Inherits Standard Payroll Officer -->
+            <field name="implied_ids" eval="[(4, ref('payroll.group_payroll_user'))]"/>
+            <field name="comment">Global Access. Officer Rights.</field>
+        </record>
+
+        <!-- Reusing original ID 'group_head_office_payroll' for HO Manager -->
+        <record id="group_head_office_payroll" model="res.groups">
+            <field name="name">Head Office Payroll Manager</field>
+            <field name="category_id" eval="False"/>
+            <!-- Inherits HO Officer AND Standard Payroll Manager -->
+            <field name="implied_ids" eval="[(4, ref('group_head_office_payroll_officer')), (4, ref('payroll.group_payroll_manager'))]"/>
+            <field name="comment">Global Access. Manager Rights.</field>
+        </record>
+
+
+        <!-- C. HR Finance Officer (Higher Priority Configuration) -->
+        <record id="group_ahadu_payroll_finance_officer" model="res.groups">
+            <field name="name">HR Finance Officer</field>
+            <field name="category_id" ref="module_category_ahadu_payroll"/>
+            <!-- Inherits HO Manager -->
+            <field name="implied_ids" eval="[(4, ref('group_head_office_payroll'))]"/>
+            <field name="comment">Higher Priority. Full CRUD for Payroll Configurations (Tax, Fuel, OT Rules).</field>
+        </record>
+
+        <!-- D. Loan Credit Committee -->
+        <record id="group_loan_credit_committee" model="res.groups">
+            <field name="name">Loan Credit Committee</field>
+            <field name="category_id" ref="module_category_ahadu_payroll"/>
+            <field name="comment">Members of the credit committee responsible for loan approvals.</field>
+        </record>
+
+
+        <!-- 2. RECORD RULES -->
+        
+        <!-- Scoping Logic:
+             We apply "Branch Restriction" rules to [Branch Officer, Branch Manager].
+             We apply "Global Access" rules to [HO Officer, HO Manager].
+        -->
+
+        <!-- A. Employee Visibility -->
+        
+        <!-- Branch Scope -->
+        <record id="rule_ahadu_payroll_employee_branch" model="ir.rule">
+            <field name="name">Ahadu Payroll: Employee Branch Restriction</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="groups" eval="[(4, ref('group_branch_payroll')), (4, ref('group_branch_payroll_manager'))]"/>
+            <field name="domain_force">[('branch_id', '=', user.employee_id.branch_id.id)]</field>
+        </record>
+        
+        <!-- Global Scope (Might not be needed if no restriction, but good to be explicit) -->
+        <record id="rule_ahadu_payroll_employee_global" model="ir.rule">
+            <field name="name">Ahadu Payroll: Employee Global Access</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="groups" eval="[(4, ref('group_head_office_payroll_officer')), (4, ref('group_head_office_payroll'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- B. Contract Visibility -->
+
+        <record id="rule_ahadu_payroll_contract_branch" model="ir.rule">
+            <field name="name">Ahadu Payroll: Contract Branch Restriction</field>
+            <field name="model_id" ref="hr_contract.model_hr_contract"/>
+            <field name="groups" eval="[(4, ref('group_branch_payroll')), (4, ref('group_branch_payroll_manager'))]"/>
+            <field name="domain_force">[('employee_id.branch_id', '=', user.employee_id.branch_id.id)]</field>
+        </record>
+
+        <record id="rule_ahadu_payroll_contract_global" model="ir.rule">
+            <field name="name">Ahadu Payroll: Contract Global Access</field>
+            <field name="model_id" ref="hr_contract.model_hr_contract"/>
+            <field name="groups" eval="[(4, ref('group_head_office_payroll_officer')), (4, ref('group_head_office_payroll'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- C. Payslip Visibility -->
+
+        <record id="rule_ahadu_payroll_payslip_branch" model="ir.rule">
+            <field name="name">Ahadu Payroll: Payslip Branch Restriction</field>
+            <field name="model_id" ref="payroll.model_hr_payslip"/>
+            <field name="groups" eval="[(4, ref('group_branch_payroll')), (4, ref('group_branch_payroll_manager'))]"/>
+            <field name="domain_force">[('employee_id.branch_id', '=', user.employee_id.branch_id.id)]</field>
+        </record>
+
+        <record id="rule_ahadu_payroll_payslip_global" model="ir.rule">
+            <field name="name">Ahadu Payroll: Payslip Global Access</field>
+            <field name="model_id" ref="payroll.model_hr_payslip"/>
+            <field name="groups" eval="[(4, ref('group_head_office_payroll_officer')), (4, ref('group_head_office_payroll'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- D. Payslip Run (Batch) Visibility -->
+
+        <record id="rule_ahadu_payroll_run_branch" model="ir.rule">
+            <field name="name">Ahadu Payroll: Batch Branch Restriction</field>
+            <field name="model_id" ref="payroll.model_hr_payslip_run"/>
+            <field name="groups" eval="[(4, ref('group_branch_payroll')), (4, ref('group_branch_payroll_manager'))]"/>
+            <field name="domain_force">[('branch_id', '=', user.employee_id.branch_id.id)]</field>
+        </record>
+
+        <record id="rule_ahadu_payroll_run_global" model="ir.rule">
+            <field name="name">Ahadu Payroll: Batch Global Access</field>
+            <field name="model_id" ref="payroll.model_hr_payslip_run"/>
+            <field name="groups" eval="[(4, ref('group_head_office_payroll_officer')), (4, ref('group_head_office_payroll'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- E. Termination Run Visibility -->
+
+        <record id="rule_ahadu_termination_run_branch" model="ir.rule">
+            <field name="name">Ahadu Payroll: Termination Batch Branch Restriction</field>
+            <field name="model_id" ref="model_hr_termination_run"/>
+            <field name="groups" eval="[(4, ref('group_branch_payroll')), (4, ref('group_branch_payroll_manager'))]"/>
+            <field name="domain_force">[('branch_id', '=', user.employee_id.branch_id.id)]</field>
+        </record>
+
+        <record id="rule_ahadu_termination_run_global" model="ir.rule">
+            <field name="name">Ahadu Payroll: Termination Batch Global Access</field>
+            <field name="model_id" ref="model_hr_termination_run"/>
+            <field name="groups" eval="[(4, ref('group_head_office_payroll_officer')), (4, ref('group_head_office_payroll'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- F. Termination Payslip Visibility -->
+
+        <record id="rule_ahadu_termination_payslip_branch" model="ir.rule">
+            <field name="name">Ahadu Payroll: Termination Payslip Branch Restriction</field>
+            <field name="model_id" ref="model_hr_termination_payslip"/>
+            <field name="groups" eval="[(4, ref('group_branch_payroll')), (4, ref('group_branch_payroll_manager'))]"/>
+            <field name="domain_force">[('employee_id.branch_id', '=', user.employee_id.branch_id.id)]</field>
+        </record>
+
+        <record id="rule_ahadu_termination_payslip_global" model="ir.rule">
+            <field name="name">Ahadu Payroll: Termination Payslip Global Access</field>
+            <field name="model_id" ref="model_hr_termination_payslip"/>
+            <field name="groups" eval="[(4, ref('group_head_office_payroll_officer')), (4, ref('group_head_office_payroll'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- G. Journal Entry Visibility -->
+
+        <record id="rule_ahadu_journal_entry_branch" model="ir.rule">
+            <field name="name">Ahadu Payroll: Journal Entry Branch Restriction</field>
+            <field name="model_id" ref="model_ahadu_journal_entry"/>
+            <field name="groups" eval="[(4, ref('group_branch_payroll')), (4, ref('group_branch_payroll_manager'))]"/>
+            <field name="domain_force">[('payslip_run_id.branch_id', '=', user.employee_id.branch_id.id)]</field>
+        </record>
+
+        <record id="rule_ahadu_journal_entry_global" model="ir.rule">
+            <field name="name">Ahadu Payroll: Journal Entry Global Access</field>
+            <field name="model_id" ref="model_ahadu_journal_entry"/>
+            <field name="groups" eval="[(4, ref('group_head_office_payroll_officer')), (4, ref('group_head_office_payroll'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+    </data>
+</odoo>
+

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_payroll_sheet_ahadu">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+
+                        <div class="text-center mb-4">
+                            <h2>Ahadu Bank S.C - Employee Payroll Sheet</h2>
+                            <h4>For the Month of <span t-field="o.date_start"
+                                    t-options='{"format": "MMMM yyyy"}' /></h4>
+                            <p>
+                                <strong>Batch Name:</strong>
+                                <span t-field="o.name" />
+                            </p>
+                        </div>
+
+                                <t t-set="total_tax" t-value="0" />
+                                <t t-set="total_pension" t-value="0" />
+                                <t t-set="total_net" t-value="0" />
+
+                                <tr t-foreach="o.slip_ids" t-as="line">
+                                    <!-- ROBUST CALCULATION -->
+                                    <t t-set="basic"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.code == 'BASIC').mapped('total'))" />
+                                    <t t-set="trans"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.code == 'TRANS').mapped('total'))" />
+                                    <t t-set="house"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.code == 'HOUSE').mapped('total'))" />
+                                    <t t-set="hardship"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.code == 'HARDSHIP').mapped('total'))" />
+                                    <t t-set="rep"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.code == 'REP').mapped('total'))" />
+                                    <t t-set="other_alw"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.category_id.code == 'ALW' and r.code not in ['TRANS', 'HOUSE', 'HARDSHIP', 'REP']).mapped('total'))" />
+                                    <t t-set="gross"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.code == 'GROSS').mapped('total'))" />
+                                    <t t-set="tax"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.code == 'TAX').mapped('total'))" />
+                                    <t t-set="pension"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.code == 'PENSION_EMP').mapped('total'))" />
+                                    <t t-set="other_ded"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.category_id.code == 'DED' and r.code not in ['TAX', 'PENSION_EMP']).mapped('total'))" />
+                                    <t t-set="total_deduction"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.category_id.code == 'DED').mapped('total'))" />
+                                    <t t-set="net"
+                                        t-value="sum(line.line_ids.filtered(lambda r: r.code == 'NET').mapped('total'))" />
+
+                                    <!-- Accumulate Grand Totals -->
+                                    <t t-set="total_basic" t-value="total_basic + basic" />
+                                    <t t-set="total_gross" t-value="total_gross + gross" />
+                                    <t t-set="total_tax" t-value="total_tax + tax" />
+                                    <t t-set="total_pension" t-value="total_pension + pension" />
+                                    <t t-set="total_net" t-value="total_net + net" />
+
+                                    <!-- Display Row -->
+                                    <td>
+                                        <span t-field="line.employee_id.barcode" />
+                                    </td>
+                                    <td>
+                                        <span t-field="line.employee_id.name" />
+                                    </td>
+                                    <td>
+                                        <span t-field="line.employee_id.job_id.name" />
+                                    </td>
+
+                                    <td class="text-end">
+                                        <span t-esc="basic"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="trans"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="house"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="hardship"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="rep"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="other_alw"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+
+                                    <td class="text-end" style="font-weight: bold;">
+                                        <span t-esc="gross"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+
+                                    <td class="text-end">
+                                        <span t-esc="gross"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="tax"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="pension"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="other_ded"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="total_deduction"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+
+                                    <td class="text-end" style="font-weight: bold;">
+                                        <span t-esc="net"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                </tr>
+
+                                <!-- GRAND TOTAL ROW: BRANDED COLOR #850037 -->
+                                <tr style="background-color: #850037; font-weight: bold;">
+                                    <!-- Added color: #ffffff to every TD here as well -->
+                                    <td colspan="3" class="text-end" style="color: #ffffff;">TOTALS:</td>
+                                    <td class="text-end" style="color: #ffffff;">
+                                        <span t-esc="total_basic"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-end" style="color: #ffffff;">
+                                        <span t-esc="total_gross"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td></td>
+                                    <td class="text-end" style="color: #ffffff;">
+                                        <span t-esc="total_tax"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td class="text-end" style="color: #ffffff;">
+                                        <span t-esc="total_pension"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-end" style="color: #ffffff;">
+                                        <span t-esc="total_net"
+                                            t-options='{"widget": "float", "precision": 2}' />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="row mt-5">
+                            <div class="col-4">
+                                <p><strong>Prepared By:</strong> ___________________</p>
+                            </div>
+                            <div class="col-4 text-center">
+                                <p><strong>Checked By:</strong> ___________________</p>
+                            </div>
+                            <div class="col-4 text-end">
+                                <p><strong>Approved By:</strong> ___________________</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

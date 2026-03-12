@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_attendance_report_wizard_form" model="ir.ui.view">
+        <field name="name">attendance.report.wizard.form</field>
+        <field name="model">attendance.report.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="date_range_type"/>
+                        <field name="date_from" invisible="date_range_type != 'custom'"/>
+                        <field name="date_to" invisible="date_range_type != 'custom'"/>
+                    </group>
+                    <group>
+                        <field name="report_type" widget="radio"/>
+                        <field name="lunch_scope" widget="radio" invisible="report_type != 'lunch_tracking'"/>
+                    </group>
+                    <group invisible="report_type not in ['summary', 'branch_summary', 'department_summary',]">
+                        <field name="summary_ranking_type" widget="radio"/>
+                    </group>
+                                    
+                </group>
+                <group>
+                    <!-- Show department selector for Departmental reports -->
+                    <field name="department_ids" 
+                           widget="many2many_tags" 
+                           invisible="report_type not in ['department', 'summary', 'department_summary'] and not (report_type == 'lunch_tracking' and lunch_scope == 'department')"/>
+                     <!-- Branch selector -->
+                    <field name="branch_ids" widget="many2many_tags"
+                           invisible="report_type not in ['branch', 'branch_summary'] and not (report_type == 'lunch_tracking' and lunch_scope == 'branch')"/>
+                    <field name="employee_ids" widget="many2many_tags" invisible="report_type != 'employee'"/>
+                    <!-- <field name="download_as_zip" 
+                                invisible="report_type not in ['department', 'summary'] or not department_ids or department_ids.length &lt; 2"/> -->
+                    <field name="download_as_zip"
+                           invisible="(report_type not in ['department', 'branch_summary', 'branch', 'summary', 'lunch_tracking']) or 
+                                     (report_type in ['department','branch_summary', 'branch'] and (not department_ids and not branch_ids)) or
+                                     (report_type == 'lunch_tracking' and lunch_scope == 'all')"/>
+                </group>
+
+                <!-- <group>
+                    
+                    <field name="department_ids" widget="many2many_tags" invisible="report_type not in ['department', 'summary']"/>
+                    <field name="employee_ids" widget="many2many_tags" invisible="report_type != 'employee'"/>
+                    <field name="download_as_zip" invisible="report_type != 'department' or not department_ids or department_ids.length &lt; 2"/>
+                </group> -->
+                            <footer>
+                    <button name="action_print_report" string="Generate Excel Report" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_launch_attendance_report_wizard" model="ir.actions.act_window">
+        <field name="name">Attendance Report</field>
+        <field name="res_model">attendance.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Quiz Questions Inheritance -->
+    <record id="slide_question_view_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">slide.question.view.form.inherit.ahadu</field>
+        <field name="model">slide.question</field>
+        <field name="inherit_id" ref="website_slides.slide_question_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <!-- Placeholder for future customizations -->
+            </xpath>
+        </field>
+    </record>
+</odoo>

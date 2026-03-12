@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_hr_region_tree" model="ir.ui.view">
+            <field name="name">hr.region.tree</field>
+            <field name="model">hr.region</field>
+            <field name="arch" type="xml">
+                <list string="Regions">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_hr_region_form" model="ir.ui.view">
+            <field name="name">hr.region.form</field>
+            <field name="model">hr.region</field>
+            <field name="arch" type="xml">
+                <form string="Region">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="code"/>
+                            </group>
+                            <group>
+                                <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="description"/>
+                        </group>
+                        <notebook>
+                            <page string="Cities" name="cities">
+                                <field name="city_ids" readonly="1">
+                                    <list>
+                                        <field name="name"/>
+                                        <field name="company_id" groups="base.group_multi_company"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_hr_region_filter" model="ir.ui.view">
+            <field name="name">hr.region.search</field>
+            <field name="model">hr.region</field>
+            <field name="arch" type="xml">
+                <search string="Search Regions">
+                    <field name="name"/>
+                    <field name="code"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_hr_region" model="ir.actions.act_window">
+            <field name="name">Regions</field>
+            <field name="res_model">hr.region</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Create a new Region
+              </p>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<menuitem id="menu_ahadu_hr_root" name="Ahadu HR" sequence="10"/>
+<!--  HR REPORTING DASHBOARD MENU  -->
+<record id="action_ahadu_hr_reporting_dashboard" model="ir.actions.client">
+<field name="name">HR Reporting Dashboard</field>
+<field name="tag">ahadu_hr.reporting_dashboard</field>
+</record>
+<menuitem id="menu_ahadu_hr_reporting_dashboard" name="HR Dashboard" parent="menu_ahadu_hr_root" action="action_ahadu_hr_reporting_dashboard" sequence="5"/>
+<menuitem id="hr.menu_hr_configuration" name="Configuration" parent="menu_ahadu_hr_root" sequence="70"/>
+<menuitem id="hr.menu_hr_customfield_group" name="Custom Fields" parent="hr.menu_hr_configuration" sequence="30"/>
+<record id="action_employee_activities_dashboard" model="ir.actions.client">
+<field name="name">Activities Dashboard</field>
+<field name="tag">employee_activity_dashboard</field>
+</record>
+<!--  =============================================  -->
+<!--  ==== Employee Activities Section ====  -->
+<!--  =============================================  -->
+<menuitem id="menu_employee_activities" name="Employee Activities" parent="menu_ahadu_hr_root" action="action_employee_activities_dashboard" sequence="20"/>
+<!--  Client Action for JS Dashboard  -->
+<!--  <menuitem id="menu_employee_activities_dashboard" name="Activities Dashboard"
+              parent="menu_employee_activities" action="action_employee_activities_dashboard" sequence="5"/>  -->
+<record id="action_hr_employee_list_ahadu" model="ir.actions.act_window">
+<field name="name">Employees</field>
+<field name="res_model">hr.employee</field>
+<field name="view_mode">kanban,list,form,activity,graph,pivot,hierarchy</field>
+<field name="search_view_id" ref="hr.view_employee_filter"/>
+<field name="help" type="html">
+<p class="o_view_nocontent_smiling_face"> Create a new employee </p>
+<p> Add a new employee to your company and manage all human resource related activities. </p>
+</field>
+</record>
+<!--  <menuitem
+        id="menu_employee_list_ahadu"
+        name="Employees"
+        parent="menu_ahadu_hr_root"
+        action="action_hr_employee_list_ahadu"
+        sequence="10"/>  -->
+<menuitem id="menu_employee_list_ahadu" name="Employees" parent="menu_ahadu_hr_root" action="hr.open_view_employee_list" sequence="10"/>
+<menuitem id="menu_ahadu_employee_list" name="Employees" parent="menu_employee_list_ahadu" action="action_hr_employee_list_ahadu" sequence="1"/>
+<menuitem id="menu_ahadu_contracts" name="Contracts" parent="menu_employee_list_ahadu" action="hr_contract.action_hr_contract" sequence="3"/>
+<menuitem id="menu_ahadu_departments" name="Departments" parent="menu_ahadu_hr_root" action="hr.hr_department_tree_action" sequence="20"/>
+<menuitem id="menu_ahadu_reporting" name="Skill Reporting" parent="menu_ahadu_hr_root" action="hr_skills.hr_employee_skill_report_action" sequence="60"/>
+<menuitem id="menu_hr_approval_policy" name="Approval Workflows" parent="hr.menu_hr_configuration" action="action_hr_approval_policy" sequence="70"/>
+<menuitem id="menu_hr_benefit_package_config" name="Benefits" parent="hr.menu_hr_configuration" sequence="80"/>
+<menuitem id="menu_hr_benefit_packages" name="Benefit Packages" parent="menu_hr_benefit_package_config" action="action_hr_benefit_package" sequence="10"/>
+<menuitem id="menu_hr_benefit_types" name="Benefit Types" parent="menu_hr_benefit_package_config" action="action_hr_benefit_type" sequence="20"/>
+<menuitem id="menu_hr_division" name="Divisions" parent="hr.menu_hr_customfield_group" action="action_hr_division" sequence="4"/>
+<menuitem id="menu_hr_branch" name="Branches" parent="hr.menu_hr_customfield_group" action="action_hr_branch" sequence="3"/>
+<menuitem id="menu_hr_district" name="Districts" parent="hr.menu_hr_customfield_group" action="action_hr_district" sequence="2"/>
+<menuitem id="menu_hr_grade" name="Grades" parent="hr.menu_hr_customfield_group" action="action_hr_grade" sequence="1"/>
+<menuitem id="menu_hr_cost_center" name="Cost Centers" parent="hr.menu_hr_customfield_group" action="action_hr_cost_center" sequence="5"/>
+<menuitem id="menu_hr_region"
+                  name="Regions"
+                  parent="hr.menu_hr_customfield_group"
+                  action="action_hr_region"
+                  sequence="2"/>
+<menuitem id="menu_hr_city"
+                  name="Cities"
+                  parent="hr.menu_hr_customfield_group"
+                  action="action_hr_city"
+                  sequence="3"/>
+<menuitem id="menu_hr_employee_type" name="Employee Type" parent="hr.menu_hr_customfield_group" action="action_hr_employee_type" sequence="10"/>
+
+<menuitem
+        id="menu_hr_hardship_allowance_level"
+        name="Hardship Allowance"
+        parent="hr.menu_hr_customfield_group"
+        action="action_hr_hardship_allowance_level"
+        sequence="81"/>
+
+<!-- <menuitem id="menu_hr_organization_chart" name="Organization Chart" parent="menu_ahadu_hr_root" action="action_hr_organization_chart" sequence="30"/> -->
+<menuitem id="menu_hr_organogram_structure" name="Organogram Structure" parent="hr.menu_hr_configuration" action="action_hr_organogram_node" sequence="60"/>
+<menuitem id="menu_hr_structural_org_chart" name="Structural Chart" parent="menu_ahadu_hr_root" action="action_hr_structural_org_chart" sequence="31"/>
+<menuitem id="menu_employee_probation" name="Probation Reviews" parent="hr.menu_hr_configuration" action="action_employee_probation" sequence="100"/>
+<!--  Settings Group  -->
+<menuitem id="hr.menu_hr_settings_group" name="Settings" parent="hr.menu_hr_configuration" sequence="10"/>
+<!--  Employee Group  -->
+<menuitem id="hr.menu_hr_employee_group" name="Employee" parent="hr.menu_hr_configuration" sequence="20"/>
+<menuitem id="hr.menu_hr_work_location" name="Work Locations" parent="hr.menu_hr_employee_group" action="hr.hr_work_location_action" sequence="10"/>
+<menuitem id="hr.menu_hr_departure_reasons" name="Departure Reasons" parent="hr.menu_hr_employee_group" action="hr.hr_departure_reason_action" sequence="20"/>
+<menuitem id="hr.menu_hr_category" name="Tags" parent="hr.menu_hr_employee_group" action="hr.open_view_categ_form" sequence="30"/>
+<menuitem id="hr_skills.hr_resume_type_menu" name="Resume Line Types" parent="hr.menu_hr_employee_group" action="hr_skills.hr_resume_type_action" sequence="40"/>
+<!--  Recruitment Group  -->
+<menuitem id="hr.menu_hr_recruitment_group" name="Recruitment" parent="hr.menu_hr_configuration" sequence="30"/>
+<menuitem id="hr.menu_hr_job_position" name="Job Positions" parent="hr.menu_hr_recruitment_group" action="hr.action_hr_job" sequence="10"/>
+<menuitem id="hr_contract.hr_contract_type_action" name="Employment Types" parent="hr.menu_hr_recruitment_group" action="hr.hr_contract_type_action" sequence="20"/>
+<menuitem id="hr_skills.hr_skill_type_menu" name="Skill Types" parent="hr.menu_hr_recruitment_group" action="hr_skills.hr_skill_type_action" sequence="30"/>
+<!--  Contracts Group  -->
+<menuitem id="hr.menu_hr_contracts_group" name="Contracts" parent="hr.menu_hr_configuration" sequence="40"/>
+<menuitem id="hr.menu_hr_working_time" name="Working Schedules" parent="hr.menu_hr_contracts_group" action="resource.action_resource_calendar_form" sequence="10"/>
+<!--  Window Actions for individual activity models  -->
+<record id="action_employee_promotion" model="ir.actions.act_window">
+<field name="name">Employee Promotions</field>
+<field name="res_model">hr.employee.promotion</field>
+<field name="view_mode">list,kanban,form</field>
+</record>
+<record id="action_employee_transfer" model="ir.actions.act_window">
+<field name="name">Employee Transfers</field>
+<field name="res_model">hr.employee.transfer</field>
+<field name="view_mode">list,kanban,form</field>
+</record>
+<record id="action_employee_disciplinary" model="ir.actions.act_window">
+<field name="name">Disciplinary Actions</field>
+<field name="res_model">hr.employee.disciplinary</field>
+<field name="view_mode">list,kanban,form</field>
+</record>
+<record id="action_employee_guarantee" model="ir.actions.act_window">
+<field name="name">Employee Guarantees</field>
+<field name="res_model">hr.employee.guarantee</field>
+<field name="view_mode">list,kanban,form</field>
+</record>
+<!--  =============================================  -->
+<!--  ==== NEW REPORTING SECTION ====  -->
+<!--  =============================================  -->
+<menuitem id="menu_hr_reporting_root" name="Analytics Dashboard" parent="menu_ahadu_hr_root" sequence="50"/>
+<menuitem id="menu_employee_headcount_report" name="Headcount Analysis" parent="menu_hr_reporting_root" action="action_employee_headcount_report" sequence="10"/>
+<menuitem id="menu_hr_analytics_dashboard" name="Analytics Dashboard" parent="menu_hr_reporting_root" action="action_hr_analytics_dashboard" sequence="20"/>
+
+
+<!--  <record id="action_employee_lateral" model="ir.actions.act_window">
+        <field name="name">Employee Lateral Movements</field>
+        <field name="res_model">hr.employee.lateral</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record>  -->
+<!--  <record id="action_employee_retirement" model="ir.actions.act_window">
+        <field name="name">Employee Retirements</field>
+        <field name="res_model">hr.employee.retirement</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record>  -->
+    
+<!--  Menu items for individual activities  -->
+<!--  <menuitem id="menu_employee_promotion" name="Promotions" parent="menu_employee_activities" action="action_employee_promotion" sequence="20"/>
+    <menuitem id="menu_employee_transfer" name="Transfers" parent="menu_employee_activities" action="action_employee_transfer" sequence="30"/>
+    <menuitem id="menu_employee_lateral" name="Lateral Movements" parent="menu_employee_activities" action="action_employee_lateral" sequence="40"/>
+    <menuitem id="menu_employee_retirement" name="Retirements" parent="menu_employee_activities" action="action_employee_retirement" sequence="50"/>
+    <menuitem id="menu_employee_disciplinary" name="Disciplinary Actions" parent="menu_employee_activities" action="action_employee_disciplinary" sequence="60"/>
+    <menuitem id="menu_employee_guarantee" name="Guarantees" parent="menu_employee_activities" action="action_employee_guarantee" sequence="70"/>  -->
+</odoo>

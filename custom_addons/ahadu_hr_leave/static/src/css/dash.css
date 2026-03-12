@@ -1,0 +1,60 @@
+/*
+    Custom CSS for the Ahadu Leave Dashboard
+*/
+
+.o_kanban_view_dashboard .o_kanban_record {
+    /* Remove default Kanban card styling */
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.o_dashboard_leave .card-dashboard {
+    border: none;
+    border-radius: 10px;
+    color: white;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.o_dashboard_leave .card-dashboard:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
+}
+
+.o_dashboard_leave .card-dashboard .card-body {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.o_dashboard_leave .card-dashboard h4 {
+    margin-top: 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/*
+    Beautiful Gradients for each card
+    Gradients are from https://uigradients.com/
+*/
+
+.card-allocations {
+    background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+}
+
+.card-time-off {
+    background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+}
+
+.card-overview {
+    background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+}
+
+.card-calendar {
+    background: linear-gradient(120deg, #ff9a9e 0%, #fecfef 100%);
+}

@@ -1,0 +1,9 @@
+<odoo>
+    <data>
+        <template id="inherit_web_layout" inherit_id="web.layout">
+            <xpath expr="//title" position="replace">
+                <title>AHADU ERP - Login</title>
+            </xpath>
+        </template>
+    </data>
+</odoo>

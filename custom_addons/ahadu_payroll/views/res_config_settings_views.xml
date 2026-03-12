@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_ahadu_payroll" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.ahadu.payroll</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="90"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Ahadu Payroll" string="Ahadu Payroll" name="ahadu_payroll">
+                    <block title="Payroll Calculations" name="payroll_calculations">
+                        <setting id="attendance_based_payroll_setting" help="Enable this to calculate payroll based on actual attendance records (check-in/out).">
+                            <field name="attendance_based_payroll"/>
+                        </setting>
+                    </block>
+                    <block title="Overtime Rates" name="overtime_rates">
+                        <setting id="ot_rates_setting" help="Configure the multiplier rates for different overtime types.">
+                            <group>
+                                <group>
+                                    <field name="overtime_rate_normal" groups="ahadu_payroll.group_ahadu_payroll_finance_officer"/>
+                                    <field name="overtime_rate_night" groups="ahadu_payroll.group_ahadu_payroll_finance_officer"/>
+                                </group>
+                                <group>
+                                    <field name="overtime_rate_weekend" groups="ahadu_payroll.group_ahadu_payroll_finance_officer"/>
+                                    <field name="overtime_rate_holiday" groups="ahadu_payroll.group_ahadu_payroll_finance_officer"/>
+                                </group>
+                            </group>
+                        </setting>
+                    </block>
+                    <block title="Tax Configuration" name="tax_configuration">
+                        <setting id="tax_brackets_setting" help="Configure the Income Tax Brackets (Rates and Deductions).">
+                             <div class="row mt16">
+                                <div class="col-12 col-lg-6 o_setting_box">
+                                    <div class="o_setting_right_pane">
+                                        <button name="%(ahadu_payroll.action_ahadu_payroll_tax_bracket)d" icon="fa-arrow-right" type="action" string="Configure Tax Brackets" class="btn-link"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </setting>
+                         <setting id="ci_tax_rate_setting" help="Set the tax rate for Cash Indemnity allowance (Default 35%)." groups="ahadu_payroll.group_ahadu_payroll_finance_officer">
+                            <field name="cash_indemnity_tax_rate"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_ahadu_payroll_configuration" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'ahadu_payroll'}</field>
+    </record>
+
+    <menuitem id="menu_ahadu_payroll_settings"
+              name="Settings"
+              parent="ahadu_payroll.menu_ahadu_config_root"
+              sequence="0"
+              action="action_ahadu_payroll_configuration"
+              groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"/>
+</odoo>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ahadu_view_slide_slide_form" model="ir.ui.view">
+        <field name="name">ahadu.slide.slide.form</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="arch" type="xml">
+            <!-- Make source_type visible for VIDEO as well (in addition to infographic/document) -->
+            <xpath expr="//label[@for='source_type']" position="attributes">
+                <attribute name="invisible">slide_category not in ['infographic', 'document', 'video']</attribute>
+            </xpath>
+            <xpath expr="//field[@name='source_type']" position="attributes">
+                <attribute name="invisible">slide_category not in ['infographic', 'document', 'video']</attribute>
+            </xpath>
+
+            <!-- Hide video_url when user picks 'upload from device' -->
+            <xpath expr="//field[@name='video_url']" position="attributes">
+                <attribute name="invisible">slide_category != 'video' or source_type == 'local_file'</attribute>
+                <attribute name="required">slide_category == 'video' and source_type in ['external', 'external_link']</attribute>
+            </xpath>
+
+            <!-- Insert the local video upload field after video_url -->
+            <xpath expr="//field[@name='video_url']" position="after">
+                <field name="video_attachment_ids"
+                       string="Upload Video"
+                       widget="many2many_binary"
+                       options="{'accepted_file_extensions': 'video/*'}"
+                       invisible="slide_category != 'video' or source_type != 'local_file'"/>
+                <field name="video_binary_content" invisible="1"/>
+                <field name="video_binary_filename" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="ahadu_view_slide_slide_form_wo_channel_id" model="ir.ui.view">
+        <field name="name">ahadu.slide.slide.form.wo.channel.id</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form_wo_channel_id"/>
+        <field name="arch" type="xml">
+            <!-- Make source_type visible for VIDEO as well -->
+            <xpath expr="//label[@for='source_type']" position="attributes">
+                <attribute name="invisible">slide_category not in ['infographic', 'document', 'video']</attribute>
+            </xpath>
+            <xpath expr="//field[@name='source_type']" position="attributes">
+                <attribute name="invisible">slide_category not in ['infographic', 'document', 'video']</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

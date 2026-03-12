@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pay Group Data -->
+    <record id="pay_group_senior_mg" model="ahadu.pay.group">
+        <field name="code">SENIOR_MG</field>
+        <field name="name">Senior Management</field>
+    </record>
+    <record id="pay_group_contempwop" model="ahadu.pay.group">
+        <field name="code">CONTEMPWOP</field>
+        <field name="name">Contract Employee Without Pension</field>
+    </record>
+    <record id="pay_group_middle" model="ahadu.pay.group">
+        <field name="code">MIDDLE</field>
+        <field name="name">Middle Level</field>
+    </record>
+    <record id="pay_group_cl_staff" model="ahadu.pay.group">
+        <field name="code">CL_STAFF</field>
+        <field name="name">Clerical Staff</field>
+    </record>
+    <record id="pay_group_non_cl" model="ahadu.pay.group">
+        <field name="code">NON_CL</field>
+        <field name="name">Non-Clerical</field>
+    </record>
+    <record id="pay_group_executives" model="ahadu.pay.group">
+        <field name="code">EXECUTIVES</field>
+        <field name="name">Executives</field>
+    </record>
+    <record id="pay_group_contempret" model="ahadu.pay.group">
+        <field name="code">CONTEMPRET</field>
+        <field name="name">Contract Employee With Retirement</field>
+    </record>
+</odoo>

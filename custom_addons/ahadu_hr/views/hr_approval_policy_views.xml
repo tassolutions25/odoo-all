@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_hr_approval_policy_tree" model="ir.ui.view">
+            <field name="name">hr.approval.policy.tree</field>
+            <field name="model">hr.approval.policy</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="model_id"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_hr_approval_policy_form" model="ir.ui.view">
+            <field name="name">hr.approval.policy.form</field>
+            <field name="model">hr.approval.policy</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1><field name="name" placeholder="e.g., Promotion Policy for Directors"/></h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="model_id" options="{'no_create': True}"/>
+                                <field name="model_name" invisible="1"/> <!-- Add the new field invisibly -->
+                                <field name="sequence"/>
+                            </group>
+                            <group>
+                                <field name="active"/>
+                            </group>
+                        </group>
+                        <group string="Applicability Domain">
+                            <field name="domain" widget="domain" options="{'model': 'model_name'}" nolabel="1"/>
+                            <div class="text-muted">
+                                Use 'record' to refer to the specific document being approved.
+                                <br/>Example for Directors (using organogram): <code>[('employee_id.job_id.organogram_node_ids.node_type', '=', 'director')]</code>
+                            </div>
+                        </group>
+                        <notebook>
+                            <page string="Approval Steps">
+                                <field name="line_ids">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="approver_type"/>
+                                        <field name="job_id" invisible="approver_type != 'job_position'" required="approver_type == 'job_position'"/>
+                                        <field name="is_required"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Description">
+                                <field name="description" nolabel="1" placeholder="Describe the purpose of this policy..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_hr_approval_policy" model="ir.actions.act_window">
+            <field name="name">Approval Workflows</field>
+            <field name="res_model">hr.approval.policy</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+    </data>
+</odoo>

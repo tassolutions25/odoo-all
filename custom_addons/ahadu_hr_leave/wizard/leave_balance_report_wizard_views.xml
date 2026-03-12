@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_leave_balance_by_year" model="ir.actions.report">
+        <field name="name">Leave Balance by Year</field>
+        <field name="model">ahadu.leave.balance.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_hr_leave.template_leave_balance_by_year</field>
+        <field name="report_file">ahadu_hr_leave.template_leave_balance_by_year</field>
+        <field name="print_report_name">'Leave Balance - %s' % object.employee_id.name</field>
+        <field name="binding_model_id" eval="False" />
+    </record>
+
+    <template id="template_leave_balance_by_year">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="mt-4 text-center">Employee Leave Balance Report</h2>
+
+                        <!-- Header reads from the wizard record 'doc' -->
+                        <div class="row mt-5 mb-4">
+                            <div class="col-6">
+                                <strong>Employee:</strong>
+                                <span t-esc="doc.employee_id.name" />
+                                <br />
+                                <strong>Department:</strong>
+                                <span t-esc="doc.employee_id.department_id.name or 'N/A'" />
+                                <br />
+                                <strong>Job Title:</strong>
+                                <span t-esc="doc.employee_id.job_title or 'N/A'" />
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Report Date:</strong>
+                                <span
+                                    t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')" />
+                            </div>
+                        </div>
+
+                        <!-- THE FIX: Table body reads from 'report_data' which comes from the
+                        context -->
+                        <table class="table table-sm table-bordered">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="text-center">Accrual Year</th>
+                                    <th class="text-center">Granted</th>
+                                    <th class="text-center">Used</th>
+                                    <th class="text-center">Expired</th>
+                                    <th class="text-center">
+                                        <strong>Current Balance</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="report_data['lines']" t-as="line">
+                                    <td class="text-center">
+                                        <t t-esc="line['year']" />
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="'%.2f' % line['granted']" />
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="'%.2f' % line['used']" />
+                                    </td>
+                                    <td class="text-center text-danger">
+                                        <t t-esc="'%.2f' % line['expired']" />
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>
+                                            <t t-esc="'%.2f' % line['balance']" />
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-light fw-bold">
+                                    <td class="text-center">Total</td>
+                                    <td class="text-center">
+                                        <t t-esc="'%.2f' % report_data['total_granted']" />
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="'%.2f' % report_data['total_used']" />
+                                    </td>
+                                    <td class="text-center text-danger">
+                                        <t t-esc="'%.2f' % report_data['total_expired']" />
+                                    </td>
+                                    <td class="text-center">
+                                        <h5 class="my-0">
+                                            <span class="badge bg-success"><t
+                                                    t-esc="'%.2f' % report_data['total_balance']" />
+                                                Days</span>
+                                        </h5>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-name="ahadu_hr.HRReportingDashboard" owl="1">
+        <div class="hr_dashboard_container">
+            <div t-if="state.loading" class="loading-spinner">
+                <div class="spinner"></div>
+                <p class="mt-3">Loading dashboard data...</p>
+            </div>
+            
+            <div t-if="state.error" class="alert alert-warning">
+                <i class="fa fa-exclamation-triangle me-2"></i>
+                <strong>Notice:</strong> Using sample data. <span t-esc="state.error"></span>
+            </div>
+            
+            <div t-if="!state.loading">
+                <div class="dashboard_header">
+                    <h1 class="dashboard_title">
+                        <i class="fa fa-chart-line me-2"></i>
+                        HR Reporting Dashboard
+                    </h1>
+                </div>
+
+                <div class="dashboard_filter_bar">
+                    <h5 class="filter_label">
+                        <i class="fa fa-filter me-2"></i>Filters
+                    </h5>
+                    <div class="dashboard_filters">
+                        <select class="form-select" name="newly_joined" t-on-change="onFilterChange">
+                            <option value="all" t-att-selected="state.filters.newly_joined === 'all'">All Time</option>
+                            <option value="30_days" t-att-selected="state.filters.newly_joined === '30_days'">Last 30 Days</option>
+                            <option value="90_days" t-att-selected="state.filters.newly_joined === '90_days'">Last 90 Days</option>
+                            <option value="this_year" t-att-selected="state.filters.newly_joined === 'this_year'">This Year</option>
+                        </select>
+                        <select class="form-select" name="branch" t-on-change="onFilterChange">
+                            <option value="all" t-att-selected="state.filters.branch === 'all'">All Branches</option>
+                            <t t-foreach="state.availableFilters.branches || []" t-as="branch" t-key="branch.id">
+                                <option t-att-value="branch.id" t-esc="branch.name" t-att-selected="state.filters.branch == branch.id"></option>
+                            </t>
+                        </select>
+                        <select class="form-select" name="department" t-on-change="onFilterChange">
+                            <option value="all" t-att-selected="state.filters.department === 'all'">All Departments</option>
+                            <t t-foreach="state.availableFilters.departments || []" t-as="dept" t-key="dept.id">
+                                <option t-att-value="dept.id" t-esc="dept.name" t-att-selected="state.filters.department == dept.id"></option>
+                            </t>
+                        </select>
+                        <select class="form-select" name="district" t-on-change="onFilterChange">
+                            <option value="all" t-att-selected="state.filters.district === 'all'">All Districts</option>
+                            <t t-foreach="state.availableFilters.districts || []" t-as="district" t-key="district.id">
+                                <option t-att-value="district.id" t-esc="district.name" t-att-selected="state.filters.district == district.id"></option>
+                            </t>
+                        </select>
+                        <select class="form-select" name="grade" t-on-change="onFilterChange">
+                            <option value="all" t-att-selected="state.filters.grade === 'all'">All Grades</option>
+                            <t t-foreach="state.availableFilters.grades || []" t-as="grade" t-key="grade.id">
+                                <option t-att-value="grade.id" t-esc="grade.name" t-att-selected="state.filters.grade == grade.id"></option>
+                            </t>
+                        </select>
+                        <select class="form-select" name="gender" t-on-change="onFilterChange">
+                            <option value="all" t-att-selected="state.filters.gender === 'all'">All Genders</option>
+                            <t t-foreach="state.availableFilters.genders || []" t-as="gender" t-key="gender.id">
+                                <option t-att-value="gender.id" t-esc="gender.name" t-att-selected="state.filters.gender === gender.id"></option>
+                            </t>
+                        </select>
+                        <select class="form-select" name="age_group" t-on-change="onFilterChange">
+                            <option value="all" t-att-selected="state.filters.age_group === 'all'">All Age Groups</option>
+                            <t t-foreach="state.availableFilters.age_groups || []" t-as="age_group" t-key="age_group.id">
+                                <option t-att-value="age_group.id" t-esc="age_group.name" t-att-selected="state.filters.age_group === age_group.id"></option>
+                            </t>
+                        </select>
+                        <select class="form-select" name="job_position" t-on-change="onFilterChange">
+                            <option value="all" t-att-selected="state.filters.job_position === 'all'">All Positions</option>
+                            <t t-foreach="state.availableFilters.job_positions || []" t-as="job" t-key="job.id">
+                                <option t-att-value="job.id" t-esc="job.name" t-att-selected="state.filters.job_position == job.id"></option>
+                            </t>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="dashboard_body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button t-att-class="'nav-link' + (state.activeTab === 'overview' ? ' active' : '')" t-on-click="() => this.setActiveTab('overview')" type="button">
+                                <i class="fa fa-tachometer-alt me-2"></i>Workforce Overview
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button t-att-class="'nav-link' + (state.activeTab === 'movements' ? ' active' : '')" t-on-click="() => this.setActiveTab('movements')" type="button">
+                                <i class="fa fa-retweet me-2"></i>Employee Movements
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button t-att-class="'nav-link' + (state.activeTab === 'structure' ? ' active' : '')" t-on-click="() => this.setActiveTab('structure')" type="button">
+                               <i class="fa fa-sitemap me-2"></i>Organizational Structure
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button t-att-class="'nav-link' + (state.activeTab === 'activities' ? ' active' : '')" t-on-click="() => this.setActiveTab('activities')" type="button">
+                               <i class="fa fa-tasks me-2"></i>Activity Analysis
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content pt-4">
+                        <div t-att-class="'tab-pane fade' + (state.activeTab === 'overview' ? ' show active' : '')">
+                            <div class="row kpi_section mb-4">
+                                <div class="col-lg col-md-6 mb-3">
+                                    <div class="kpi-card card-total">
+                                        <div class="icon"><i class="fa fa-users"></i></div>
+                                        <div class="data">
+                                            <div class="value" t-esc="state.kpis.total_employees"></div>
+                                            <div class="label">Total Employees</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg col-md-6 mb-3">
+                                    <div class="kpi-card card-female">
+                                        <div class="icon"><i class="fa fa-venus"></i></div>
+                                        <div class="data">
+                                            <div class="value" t-esc="state.kpis.female_employees"></div>
+                                            <div class="label">Females (<t t-esc="state.kpis.female_percentage"></t>%)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg col-md-6 mb-3">
+                                    <div class="kpi-card card-male">
+                                        <div class="icon"><i class="fa fa-mars"></i></div>
+                                        <div class="data">
+                                            <div class="value" t-esc="state.kpis.male_employees"></div>
+                                            <div class="label">Males (<t t-esc="state.kpis.male_percentage"></t>%)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-chart-pie me-2"></i>Gender Breakdown
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="genderChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-chart-bar me-2"></i>Age Distribution
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="ageChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-map-marker-alt me-2"></i>Work Location
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="locationChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-briefcase me-2"></i>Position Classification
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="positionClassificationChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div t-att-class="'tab-pane fade' + (state.activeTab === 'movements' ? ' show active' : '')">
+                            <div class="row kpi_section mb-4">
+                                <div class="col-lg col-md-6 mb-3">
+                                    <div class="kpi-card card-promotion">
+                                        <div class="icon"><i class="fa fa-arrow-up"></i></div>
+                                        <div class="data">
+                                            <div class="value" t-esc="state.kpis.promotions"></div>
+                                            <div class="label">Promotions</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg col-md-6 mb-3">
+                                    <div class="kpi-card card-transfer">
+                                        <div class="icon"><i class="fa fa-exchange-alt"></i></div>
+                                        <div class="data">
+                                            <div class="value" t-esc="state.kpis.transfers"></div>
+                                            <div class="label">Transfers</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg col-md-6 mb-3">
+                                    <div class="kpi-card card-demotion">
+                                        <div class="icon"><i class="fa fa-arrow-down"></i></div>
+                                        <div class="data">
+                                            <div class="value" t-esc="state.kpis.demotions"></div>
+                                            <div class="label">Demotions</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg col-md-6 mb-3">
+                                    <div class="kpi-card card-retirement">
+                                        <div class="icon"><i class="fa fa-user-times"></i></div>
+                                        <div class="data">
+                                            <div class="value" t-esc="state.kpis.retirements"></div>
+                                            <div class="label">Retirements</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <div class="col-lg col-md-6 mb-3">
+                                    <div class="kpi-card card-lateral">
+                                        <div class="icon"><i class="fa fa-arrows-alt-h"></i></div>
+                                        <div class="data">
+                                            <div class="value" t-esc="state.kpis.lateral"></div>
+                                            <div class="label">Lateral Movements</div>
+                                        </div>
+                                    </div>
+                                </div> -->
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-lg-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-chart-line me-2"></i>New Hires Trend (Last 6 Months)
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="hiresChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-chart-area me-2"></i>Activity Trends Over Time
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="activityTrendsChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div t-att-class="'tab-pane fade' + (state.activeTab === 'structure' ? ' show active' : '')">
+                            <div class="row">
+                                <div class="col-lg-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-building me-2"></i>Employees by Department
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="departmentChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-layer-group me-2"></i>Employees by Grade
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="gradeChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-id-badge me-2"></i>Employees by Job Position
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="jobPositionChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-globe me-2"></i>Employees by District
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="districtChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div t-att-class="'tab-pane fade' + (state.activeTab === 'activities' ? ' show active' : '')">
+                            <div class="row">
+                                <div class="col-lg-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-chart-pie me-2"></i>Activity Summary
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="activitySummaryChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-arrow-up me-2"></i>Promotions by Grade
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="promotionsByGradeChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-exchange-alt me-2"></i>Transfers by Branch
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="transfersByBranchChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-user-times me-2"></i>Retirements by Type
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="retirementsByTypeChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12 mb-4">
+                                    <div class="chart-card">
+                                        <h5 class="chart-title">
+                                            <i class="fa fa-gavel me-2"></i>Disciplinary Actions by Type
+                                        </h5>
+                                        <div class="chart-container">
+                                            <canvas t-ref="disciplinaryByTypeChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

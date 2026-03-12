@@ -1,0 +1,154 @@
+<odoo>
+    <data>
+        <template id="custom_login_layout_website" inherit_id="website.login_layout" priority="25">
+            <xpath expr="t" position="replace">
+                <t t-call="web.frontend_layout">
+                    <t t-set="html_data" t-value="{'style': 'height: 100%;'}"/>
+                    <t t-set="body_classname" t-value="'bg-100 o_ahadu_custom_login'"/>
+                    <t t-set="no_header" t-value="True"/>
+                    <t t-set="no_footer" t-value="True"/>
+                    <t t-set="no_copyright" t-value="True"/>
+                    <style>
+                        /* Hide any website chrome that sneaks in */
+                        .o_ahadu_custom_login #top,
+                        .o_ahadu_custom_login header,
+                        .o_ahadu_custom_login #bottom,
+                        .o_ahadu_custom_login footer { display: none !important; }
+                        .o_ahadu_custom_login #wrapwrap { padding: 0 !important; margin: 0 !important; }
+                        .o_ahadu_custom_login main { padding: 0 !important; margin: 0 !important; }
+
+                        /* Full-screen background */
+                        .o_ahadu_custom_login body,
+                        .o_ahadu_bg_wrap {
+                            min-height: 100vh;
+                            width: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            background-image: url('/ahadu_custom_theme/static/src/img/AHADU_ERP.jpg');
+                            background-size: cover;
+                            background-position: center;
+                            padding: 20px;
+                            box-sizing: border-box;
+                        }
+
+                        /* Login card - Compact Design */
+                        .o_ahadu_login_card {
+                            width: 100%;
+                            max-width: 320px; /* Reduced from 380px */
+                            background: #ffffff;
+                            border-radius: 12px;
+                            box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+                            padding: 24px 20px; /* Reduced padding for tighter height */
+                        }
+
+                        .o_ahadu_logo {
+                            max-height: 55px; /* Reduced from 80px */
+                            max-width: 140px;
+                            width: auto;
+                            height: auto;
+                            display: block;
+                            margin: 0 auto;
+                        }
+
+                        .o_ahadu_divider {
+                            border-bottom: 1px solid #dee2e6;
+                            padding-bottom: 12px; /* Tighter padding */
+                            margin-bottom: 12px;  /* Tighter margin */
+                            text-align: center;
+                        }
+
+                        /* Compress bootstrap margin-bottom slightly to save vertical space */
+                        .o_ahadu_login_card .mb-3 {
+                            margin-bottom: 0.8rem !important;
+                        }
+
+                        /* CRITICAL: Force login form visible even when Odoo adds d-none */
+                        .o_ahadu_login_card form.oe_login_form,
+                        .o_ahadu_login_card form.oe_login_form.d-none {
+                            display: block !important;
+                        }
+
+                        /* Hide OWL user_switch since we force the form directly */
+                        .o_ahadu_login_card owl-component {
+                            display: none !important;
+                        }
+
+                        /* ==========================================================
+                           Ahadu Brand Colors for Login Button (Burgundy)
+                           ========================================================== */
+                        .o_ahadu_login_card form.oe_login_form button[type="submit"].btn-primary,
+                        .o_ahadu_login_card .oe_login_buttons button[type="submit"].btn-primary.btn {
+                            background-color: #800020 !important;
+                            border-color: #800020 !important;
+                            color: #ffffff !important;
+                            font-weight: 600 !important;
+                            transition: all 0.3s ease;
+                        }
+
+                        .o_ahadu_login_card form.oe_login_form button[type="submit"].btn-primary:hover,
+                        .o_ahadu_login_card form.oe_login_form button[type="submit"].btn-primary:focus,
+                        .o_ahadu_login_card .oe_login_buttons button[type="submit"].btn-primary.btn:hover {
+                            background-color: #5c0017 !important;
+                            border-color: #5c0017 !important;
+                            color: #ffffff !important;
+                            box-shadow: 0 4px 12px rgba(128, 0, 32, 0.5) !important;
+                        }
+
+                        /* Make password toggle look clickable */
+                        #rt_toggle_password {
+                            cursor: pointer !important;
+                        }
+
+
+
+                        @media (max-width: 480px) {
+                            .o_ahadu_bg_wrap { padding: 15px; align-items: flex-start; padding-top: 5vh; }
+                            .o_ahadu_login_card { padding: 16px; width: 100%; border-radius: 8px;}
+                        }
+                    </style>
+                    <div class="o_ahadu_bg_wrap">
+                        <div class="o_ahadu_login_card o_database_list">
+                            <div class="o_ahadu_divider">
+                                <img src="/ahadu_custom_theme/static/src/img/ahadulogo.svg"
+                                     alt="Ahadu Logo"
+                                     class="o_ahadu_logo"/>
+                            </div>
+                            <t t-out="0"/>
+                        </div>
+                    </div>
+                    
+                    <script type="text/javascript">
+                        // Password Toggle Fix
+                        document.addEventListener("click", function (e) {
+                            var toggleBtn = e.target.closest("#rt_toggle_password");
+                            if (toggleBtn) {
+                                var passwordInput = document.getElementById("password");
+                                if (passwordInput) {
+                                    var isPassword = passwordInput.getAttribute("type") === "password";
+                                    passwordInput.setAttribute("type", isPassword ? "text" : "password");
+                                    toggleBtn.classList.toggle("fa-eye", isPassword);
+                                    toggleBtn.classList.toggle("fa-eye-slash", !isPassword);
+                                }
+                            }
+                        });
+
+                        // Form Visibility Force Fix
+                        document.addEventListener("DOMContentLoaded", function () {
+                            const loginForm = document.querySelector('form.oe_login_form');
+                            if (loginForm) {
+                                loginForm.classList.remove('d-none');
+                                const observer = new MutationObserver(function (mutations) {
+                                    if (loginForm.classList.contains('d-none')) {
+                                        loginForm.classList.remove('d-none');
+                                    }
+                                });
+                                observer.observe(loginForm, { attributes: true, attributeFilter: ['class'] });
+                            }
+                        });
+                    </script>
+                </t>
+            </xpath>
+        </template>
+    </data>
+</odoo>

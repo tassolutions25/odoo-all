@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- 1. Cash Indemnity Type Views (Rules) -->
+    <record id="view_cash_indemnity_type_tree" model="ir.ui.view">
+        <field name="name">cash.indemnity.type.list</field>
+        <field name="model">cash.indemnity.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="amount"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_cash_indemnity_type" model="ir.actions.act_window">
+        <field name="name">Cash Indemnity Rules</field>
+        <field name="res_model">cash.indemnity.type</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- 2. Cash Indemnity Tracking Views -->
+    <record id="view_cash_indemnity_tracking_form" model="ir.ui.view">
+        <field name="name">cash.indemnity.tracking.form</field>
+        <field name="model">cash.indemnity.tracking</field>
+        <field name="arch" type="xml">
+            <form string="Cash Indemnity Tracking">
+                <header>
+                    <button name="action_verify" invisible="state != 'draft'" string="Verify" type="object" class="oe_highlight"/>
+                    <button name="action_approve" invisible="state != 'verified'" string="Approve" type="object" class="oe_highlight"/>
+                    <button name="action_done" invisible="state != 'approved'" string="Mark as Done" type="object" class="oe_highlight"/>
+                    <button name="action_draft" invisible="state != 'cancel'" string="Set to Draft" type="object"/>
+                    <button name="action_cancel" invisible="state in ('done', 'cancel')" string="Cancel" type="object"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,verified,approved,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group col="3">
+                        <field name="employee_id"/>
+                        <field name="date_from" widget="daterange" options='{"related_end_date": "date_to"}' string="Period From"/>
+                        <field name="date_to" widget="daterange" options='{"related_start_date": "date_from"}' string="Period To"/>
+                    </group>
+                    <notebook>
+                        <page string="Daily Lines">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="indemnity_type_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <group string="Signatures &amp; Accountability">
+                        <group>
+                            <field name="prepared_by_id"/>
+                            <field name="prepared_date"/>
+                        </group>
+                        <group>
+                            <field name="verified_by_id"/>
+                            <field name="verified_date"/>
+                        </group>
+                        <group>
+                            <field name="approved_by_id"/>
+                            <field name="approved_date"/>
+                        </group>
+                    </group>
+                </sheet>
+
+            </form>
+        </field>
+    </record>
+
+    <record id="view_cash_indemnity_tracking_tree" model="ir.ui.view">
+        <field name="name">cash.indemnity.tracking.tree</field>
+        <field name="model">cash.indemnity.tracking</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'" decoration-muted="state == 'cancel'" decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_cash_indemnity_tracking" model="ir.actions.act_window">
+        <field name="name">Cash Indemnity Tracking</field>
+        <field name="res_model">cash.indemnity.tracking</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- 3. Cash Indemnity Calculation Views -->
+    <record id="view_cash_indemnity_form" model="ir.ui.view">
+        <field name="name">cash.indemnity.form</field>
+        <field name="model">cash.indemnity</field>
+        <field name="arch" type="xml">
+            <form string="Cash Indemnity Calculation">
+                <header>
+                    <button name="action_approve" invisible="state != 'draft'" string="Approve" type="object" class="oe_highlight"/>
+                    <button name="action_done" invisible="state != 'approved'" string="Mark as Done" type="object" class="oe_highlight"/>
+                    <button name="action_draft" invisible="state != 'cancel'" string="Set to Draft" type="object"/>
+                    <button name="action_cancel" invisible="state not in ('draft', 'approved')" string="Cancel" type="object"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                         <button name="action_fetch_tracking_data" 
+                                string="Link Tracking Data" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-refresh"
+                                invisible="state != 'draft'"/>
+                    </div>
+                
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group col="3">
+                        <field name="employee_id"/>
+                        <field name="date_from" widget="daterange" options='{"related_end_date": "date_to"}' string="Period From"/>
+                        <field name="date_to" widget="daterange" options='{"related_start_date": "date_from"}' string="Period To"/>
+                    </group>
+                    <group col="3">
+                        <field name="contract_id" readonly="1" force_save="1"/>
+                        <field name="tracking_id" readonly="1"/>
+                        <field name="approved_by_id"/>
+                        <field name="approved_date"/>
+                        <field name="company_id" invisible="1"/>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Calculation Details">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="indemnity_type_id"/>
+                                    <field name="days"/>
+                                    <field name="amount" sum="Total"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_working_days"/>
+                                <field name="total_amount" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+
+            </form>
+        </field>
+    </record>
+
+    <record id="view_cash_indemnity_tree" model="ir.ui.view">
+        <field name="name">cash.indemnity.tree</field>
+        <field name="model">cash.indemnity</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'" decoration-muted="state == 'cancel'" decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="total_working_days"/>
+                <field name="total_amount" sum="Total"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_cash_indemnity" model="ir.actions.act_window">
+        <field name="name">Cash Indemnity Calculation</field>
+        <field name="res_model">cash.indemnity</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- MENUS -->
+    
+    <menuitem id="menu_cash_indemnity_root"
+              name="Cash Indemnity"
+              parent="ahadu_payroll.menu_ahadu_root"
+              sequence="25"/>
+              
+    <menuitem id="menu_cash_indemnity_tracking"
+              name="Cash Indemnity Tracking"
+              parent="menu_cash_indemnity_root"
+              action="action_cash_indemnity_tracking"
+              sequence="10"/>
+
+    <menuitem id="menu_cash_indemnity_calculation"
+              name="Cash Indemnity Calculation"
+              parent="menu_cash_indemnity_root"
+              action="action_cash_indemnity"
+              sequence="20"/>
+
+    <menuitem id="menu_cash_indemnity_rules"
+              name="Cash Indemnity Rules"
+              parent="menu_cash_indemnity_root"
+              action="action_cash_indemnity_type"
+              sequence="30"/>
+    
+</odoo>

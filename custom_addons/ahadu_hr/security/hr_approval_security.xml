@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--
+        =======================================================
+        SECTION 1: Restrictive Rules for Regular Users
+        =======================================================
+        This rule ensures that a regular user can only see approval documents if:
+        - They created it.
+        - It's for them (they are the employee).
+        - They are the next person in line to approve it.
+        - The document is in a final state (draft, approved, rejected).
+        -->
+        <record id="hr_promotion_approval_rule_user" model="ir.rule">
+            <field name="name">Promotion: User's own and approval documents</field>
+            <field name="model_id" ref="model_hr_employee_promotion"/>
+            <field name="domain_force">['|',('state', 'in', ['draft', 'approved', 'rejected']),'|',('create_uid', '=', user.id),'|',('employee_id.user_id', '=', user.id),('next_approver_ids', 'in', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="hr_demotion_approval_rule_user" model="ir.rule">
+            <field name="name">Demotion: User's own and approval documents</field>
+            <field name="model_id" ref="model_hr_employee_demotion"/>
+            <field name="domain_force">['|',('state', 'in', ['draft', 'approved', 'rejected']),'|',('create_uid', '=', user.id),'|',('employee_id.user_id', '=', user.id),('next_approver_ids', 'in', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="hr_transfer_approval_rule_user" model="ir.rule">
+            <field name="name">Transfer: User's own and approval documents</field>
+            <field name="model_id" ref="model_hr_employee_transfer"/>
+            <field name="domain_force">['|',('state', 'in', ['draft', 'approved', 'rejected']),'|',('create_uid', '=', user.id),'|',('employee_id.user_id', '=', user.id),('next_approver_ids', 'in', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+         <record id="hr_termination_approval_rule_user" model="ir.rule">
+            <field name="name">Termination: User's own and approval documents</field>
+            <field name="model_id" ref="model_hr_employee_termination"/>
+            <field name="domain_force">['|',('state', 'in', ['draft', 'approved', 'rejected']),'|',('create_uid', '=', user.id),'|',('employee_id.user_id', '=', user.id),('next_approver_ids', 'in', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+         <record id="hr_acting_approval_rule_user" model="ir.rule">
+            <field name="name">Acting: User's own and approval documents</field>
+            <field name="model_id" ref="model_hr_employee_acting"/>
+            <field name="domain_force">['|',('state', 'in', ['draft', 'approved', 'rejected']),'|',('create_uid', '=', user.id),'|',('employee_id.user_id', '=', user.id),('next_approver_ids', 'in', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+         <record id="hr_temporary_assignment_approval_rule_user" model="ir.rule">
+            <field name="name">Temporary Assignment: User's own and approval documents</field>
+            <field name="model_id" ref="model_hr_employee_temporary_assignment"/>
+            <field name="domain_force">['|',('state', 'in', ['draft', 'approved', 'rejected']),'|',('create_uid', '=', user.id),'|',('employee_id.user_id', '=', user.id),('next_approver_ids', 'in', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+         <record id="hr_probation_approval_rule_user" model="ir.rule">
+            <field name="name">Probation: User's own and approval documents</field>
+            <field name="model_id" ref="model_hr_employee_probation"/>
+            <field name="domain_force">['|',('state', 'in', ['draft', 'approved', 'rejected']),'|',('create_uid', '=', user.id),'|',('employee_id.user_id', '=', user.id),('next_approver_ids', 'in', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!--
+        =======================================================
+        SECTION 2: Permissive Rules for HR Managers
+        =======================================================
+        This rule gives HR Managers access to ALL records of the specified models,
+        bypassing the restrictions from Section 1. The domain [(1, '=', 1)] means 'always true'.
+        -->
+        <record id="hr_promotion_approval_rule_manager" model="ir.rule">
+            <field name="name">Promotion: Manager Full Access</field>
+            <field name="model_id" ref="model_hr_employee_promotion"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
+        </record>
+
+        <record id="hr_demotion_approval_rule_manager" model="ir.rule">
+            <field name="name">Demotion: Manager Full Access</field>
+            <field name="model_id" ref="model_hr_employee_demotion"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
+        </record>
+
+        <record id="hr_transfer_approval_rule_manager" model="ir.rule">
+            <field name="name">Transfer: Manager Full Access</field>
+            <field name="model_id" ref="model_hr_employee_transfer"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
+        </record>
+
+        <record id="hr_termination_approval_rule_manager" model="ir.rule">
+            <field name="name">Termination: Manager Full Access</field>
+            <field name="model_id" ref="model_hr_employee_termination"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
+        </record>
+
+        <record id="hr_acting_approval_rule_manager" model="ir.rule">
+            <field name="name">Acting: Manager Full Access</field>
+            <field name="model_id" ref="model_hr_employee_acting"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
+        </record>
+
+        <record id="hr_temporary_assignment_approval_rule_manager" model="ir.rule">
+            <field name="name">Temporary Assignment: Manager Full Access</field>
+            <field name="model_id" ref="model_hr_employee_temporary_assignment"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
+        </record>
+
+        <record id="hr_probation_approval_rule_manager" model="ir.rule">
+            <field name="name">Probation: Manager Full Access</field>
+            <field name="model_id" ref="model_hr_employee_probation"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
+        </record>
+    </data>
+</odoo>

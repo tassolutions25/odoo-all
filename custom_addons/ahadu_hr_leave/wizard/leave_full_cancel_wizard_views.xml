@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. The Form View for the pop-up window -->
+    <record id="ahadu_leave_full_cancel_wizard_view_form" model="ir.ui.view">
+        <field name="name">ahadu.leave.full.cancel.wizard.form</field>
+        <field name="model">ahadu.leave.full.cancel.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <div class="alert alert-warning" role="alert">
+                    Please provide a reason. This request will be sent to your manager for approval.
+                </div>
+                <group>
+                    <field name="leave_id" />
+                    <field name="reason" placeholder="e.g., Project timeline has changed..." />
+                </group>
+                <footer>
+                    <button name="action_submit_cancellation_request" string="Submit Request"
+                        type="object" class="btn-primary" />
+                    <button string="Discard" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- 2. The Window Action that opens the wizard -->
+    <record id="action_ahadu_leave_full_cancel_wizard" model="ir.actions.act_window">
+        <field name="name">Request Full Cancellation</field>
+        <field name="res_model">ahadu.leave.full.cancel.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="groups_id" eval="[(6, 0, [])]" />
+    </record>
+</odoo>

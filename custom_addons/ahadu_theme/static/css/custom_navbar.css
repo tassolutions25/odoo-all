@@ -1,0 +1,243 @@
+:root {
+    --o-brand-odoo: #860037 !important;
+    --o-brand-primary: #860037 !important;
+    --o-brand-secondary: #860037 !important;
+    --o-main-headings-color: var(--o-brand-odoo) !important;
+    --o-main-link-color: #860037 !important;   /*Darker shade of primary */
+    --o-community-color: var(--o-brand-odoo) !important;;
+}
+.o_main_navbar {
+    background: #860037 !important;
+}
+
+.o_main_navbar .o_menu_sections .o_nav_entry, .o_main_navbar .o_menu_sections .dropdown-toggle {
+     background: #860037 !important;
+}
+/* Hide the "Add" button */
+div.d-flex.justify-content-between.align-items-center > button.btn.btn-secondary.btn-sm {
+    display: none !important;
+}
+/* make delete button on notifications model visible */
+td.o_list_record_remove > button.fa.d-print-none.fa-trash-o::before {
+    content: "\f014"; /* Unicode for trash icon */
+    color: black !important;
+    opacity: 1 !important; /* Ensure visibility */
+}
+
+
+/* Hide the delete button with the fa-times icon */
+button.fa.fa-times[name="delete"] {
+    display: none !important;
+}
+button.fa-times {
+    color: black !important;
+}
+.fa-pencil {
+   color: #fff !important;
+}
+/* Make the "New" button #860037 */
+.o_form_button_create {
+    background-color:  #860037 !important;
+    color: white !important;  /* Optional: Change text color to white for contrast */
+}
+/* Ensure the trash icon is white */
+button.o_clear_file_button i.fa-trash-o {
+    color: white !important;
+    visibility: visible !important; /* Ensure it's not hidden */
+}
+/* hide department hierarchy arrow button */
+button[name="hierarchy_search_parent_node"] {
+    display: none;
+}
+/* make resume more visible */
+.o_data_row {
+    background-color: #f0f0f0 !important;  /* Lighter off-white background */
+    color: #000;  /* Optional: Set text color to black for contrast */
+}
+/* Make the button background #860037 */
+button.o_clear_file_button {
+    background-color:  --o-brand-primary !important;
+    border-radius: 50%;
+    padding: 10px;
+    display: flex; /* Ensures proper alignment */
+    align-items: center;
+    justify-content: center;
+}
+  /* Styling for the Resume Card */
+.custom-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    padding: 20px 16px; 
+    margin-top: 16px;
+    margin-bottom: 16px;
+    width: 800px;  
+    height: auto; 
+}
+
+.o_card_header {
+    background-color: #f7f7f7;
+    padding: 12px;
+    border-radius: 8px 8px 0 0;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #333;
+}
+.o_card_body {
+    padding: 16px;
+    color: #555;
+}
+
+/* Optional: Adding a hover effect to the card */
+.custom-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Fix any font-awesome conflicts */
+button.o_clear_file_button i.fa-trash-o::before {
+    content: "\f014"; /* Unicode for trash icon */
+    color: white !important;
+    opacity: 1 !important; /* Ensure visibility */
+}
+.oe_login_buttons.text-center.gap-1.d-grid.mb-1.pt-3 .btn.btn-primary {
+    background-color: #860037 !important;
+    border-color: #860037 !important;
+    color: #000 !important; 
+}
+.oe_login_buttons.text-center.gap-1.d-grid.mb-1.pt-3 .btn.btn-primary:hover {
+    background-color: #860037 !important; /* #860037 background on hover */
+    border-color: #860037 !important;
+    color: #fff !important; /* White text for better visibility */
+}
+.o_stat_info, .o_stat_value, .o_button_icon, .fa-ellipsis-h, .o_header_part, .fa-angle-double-left, .o_stat_text {
+    color: #FFFFFF !important;
+}
+.btn-primary.o-dropdown.dropdown-toggle.dropdown {
+    color: #FFFFFF !important;
+}
+.btn-primary.o-dropdown.dropdown-toggle.dropdown{
+    color: #FFFFFF !important;
+}
+.btn.btn-light.o-dropdown.dropdown-toggle.dropdown{
+    color: #FFFFFF !important;
+}
+.o_searchview_dropdown_toggler.o-dropdown-caret.rounded-start-0 {
+    color: #FFFFFF !important;
+}
+/*make the custom filter #860037*/
+.o_model_field_selector_popover_body ul.o_model_field_selector_popover_page {
+    background-color: white !important;
+    color: black; /* Ensures text is readable */
+}
+.o_model_field_selector_popover_body ul.o_model_field_selector_popover_page li {
+    background-color: white !important;
+}
+.o_model_field_selector_popover_body ul.o_model_field_selector_popover_page li .o_model_field_selector_popover_item_name,
+.o_model_field_selector_popover_body ul.o_model_field_selector_popover_page li .o_model_field_selector_popover_item_relation {
+    background-color: white !important;
+    color: black !important;
+    border-color: #ddd !important; /* Optional: keeps the button border subtle */
+}
+/* Hide the notification button
+.o-mail-DiscussSystray-class {
+    display: none !important;
+} */
+
+/* Hide the Activities icon */
+/* .fa.fa-lg.fa-clock-o {
+    display: none !important;
+} */
+ /* Hide the Activities icon(badge with) */
+.o-mail-ActivityMenu-counter.badge.rounded-pill {
+    display: none !important;
+}
+.btn-outline-secondary, .btn-light {
+    background-color: var(--o-brand-odoo) !important;
+    border-color: var(--o-brand-odoo) !important;
+}
+/* Keep the icon border white, but don't affect other dropdowns */
+/* For the icon inside the button */
+.d-print-none.btn.lh-sm.p-0.border-0.o-dropdown.dropdown-toggle.dropdown i {
+    border: 2px solid #FFFFFF !important;
+    color: #000000 !important;
+}
+/* Prevent the dropdown button from being affected by the yellow background */
+.d-print-none.btn.lh-sm.p-0.border-0.o-dropdown.dropdown-toggle.dropdown {
+    background-color: transparent !important;
+}
+/* Only change the dropdown menu background to yellow */
+.d-print-none.o-dropdown.dropdown-toggle.dropdown.show {
+    background-color: #860037 !important;
+}
+/* Force remove background color and ensure icon is black for Save and Cancel buttons */
+.o_form_button_save, .o_form_button_cancel {
+    background-color: transparent !important; /* Force the background to be transparent */
+    border: none !important; /* Remove border */
+    box-shadow: none !important; /* Remove any shadow */
+}
+/* Make sure the icon is black */
+.o_form_button_save i, .o_form_button_cancel i {
+    color: black !important;
+}
+/* Ensure consistent icon size */
+.o_form_button_save .fa-fw,
+.o_form_button_cancel .fa-fw {
+    font-size: 1.5em !important;
+}
+/* Override only Save and Cancel button backgrounds, not affecting "New" button */
+.o_form_button_save {
+    background-color: transparent !important; /* Ensure Save button background is transparent */
+    border-color: transparent !important; /* Remove border color */
+    box-shadow: none !important; /* Remove any shadow */
+}
+.o_form_button_cancel {
+    background-color: transparent !important; /* Ensure Cancel button background is transparent */
+    border-color: transparent !important; /* Remove border color */
+    box-shadow: none !important; /* Remove any shadow */
+}
+.fa.fa-cog{
+    font-size: 1.5em;
+}
+
+.btn-primary, .btn-odoo {
+    background-color: var(--o-brand-odoo) !important;
+    border-color: var(--o-brand-odoo) !important;
+}
+.btn-outline-primary {
+    border-color: var(--o-brand-odoo) !important;
+}
+
+.text-odoo {
+    color: var(--o-brand-odoo) !important;
+}
+
+.o_searchview_facet{
+    border-color: var(--o-brand-odoo) !important;
+}
+.btn-light:hover, .btn-primary:hover,.btn-outline-primary:hover{
+    background-color: var(--o-brand-secondary) !important;
+    border-color: var(--o-brand-secondary) !important;
+}
+
+.btn-light:focus,.dropdown-toggle:focus{
+    background-color: var(--o-brand-secondary) !important;
+    border-color: var(--o-brand-secondary) !important;
+}
+
+/* Apply new colors to elements */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--o-main-headings-color) !important;
+}
+
+.btn-link{
+    color: var(--o-brand-odoo) !important;
+}
+
+.btn-link:hover {
+    color: lighten(#860037, 10%) !important;
+}
+
+button[class="btn-close"] {
+    display: none;
+}

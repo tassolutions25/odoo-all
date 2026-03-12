@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Course Tags Inheritance -->
+    <record id="view_slide_channel_tag_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">slide.channel.tag.view.form.inherit.ahadu</field>
+        <field name="model">slide.channel.tag</field>
+        <field name="inherit_id" ref="website_slides.slide_channel_tag_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <!-- Placeholder for future customizations -->
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Content Tags Inheritance -->
+    <record id="view_slide_tag_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">slide.tag.view.form.inherit.ahadu</field>
+        <field name="model">slide.tag</field>
+        <field name="inherit_id" ref="website_slides.view_slide_tag_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <!-- Placeholder for future customizations -->
+            </xpath>
+        </field>
+    </record>
+</odoo>

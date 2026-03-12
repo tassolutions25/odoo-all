@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Extend Job Tree View -->
+    <record id="view_job_tree_extended_status" model="ir.ui.view">
+        <field name="name">hr.job.tree.extended.status</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_hr_job_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='no_of_employee']" position="after">
+                <field name="grade_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Unified Form View -->
+    <record id="view_job_form_extended_unified" model="ir.ui.view">
+        <field name="name">hr.job.form.extended.unified</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_hr_job_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+
+            <!-- Add time_to_hire and cost_per_hire after interviewer_ids -->
+            <xpath expr="//field[@name='interviewer_ids']" position="after">
+                <field name="time_to_hire"/>
+                <field name="cost_per_hire" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+            </xpath>
+
+              <!-- Add Notebook Pages -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Job Description" name="job_description">
+                    <field name="job_description" widget="binary" filename="job_description_filename"/>
+                </page>
+
+             </xpath>    
+
+              <xpath expr="//field[@name='contract_type_id']" position="after">
+               <field name="years_of_experience" widget="integer" options="{'min': 0}"/>
+            </xpath>
+
+
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="ir_cron_expire_leave_allocations" model="ir.cron">
+            <field name="name">Ahadu: Expire Old Leave Allocations</field>
+            <field name="model_id" ref="hr_holidays.model_hr_leave_allocation" />
+            <field name="state">code</field>
+            <field name="code">model._cron_expire_old_allocations()</field>
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True" />
+            <!-- Set it to run early in the morning, e.g., 1 AM -->
+            <field name="nextcall"
+                eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 01:00:00')" />
+        </record>
+
+
+        <record id="ir_cron_daily_leave_accrual" model="ir.cron">
+            <field name="name">Ahadu: Daily Annual Leave Accrual</field>
+            <field name="model_id" ref="hr.model_hr_employee" />
+            <field name="state">code</field>
+            <field name="code">model._cron_daily_leave_accrual()</field>
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True" />
+            <field name="nextcall"
+                eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 01:00:00')" />
+        </record>
+
+        <!--  Daily Cron Job to Reset Sick Leave -->
+        <record id="ir_cron_daily_sick_leave_reset" model="ir.cron">
+            <field name="name">Ahadu: Daily Sick Leave Balance Reset</field>
+            <field name="model_id" ref="hr.model_hr_employee" />
+            <field name="state">code</field>
+            <field name="code">model._cron_reset_sick_leave()</field>
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True" />
+            <field name="nextcall"
+                eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 02:00:00')" />
+        </record>
+    </data>
+</odoo>

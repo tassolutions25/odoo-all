@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Forcefully update the eLearning Root Menu Name with all attributes -->
+    <record id="website_slides.website_slides_menu_root" model="ir.ui.menu">
+        <field name="name">Ahadu eLearning</field>
+        <field name="sequence">100</field>
+        <field name="web_icon">website_slides,static/description/icon.png</field>
+    </record>
+
+    <!-- Associate the main action with Ahadu Branding -->
+    <record id="website_slides.slide_channel_action_overview" model="ir.actions.act_window">
+        <field name="name">Ahadu eLearning</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Manage your Ahadu eLearning Courses
+            </p>
+        </field>
+    </record>
+
+    <!-- Sub-menus Branding -->
+    <record id="website_slides.website_slides_menu_courses" model="ir.ui.menu">
+        <field name="name">Ahadu Courses</field>
+    </record>
+    <record id="website_slides.website_slides_menu_courses_courses" model="ir.ui.menu">
+        <field name="name">All Courses</field>
+    </record>
+</odoo>

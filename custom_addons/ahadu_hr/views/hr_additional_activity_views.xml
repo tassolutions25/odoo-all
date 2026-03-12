@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================= -->
+    <!-- 1. DATA CHANGE VIEWS -->
+    <!-- ============================================= -->
+    <record id="view_hr_employee_data_change_tree" model="ir.ui.view">
+        <field name="name">hr.employee.data.change.list</field>
+        <field name="model">hr.employee.data.change</field>
+        <field name="arch" type="xml">
+            <list string="Data Changes">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="change_summary"/>
+                <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_data_change_form" model="ir.ui.view">
+        <field name="name">hr.employee.data.change.form</field>
+        <field name="model">hr.employee.data.change</field>
+        <field name="arch" type="xml">
+            <form string="Data Change">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve_step" string="Approve" type="object" class="btn-success" invisible="can_approve == False"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="can_approve == False"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" class="oe_link" invisible="state not in ('submitted', 'rejected')" groups="hr.group_hr_user"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1>Data Change</h1></div>
+                    <group>
+                        <group>
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                            <field name="can_approve" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="change_summary" placeholder="Describe the data changes..." readonly="state != 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="Approval History">
+                            <field name="approval_line_ids" readonly="1">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="approver_id"/>
+                                    <field name="status"/>
+                                    <field name="approval_date"/>
+                                    <field name="comments"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================= -->
+    <!-- 2. CONFIRMATION VIEWS -->
+    <!-- ============================================= -->
+    <record id="view_hr_employee_confirmation_tree" model="ir.ui.view">
+        <field name="name">hr.employee.confirmation.list</field>
+        <field name="model">hr.employee.confirmation</field>
+        <field name="arch" type="xml">
+            <list string="Probation Confirmations">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="reason"/>
+                <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_confirmation_form" model="ir.ui.view">
+        <field name="name">hr.employee.confirmation.form</field>
+        <field name="model">hr.employee.confirmation</field>
+        <field name="arch" type="xml">
+            <form string="Confirmation">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve_step" string="Approve" type="object" class="btn-success" invisible="can_approve == False"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="can_approve == False"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" class="oe_link" invisible="state not in ('submitted', 'rejected')" groups="hr.group_hr_user"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1>Probation Confirmation</h1></div>
+                    <group>
+                        <group>
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                            <field name="can_approve" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="reason" placeholder="Notes regarding confirmation..." readonly="state != 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="Approval History">
+                            <field name="approval_line_ids" readonly="1">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="approver_id"/>
+                                    <field name="status"/>
+                                    <field name="approval_date"/>
+                                    <field name="comments"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================= -->
+    <!-- 3. REASSIGN REPORTEES VIEWS -->
+    <!-- ============================================= -->
+    <record id="view_hr_employee_reassign_tree" model="ir.ui.view">
+        <field name="name">hr.employee.reassign.list</field>
+        <field name="model">hr.employee.reassign</field>
+        <field name="arch" type="xml">
+            <list string="Reassign Reportees">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="reason"/>
+                <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_reassign_form" model="ir.ui.view">
+        <field name="name">hr.employee.reassign.form</field>
+        <field name="model">hr.employee.reassign</field>
+        <field name="arch" type="xml">
+            <form string="Reassign Reportees">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve_step" string="Approve" type="object" class="btn-success" invisible="can_approve == False"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="can_approve == False"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" class="oe_link" invisible="state not in ('submitted', 'rejected')" groups="hr.group_hr_user"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1>Reassign Reportees</h1></div>
+                    <group>
+                        <group>
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                            <field name="can_approve" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="reason" placeholder="Reason for reassignment..." readonly="state != 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="Approval History">
+                            <field name="approval_line_ids" readonly="1">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="approver_id"/>
+                                    <field name="status"/>
+                                    <field name="approval_date"/>
+                                    <field name="comments"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================= -->
+    <!-- 4. REINITIATE VIEWS -->
+    <!-- ============================================= -->
+    <record id="view_hr_employee_reinitiate_tree" model="ir.ui.view">
+        <field name="name">hr.employee.reinitiate.list</field>
+        <field name="model">hr.employee.reinitiate</field>
+        <field name="arch" type="xml">
+            <list string="Employee Reinitiate">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="reason"/>
+                <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_reinitiate_form" model="ir.ui.view">
+        <field name="name">hr.employee.reinitiate.form</field>
+        <field name="model">hr.employee.reinitiate</field>
+        <field name="arch" type="xml">
+            <form string="Employee Reinitiate">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve_step" string="Approve" type="object" class="btn-success" invisible="can_approve == False"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="can_approve == False"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" class="oe_link" invisible="state not in ('submitted', 'rejected')" groups="hr.group_hr_user"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1>Employee Reinitiate</h1></div>
+                    <group>
+                        <group>
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                            <field name="can_approve" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="reason" placeholder="Reason for re-initiation..." readonly="state != 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="Approval History">
+                            <field name="approval_line_ids" readonly="1">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="approver_id"/>
+                                    <field name="status"/>
+                                    <field name="approval_date"/>
+                                    <field name="comments"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================= -->
+        <!-- == 1. SPECIFIC POLICIES (Checked First)    == -->
+        <!-- ============================================= -->
+
+        <!-- PROMOTION Policy for C-Level -->
+        <record id="policy_promotion_c_level" model="hr.approval.policy">
+            <field name="name">Promotion Policy - C-Level</field>
+            <field name="model_id" ref="model_hr_employee_promotion"/>
+            <field name="domain">[('employee_id.job_id.organogram_node_ids.node_type', '=', 'c_level')]</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="policy_line_promo_clevel_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_promotion_c_level"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_director_human_capital"/>
+        </record>
+        <record id="policy_line_promo_clevel_2" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_promotion_c_level"/>
+            <field name="sequence">20</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_chief_corp_services"/>
+        </record>
+        <record id="policy_line_promo_clevel_3" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_promotion_c_level"/>
+            <field name="sequence">30</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_ceo"/>
+        </record>
+
+        <!-- TRANSFER Policy for Directors -->
+        <record id="policy_transfer_director" model="hr.approval.policy">
+            <field name="name">Transfer Policy - Directors</field>
+            <field name="model_id" ref="model_hr_employee_transfer"/>
+            <field name="domain">[('employee_id.job_id.organogram_node_ids.node_type', '=', 'director')]</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="policy_line_transfer_dir_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_transfer_director"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">managerial_chain</field>
+        </record>
+        <record id="policy_line_transfer_dir_2" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_transfer_director"/>
+            <field name="sequence">100</field> <!-- High sequence to be last -->
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_ceo"/>
+        </record>
+        
+
+        <!-- ============================================= -->
+        <!-- == 2. DEFAULT "CATCH-ALL" POLICIES         == -->
+        <!-- ============================================= -->
+
+        <!-- Default PROMOTION Policy for everyone else -->
+        <record id="policy_promotion_default" model="hr.approval.policy">
+            <field name="name">Promotion Policy - Default</field>
+            <field name="model_id" ref="model_hr_employee_promotion"/>
+            <field name="domain">[]</field> <!-- Empty domain matches everything -->
+            <field name="sequence">100</field> <!-- High sequence so it's checked last -->
+        </record>
+        <record id="policy_line_promo_default_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_promotion_default"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">managerial_chain</field>
+        </record>
+
+        <!-- Default DEMOTION Policy for everyone -->
+        <record id="policy_demotion_default" model="hr.approval.policy">
+            <field name="name">Demotion Policy - Default</field>
+            <field name="model_id" ref="model_hr_employee_demotion"/>
+            <field name="domain">[]</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="policy_line_demotion_default_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_demotion_default"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">managerial_chain</field>
+        </record>
+
+        <!-- Default TRANSFER Policy for everyone else -->
+        <record id="policy_transfer_default" model="hr.approval.policy">
+            <field name="name">Transfer Policy - Default</field>
+            <field name="model_id" ref="model_hr_employee_transfer"/>
+            <field name="domain">[]</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="policy_line_transfer_default_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_transfer_default"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">managerial_chain</field>
+        </record>
+
+        <!-- TERMINATION Policy (already a catch-all) -->
+        <record id="policy_termination_all" model="hr.approval.policy">
+            <field name="name">Termination Policy - All Employees</field>
+            <field name="model_id" ref="model_hr_employee_termination"/>
+            <field name="domain">[]</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="policy_line_term_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_termination_all"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">managerial_chain</field>
+        </record>
+         <record id="policy_line_term_2" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_termination_all"/>
+            <field name="sequence">100</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_ceo"/>
+        </record>
+
+        <!-- Default PROBATION Policy for everyone -->
+        <record id="policy_probation_default" model="hr.approval.policy">
+            <field name="name">Probation Review Policy - Default</field>
+            <field name="model_id" ref="model_hr_employee_probation"/>
+            <field name="domain">[]</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="policy_line_probation_default_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_probation_default"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">managerial_chain</field>
+        </record>
+
+        <!-- other defaults as needed for Acting, Temporary Assignment, etc. -->
+        <record id="policy_acting_default" model="hr.approval.policy">
+            <field name="name">Acting Assignment Policy - Default</field>
+            <field name="model_id" ref="model_hr_employee_acting"/>
+            <field name="domain">[]</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="policy_line_acting_default_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_acting_default"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">managerial_chain</field>
+        </record>
+
+        <record id="policy_temp_assign_default" model="hr.approval.policy">
+            <field name="name">Temporary Assignment Policy - Default</field>
+            <field name="model_id" ref="model_hr_employee_temporary_assignment"/>
+            <field name="domain">[]</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="policy_line_temp_assign_default_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_temp_assign_default"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">managerial_chain</field>
+        </record>
+        
+        <record id="policy_disciplinary_default" model="hr.approval.policy">
+            <field name="name">Disciplinary Action Policy - Default</field>
+            <field name="model_id" ref="model_hr_employee_disciplinary"/>
+            <field name="domain">[]</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="policy_line_disciplinary_default_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_disciplinary_default"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">managerial_chain</field>
+        </record>
+
+        <record id="policy_guarantee_default" model="hr.approval.policy">
+            <field name="name">Guarantee Request Policy - Default</field>
+            <field name="model_id" ref="model_hr_employee_guarantee"/>
+            <field name="domain">[]</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="policy_line_guarantee_default_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_guarantee_default"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_hr_officer"/>
+        </record>
+
+        <record id="policy_probation_c_level" model="hr.approval.policy">
+            <field name="name">Probation Review Policy - C-Level</field>
+            <field name="model_id" ref="model_hr_employee_probation"/>
+            <field name="domain">[('employee_id.job_id.organogram_node_ids.node_type', '=', 'c_level')]</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="policy_line_probation_clevel_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_probation_c_level"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_director_human_capital"/>
+        </record>
+        <record id="policy_line_probation_clevel_2" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_probation_c_level"/>
+            <field name="sequence">20</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_chief_corp_services"/>
+        </record>
+        <record id="policy_line_probation_clevel_3" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_probation_c_level"/>
+            <field name="sequence">30</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_ceo"/>
+        </record>
+
+        <!-- ============================================= -->
+        <!-- == 3. EMPLOYEE HIRING POLICIES             == -->
+        <!-- ============================================= -->
+
+        <!-- Policy for C-Level Hiring -->
+        <record id="policy_hiring_c_level" model="hr.approval.policy">
+            <field name="name">Hiring Policy - C-Level</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="domain">[('job_id.organogram_node_ids.node_type', '=', 'c_level')]</field>
+            <field name="sequence">5</field>
+        </record>
+        <record id="policy_line_hiring_clevel_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_hiring_c_level"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_director_human_capital"/>
+        </record>
+        <record id="policy_line_hiring_clevel_2" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_hiring_c_level"/>
+            <field name="sequence">20</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_chief_corp_services"/>
+        </record>
+        <record id="policy_line_hiring_clevel_3" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_hiring_c_level"/>
+            <field name="sequence">30</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_ceo"/>
+        </record>
+
+        <!-- Policy for Director Hiring -->
+        <record id="policy_hiring_director" model="hr.approval.policy">
+            <field name="name">Hiring Policy - Directors</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="domain">[('job_id.organogram_node_ids.node_type', '=', 'director')]</field>
+            <field name="sequence">6</field>
+        </record>
+        <record id="policy_line_hiring_director_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_hiring_director"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_director_human_capital"/>
+        </record>
+        <record id="policy_line_hiring_director_2" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_hiring_director"/>
+            <field name="sequence">20</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_chief_corp_services"/>
+        </record>
+
+        <!-- Default Policy for Other Staff Hiring -->
+        <record id="policy_hiring_default" model="hr.approval.policy">
+            <field name="name">Hiring Policy - Default Staff</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="domain">[]</field>
+            <field name="sequence">101</field>
+        </record>
+        <record id="policy_line_hiring_default_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_hiring_default"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_hr_officer"/>
+        </record>
+        <record id="policy_line_hiring_default_2" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_hiring_default"/>
+            <field name="sequence">20</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_director_human_capital"/>
+        </record>
+
+        <!-- ============================================= -->
+        <!-- == NEW EMPLOYEE APPROVAL POLICIES          == -->
+        <!-- ============================================= -->
+
+        <!-- Policy for C-Level Employees -->
+        <record id="policy_new_employee_c_level" model="hr.approval.policy">
+            <field name="name">New Employee Approval - C-Level</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="domain">[('job_id.organogram_node_ids.node_type', '=', 'c_level')]</field>
+            <field name="sequence">5</field>
+        </record>
+        <record id="policy_line_new_clevel_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_new_employee_c_level"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_director_human_capital"/>
+        </record>
+        <record id="policy_line_new_clevel_2" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_new_employee_c_level"/>
+            <field name="sequence">20</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_chief_corp_services"/>
+        </record>
+        <record id="policy_line_new_clevel_3" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_new_employee_c_level"/>
+            <field name="sequence">30</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_ceo"/>
+        </record>
+
+        <!-- Policy for Director Level Employees -->
+        <record id="policy_new_employee_director" model="hr.approval.policy">
+            <field name="name">New Employee Approval - Directors</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="domain">[('job_id.organogram_node_ids.node_type', '=', 'director')]</field>
+            <field name="sequence">6</field>
+        </record>
+        <record id="policy_line_new_director_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_new_employee_director"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_director_human_capital"/>
+        </record>
+        <record id="policy_line_new_director_2" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_new_employee_director"/>
+            <field name="sequence">20</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_chief_corp_services"/>
+        </record>
+
+        <!-- Policy for Regular Staff (Default) -->
+        <record id="policy_new_employee_default" model="hr.approval.policy">
+            <field name="name">Default New Employee Approval</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="domain">[]</field>
+            <field name="sequence">99</field>
+        </record>
+        <record id="policy_line_new_default_1" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_new_employee_default"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_hr_officer"/>
+        </record>
+        <record id="policy_line_new_default_2" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_new_employee_default"/>
+            <field name="sequence">20</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_mgr_talent_acq"/>
+        </record>
+        <record id="policy_line_new_default_3" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_new_employee_default"/>
+            <field name="sequence">30</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_director_human_capital"/>
+        </record>
+
+    </data>
+</odoo>

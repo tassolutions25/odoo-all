@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Report Actions -->
+    <record id="action_report_leave_balance_comprehensive" model="ir.actions.report">
+        <field name="name">Employee Leave Balance Report</field>
+        <field name="model">ahadu.leave.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_hr_leave.template_leave_balance_comprehensive</field>
+        <field name="report_file">ahadu_hr_leave.template_leave_balance_comprehensive</field>
+        <field name="print_report_name">'Leave Balance'</field>
+    </record>
+
+    <record id="action_report_leave_request_summary" model="ir.actions.report">
+        <field name="name">Leave Request Summary</field>
+        <field name="model">ahadu.leave.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_hr_leave.template_leave_request_summary</field>
+        <field name="report_file">ahadu_hr_leave.template_leave_request_summary</field>
+        <field name="print_report_name">'Leave Requests'</field>
+    </record>
+
+    <record id="action_report_leave_audit" model="ir.actions.report">
+        <field name="name">Leave Compliance Audit</field>
+        <field name="model">ahadu.leave.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_hr_leave.template_leave_audit</field>
+        <field name="report_file">ahadu_hr_leave.template_leave_audit</field>
+        <field name="print_report_name">'Compliance Audit'</field>
+    </record>
+
+    <record id="action_report_leave_trend" model="ir.actions.report">
+        <field name="name">Leave Trend Analysis</field>
+        <field name="model">ahadu.leave.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_hr_leave.template_leave_trend</field>
+        <field name="report_file">ahadu_hr_leave.template_leave_trend</field>
+        <field name="print_report_name">'Leave Trends'</field>
+    </record>
+
+    <record id="action_report_leave_approval_efficiency" model="ir.actions.report">
+        <field name="name">Manager Approval Efficiency</field>
+        <field name="model">ahadu.leave.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_hr_leave.template_leave_approval_efficiency</field>
+        <field name="report_file">ahadu_hr_leave.template_leave_approval_efficiency</field>
+        <field name="print_report_name">'Manager Efficiency'</field>
+    </record>
+
+    <!-- Report Templates -->
+    
+    <!-- 1. Balance Report -->
+    <template id="template_leave_balance_comprehensive">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="report_data" t-value="doc.get_balance_data()" />
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">Employee Leave Balance Report</h2>
+                        <p class="text-center">Report Date: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')" /></p>
+                        <table class="table table-sm table-bordered mt-4">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Leave Type</th>
+                                    <th class="text-end">Allocated</th>
+                                    <th class="text-end">Used</th>
+                                    <th class="text-end">Remaining</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="report_data" t-as="line">
+                                    <td><span t-esc="line['employee']" /></td>
+                                    <td><span t-esc="line['leave_type']" /></td>
+                                    <td class="text-end"><span t-esc="'%.1f' % line['allocated']" /></td>
+                                    <td class="text-end"><span t-esc="'%.1f' % line['used']" /></td>
+                                    <td class="text-end"><strong><span t-esc="'%.1f' % line['remaining']" /></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- 2. Request Summary -->
+    <template id="template_leave_request_summary">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="leaves" t-value="doc.get_request_data()" />
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">Leave Request Summary</h2>
+                        <table class="table table-sm table-bordered mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Leave Type</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th class="text-end">Days</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="leaves" t-as="leave">
+                                    <td><span t-field="leave.employee_id.name" /></td>
+                                    <td><span t-field="leave.holiday_status_id.name" /></td>
+                                    <td><span t-field="leave.request_date_from" /></td>
+                                    <td><span t-field="leave.request_date_to" /></td>
+                                    <td class="text-end"><span t-field="leave.number_of_days" /></td>
+                                    <td><span t-field="leave.state" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- 3. Audit Report -->
+    <template id="template_leave_audit">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="audit_data" t-value="doc.get_audit_data()" />
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center text-danger">Compliance / HR Audit Report</h2>
+                        <table class="table table-sm table-bordered mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Issue Type</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="audit_data" t-as="line">
+                                    <td><span t-esc="line['employee']" /></td>
+                                    <td><span t-esc="line['issue']" /></td>
+                                    <td><span t-esc="line['details']" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- 4. Trend Analysis -->
+    <template id="template_leave_trend">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="trend_data" t-value="doc.get_trend_data()" />
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">Leave Trend Analysis</h2>
+                        <table class="table table-sm mt-4" style="width: 50%; margin: auto;">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Month</th>
+                                    <th class="text-end">Total Leave Days</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="trend_data" t-as="line">
+                                    <td><span t-esc="line['month']" /></td>
+                                    <td class="text-end"><span t-esc="'%.1f' % line['days']" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- 5. Approval Efficiency -->
+    <template id="template_leave_approval_efficiency">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="approval_data" t-value="doc.get_approval_data()" />
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">Manager Approval Efficiency</h2>
+                        <table class="table table-sm table-bordered mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Manager</th>
+                                    <th class="text-end">Pending Requests</th>
+                                    <th class="text-end">Approved Requests</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="approval_data" t-as="line">
+                                    <td><span t-esc="line['manager']" /></td>
+                                    <td class="text-end"><span t-esc="line['pending']" /></td>
+                                    <td class="text-end"><span t-esc="line['approved']" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

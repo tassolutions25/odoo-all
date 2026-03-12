@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ahadu_leave_request_wizard_view_form" model="ir.ui.view">
+        <field name="name">ahadu.leave.request.wizard.form</field>
+        <field name="model">ahadu.leave.request.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <!--
+                        We put both fields in the same group, but use 'invisible' on the fields
+                        themselves. This ensures their values are always sent to the server.
+                    -->
+                    <group>
+                        <!-- This field is visible when requesting from a balance -->
+                        <field name="allocation_id"
+                            placeholder="Select from your available leave balance..."
+                            options="{'no_create': True, 'no_open': True}"
+                            invisible="context.get('show_unallocated_leave', False)" />
+
+                        <!-- This field is visible when requesting other leave -->
+                        <field name="holiday_status_id"
+                            string="Leave Type"
+                            options="{'no_create': True, 'no_open': True}"
+                            invisible="not context.get('show_unallocated_leave', False)" />
+                    </group>
+                    <group>
+                        <label for="request_date_from" string="Dates (Gregorian)" />
+                        <div class="o_row">
+                            <field name="request_date_from" nolabel="1" />
+                            <span>→</span>
+                            <field name="request_date_to" nolabel="1" />
+                        </div>
+                        <label for="ethiopian_date_from" string="Dates (Ethiopian)" />
+                        <div class="o_row text-muted">
+                            <field name="ethiopian_date_from" nolabel="1" />
+                            <span>→</span>
+                            <field name="ethiopian_date_to" nolabel="1" />
+                        </div>
+                        <field name="number_of_days" readonly="1" force_save="1" />
+                        <field name="name" string="Description" placeholder="Add a description..." />
+
+                        <!-- <field name="attachment_ids" widget="many2many_binary"
+                            string="Supporting Document"
+                            invisible="not attachment_mandatory_allocated and not attachment_mandatory_unallocated" />
+                        <field name="attachment_mandatory_allocated" invisible="1" />
+                        <field name="attachment_mandatory_unallocated" invisible="1" /> -->
+                        <field name="is_attachment_mandatory" invisible="1" />
+                        <field name="attachment_ids" widget="many2many_binary"
+                            string="Supporting Document"
+                            invisible="not is_attachment_mandatory" />
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_submit_request" string="Save &amp; Close" type="object"
+                        class="btn-primary" />
+                    <button string="Discard" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- The wizard's main action record is no longer called directly by a menu item -->
+    <record id="action_ahadu_leave_request_wizard" model="ir.actions.act_window">
+        <field name="name">New Leave Request</field>
+        <field name="res_model">ahadu.leave.request.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

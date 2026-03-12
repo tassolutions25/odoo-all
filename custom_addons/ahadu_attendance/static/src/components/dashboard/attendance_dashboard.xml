@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space ="preserve">
+    <t t-name="ahadu_attendance.AttendanceDashboard" owl="1">
+        <Layout display="{ controlPanel: false }">
+            <div class="o_ahadu_dashboard container-fluid p-4">
+                
+                <!-- Today's Summary Section -->
+                <h4 class="kpi-title">Today's Summary</h4>
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="o_kpi_card d-flex align-items-center present" t-on-click="() => this.openAttendances(state.kpi_data.domain_present)">
+                            <div class="kpi-icon"><i class="fa fa-fw fa-check-circle"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi_value"><t t-esc="state.kpi_data.present_today"/></div>
+                                <div class="kpi_name">Present</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="o_kpi_card d-flex align-items-center absent" t-on-click="() => this.openAbsences()">
+                            <div class="kpi-icon"><i class="fa fa-fw fa-times-circle"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi_value"><t t-esc="state.kpi_data.absent_today"/></div>
+                                <div class="kpi_name">Absent</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="o_kpi_card d-flex align-items-center on-leave"
+                            t-on-click="() => this.openRecords('On Leave Today', 'hr.leave', state.kpi_data.domain_on_leave)">
+                            <div class="kpi-icon"><i class="fa fa-fw fa-plane"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi_value"><t t-esc="state.kpi_data.on_leave_today"/></div>
+                                <div class="kpi_name">On Leave</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="o_kpi_card d-flex align-items-center late" t-on-click="() => this.openAttendances(state.kpi_data.domain_late)">
+                            <div class="kpi-icon"><i class="fa fa-fw fa-clock-o"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi_value"><t t-esc="state.kpi_data.late_today"/></div>
+                                <div class="kpi_name">Late Arrivals</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional KPIs Row -->
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-4 col-md-6">
+                        <div class="o_kpi_card d-flex align-items-center early-out" t-on-click="() => this.openAttendances(state.kpi_data.domain_early_out)">
+                            <div class="kpi-icon"><i class="fa fa-fw fa-sign-out"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi_value"><t t-esc="state.kpi_data.early_out_today"/></div>
+                                <div class="kpi_name">Early Departures</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6">
+                        <div class="o_kpi_card d-flex align-items-center lunch-track">
+                            <div class="kpi-icon"><i class="fa fa-fw fa-cutlery"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi_value"><t t-esc="state.kpi_data.lunch_recorded_today"/> (<t t-esc="state.kpi_data.lunch_participation_rate"/>%)</div>
+                                <div class="kpi_name">Lunch Recorded</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6">
+                        <div class="o_kpi_card d-flex align-items-center overtime">
+                            <div class="kpi-icon"><i class="fa fa-fw fa-hourglass-half"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi_value"><t t-esc="state.kpi_data.overtime_hours_today"/> hrs</div>
+                                <div class="kpi_name">Overtime Today</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Summary & Calendar Heatmap -->
+                <div class="row g-4 mb-4" t-if="state.summary_data and state.summary_data.calendar_heatmap">
+                    <div class="col-lg-12">
+                        <div class="summary-card p-0 overflow-hidden">
+                            <div class="row g-0">
+                                <!-- Personal Stats Side -->
+                                <div class="col-md-3 bg-light p-3 border-end">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="text-uppercase fw-bold text-muted small mb-0" style="font-size: 0.6rem;">Statistics</h6>
+                                    </div>
+                                    
+                                    <!-- Filters Section -->
+                                    <div class="dashboard-filters mb-3">
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-7">
+                                                <select class="form-select form-select-sm" t-model="state.filters.month" t-on-change="onFilterChange">
+                                                    <t t-foreach="months" t-as="m" t-key="m.id">
+                                                        <option t-att-value="m.id" t-att-selected="state.filters.month == m.id"><t t-esc="m.name"/></option>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                            <div class="col-5">
+                                                <select class="form-select form-select-sm" t-model="state.filters.year" t-on-change="onFilterChange">
+                                                    <t t-foreach="years" t-as="y" t-key="y">
+                                                        <option t-att-value="y" t-att-selected="state.filters.year == y"><t t-esc="y"/></option>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="position-relative">
+                                            <input type="text" class="form-control form-control-sm" placeholder="Search Employee..." 
+                                                   t-att-value="state.searchQuery"
+                                                   t-on-input="onEmployeeSearch"/>
+                                            <div t-if="filteredEmployees.length > 0" class="search-results-dropdown shadow-sm border rounded">
+                                                <div t-foreach="filteredEmployees" t-as="emp" t-key="emp.id" 
+                                                     class="search-result-item p-2 border-bottom"
+                                                     t-on-click="() => this.selectEmployee(emp)">
+                                                    <div class="small fw-bold"><t t-esc="emp.name"/></div>
+                                                    <div class="extra-small text-muted"><t t-esc="emp.employee_id"/></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h5 class="mb-3 fw-bold"><t t-esc="state.summary_data.month_name"/></h5>
+                                    
+                                    <div class="stat-group mb-3">
+                                        <div class="stat-block stat-present" t-on-click="() => this.openMonthAttendances()">
+                                            <div class="stat-icon"><i class="fa fa-user-check"/></div>
+                                            <div class="stat-label">Present</div>
+                                            <div class="stat-value"><t t-esc="state.summary_data.present_days"/></div>
+                                        </div>
+                                        <div class="stat-block stat-absent" t-on-click="() => this.openFilteredAttendances('absent')">
+                                            <div class="stat-icon"><i class="fa fa-user-times"/></div>
+                                            <div class="stat-label">Absent</div>
+                                            <div class="stat-value"><t t-esc="state.summary_data.absent_days"/></div>
+                                        </div>
+                                        <div class="stat-block stat-miss">
+                                            <div class="stat-icon"><i class="fa fa-exclamation-triangle"/></div>
+                                            <div class="stat-label">Miss-Out</div>
+                                            <div class="stat-value"><t t-esc="state.summary_data.miss_out_days"/></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="attendance-rate-box p-2 rounded text-center mt-auto" style="background: rgba(138, 0, 55, 0.05); border: 1px solid rgba(138, 0, 55, 0.1);">
+                                        <div class="h3 fw-bold mb-0" style="color: var(--ahadu-primary);"><t t-esc="state.summary_data.attendance_perc"/>%</div>
+                                        <div class="text-uppercase small fw-bold text-muted" style="font-size: 0.55rem; letter-spacing: 1px;">Attendance Rate</div>
+                                    </div>
+                                </div>
+
+                                <!-- Calendar Heatmap Side -->
+                                <div class="col-md-9 p-3 calendar-heatmap">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h6 class="text-uppercase fw-bold text-muted small mb-1" style="font-size: 0.6rem;">Attendance Pattern</h6>
+                                            <h5 class="fw-bold mb-0">Monthly Monitoring</h5>
+                                        </div>
+                                        <div class="calendar-legend d-flex gap-3">
+                                            <div class="legend-item pointer-cursor" t-on-click="() => this.openFilteredAttendances('on_time')">
+                                                <span class="legend-dot good"></span> <small style="font-size: 0.65rem;">On Time</small>
+                                            </div>
+                                            <div class="legend-item pointer-cursor" t-on-click="() => this.openFilteredAttendances('issue')">
+                                                <span class="legend-dot warning"></span> <small style="font-size: 0.65rem;">Issue</small>
+                                            </div>
+                                            <div class="legend-item pointer-cursor" t-on-click="() => this.openFilteredAttendances('absent')">
+                                                <span class="legend-dot critical"></span> <small style="font-size: 0.65rem;">Absent</small>
+                                            </div>
+                                            <div class="legend-item pointer-cursor" t-on-click="() => this.openFilteredAttendances('leave')">
+                                                <span class="legend-dot on-leave"></span> <small style="font-size: 0.65rem;">Leave</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-0 calendar-main-row">
+                                        <div class="col-md-8">
+                                            <div class="calendar-container">
+                                                <!-- Weekday Headers -->
+                                                <div class="calendar-weekdays grid-7">
+                                                    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                                                </div>
+                                                <!-- Calendar Grid -->
+                                                <div class="calendar-grid grid-7">
+                                                    <!-- Empty slots for offset -->
+                                                    <t t-if="state.summary_data.month_start_weekday > 0">
+                                                        <div t-foreach="[...Array(state.summary_data.month_start_weekday).keys()]" t-as="empty" t-key="'empty-' + empty" class="calendar-day empty"></div>
+                                                    </t>
+                                                    <!-- Days -->
+                                                    <div t-foreach="state.summary_data.calendar_heatmap" t-as="day" t-key="day.date"
+                                                         t-attf-class="calendar-day {{day.status}} {{day.is_today ? 'today' : ''}}"
+                                                         t-att-title="day.tooltip"
+                                                         t-on-click="() => this.onDayClick(day)">
+                                                        <span class="day-number"><t t-esc="day.date"/></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 border-start ps-3 mt-2">
+                                            <h6 class="text-uppercase fw-bold text-muted" style="font-size: 0.6rem; letter-spacing: 0.5px;">Current Month List</h6>
+                                            <div class="summary-list mt-2">
+                                                <div class="summary-row d-flex justify-content-between mb-2 pb-1 border-bottom border-light">
+                                                    <span class="text-muted small">Total Sundays</span>
+                                                    <span class="fw-bold small text-primary"><t t-esc="state.summary_data.total_sundays"/></span>
+                                                </div>
+                                                <div class="summary-row d-flex justify-content-between mb-2 pb-1 border-bottom border-light">
+                                                    <span class="text-muted small">Total Holidays</span>
+                                                    <span class="fw-bold small text-warning"><t t-esc="state.summary_data.total_holidays"/></span>
+                                                </div>
+                                                <div class="summary-row d-flex justify-content-between mb-2 pb-1 border-bottom border-light">
+                                                    <span class="text-muted small">Total Leaves</span>
+                                                    <span class="fw-bold small text-info"><t t-esc="state.summary_data.leave_days"/></span>
+                                                </div>
+                                                <t t-if="state.summary_data.holidays and state.summary_data.holidays.length > 0">
+                                                    <div class="mt-3">
+                                                        <h6 class="text-uppercase fw-bold text-muted" style="font-size: 0.55rem;">Public Holidays</h6>
+                                                        <div t-foreach="state.summary_data.holidays" t-as="h" t-key="h.name + h.date" class="d-flex justify-content-between mb-1 small align-items-center">
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <i class="fa fa-calendar-star text-warning" style="font-size: 0.7rem;"></i>
+                                                                <span class="text-truncate" style="max-width: 100px; font-size: 0.75rem;"><t t-esc="h.name"/></span>
+                                                            </div>
+                                                            <div class="d-flex flex-column align-items-end" style="min-width: 60px;">
+                                                                <span class="text-muted extra-small" style="font-size: 0.55rem;"><t t-esc="h.date"/> <span style="font-size: 0.5rem; opacity: 0.7;">GC</span></span>
+                                                                <span class="fw-bold text-primary" style="font-size: 0.55rem;" t-if="h.et_date"><t t-esc="h.et_date"/> <span style="font-size: 0.5rem; opacity: 0.7;">EC</span></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                                <t t-else="">
+                                                    <div class="mt-3 text-center p-3 rounded-3" style="background: #f8fafc; border: 1px dashed #e2e8f0;">
+                                                        <i class="fa fa-calendar-check text-muted mb-1 d-block"></i>
+                                                        <span class="text-muted extra-small">No public holidays</span>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Real-time Log Section -->
+                <div class="row g-4">
+                    <!-- Left Column: Exception Chart & Real-Time Log -->
+                    <div class="col-lg-8 d-flex flex-column gap-4">
+                        <div class="chart-card" t-if="state.chart_data.attendance_exceptions">
+                            <h5 class="card-title">Attendance Exceptions (Last 7 Days)</h5>
+                            <ChartRenderer type="'bar'" data="state.chart_data.attendance_exceptions" />
+                        </div>
+                        <div class="row g-4" t-if="state.chart_data.head_office_performance or state.chart_data.branch_performance">
+                            <div class="col-md-6" t-if="state.chart_data.head_office_performance">
+                                <div class="chart-card h-100">
+                                    <h5 class="card-title">Head Office Performance</h5>
+                                    <ChartRenderer type="'bar'" data="state.chart_data.head_office_performance" />
+                                </div>
+                            </div>
+                            <div class="col-md-6" t-if="state.chart_data.branch_performance">
+                                <div class="chart-card h-100">
+                                    <h5 class="card-title">Branch Performance</h5>
+                                    <ChartRenderer type="'bar'" data="state.chart_data.branch_performance" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-card" t-if="state.realtime_logs">
+                            <h5 class="card-title">Real-Time Monitoring</h5>
+                            <div class="table-responsive d-block" style="max-height: 400px; overflow-y: auto; overflow-x: hidden;">
+                                <table class="table table-hover real-time-table mb-0">
+                                    <thead style="position: sticky; top: 0; z-index: 1; background-color: #fff;">
+                                        <tr>
+                                            <th colspan="2">Employee</th>
+                                            <th>Check In Time</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-if="state.realtime_logs.length === 0">
+                                            <td colspan="4" class="text-center text-muted py-4">No recent activity.</td>
+                                        </tr>
+                                        <tr t-foreach="state.realtime_logs" t-as="log" t-key="log.id">
+                                            <td style="width: 40px;">
+                                                <img t-att-src="log.avatar_url" class="employee-avatar" alt="Avatar"/>
+                                            </td>
+                                            <td>
+                                                <div class="employee-name">
+                                                    <strong><t t-esc="log.employee.employee_id"/></strong> - 
+                                                    <t t-esc="log.employee.name"/>
+                                                </div>
+                                            </td>
+                                            <td><t t-esc="log.check_in"/></td>
+                                            <td>
+                                                <span t-attf-class="badge {{log.status_class}}">
+                                                    <t t-esc="log.attendance_status"/>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right Column: Donut Charts -->
+                    <div class="col-lg-4 d-flex flex-column gap-4">
+                        <div class="chart-card" t-if="state.chart_data.schedule_status">
+                            <h5 class="card-title">Schedule Status</h5>
+                             <ChartRenderer type="'doughnut'" data="state.chart_data.schedule_status" />
+                        </div>
+                        <div class="chart-card" t-if="state.chart_data.approval_status">
+                            <h5 class="card-title">Approval Status</h5>
+                            <ChartRenderer type="'doughnut'" data="state.chart_data.approval_status" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Layout>
+    </t>
+</templates>

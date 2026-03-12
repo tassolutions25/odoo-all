@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_journal_entry_ahadu">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Times New Roman', serif;">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h2 style="text-transform: uppercase;">Payroll Journal Entry</h2>
+                            </div>
+                        </div>
+
+                        <div class="row mt32 mb32">
+                            <div class="col-6">
+                                <strong>Reference: </strong><span t-field="o.name"/><br/>
+                                <strong>Date: </strong><span t-field="o.date"/><br/>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Batch: </strong><span t-field="o.payslip_run_id.name"/><br/>
+                                <strong>Status: </strong><span t-field="o.state"/>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm table-bordered mt-4">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th class="text-start">GL Account</th>
+                                    <th class="text-start">Description</th>
+                                    <th class="text-center">Cost Center</th>
+                                    <th class="text-end">Debit</th>
+                                    <th class="text-end">Credit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="total_debit" t-value="0.0"/>
+                                <t t-set="total_credit" t-value="0.0"/>
+                                <tr t-foreach="o.line_ids" t-as="line">
+                                    <td class="text-start"><span t-field="line.account_id.display_name"/></td>
+                                    <td class="text-start"><span t-field="line.description"/></td>
+                                    <td class="text-center"><span t-field="line.cost_center_id.name"/></td>
+                                    <td class="text-end">
+                                        <span t-esc="line.debit" t-options='{"widget": "monetary", "display_currency": o.payslip_run_id.company_id.currency_id}'/>
+                                        <t t-set="total_debit" t-value="total_debit + line.debit"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="line.credit" t-options='{"widget": "monetary", "display_currency": o.payslip_run_id.company_id.currency_id}'/>
+                                        <t t-set="total_credit" t-value="total_credit + line.credit"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr style="font-weight: bold; background-color: #f2f2f2;">
+                                    <td colspan="3" class="text-end">TOTAL</td>
+                                    <td class="text-end">
+                                        <span t-esc="total_debit" t-options='{"widget": "monetary", "display_currency": o.payslip_run_id.company_id.currency_id}'/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="total_credit" t-options='{"widget": "monetary", "display_currency": o.payslip_run_id.company_id.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div class="row mt-5">
+                            <div class="col-4 text-center">
+                                <span style="border-top: 1px solid black; padding: 0 40px;">Prepared By</span>
+                            </div>
+                            <div class="col-4 text-center">
+                                <span style="border-top: 1px solid black; padding: 0 40px;">Checked By</span>
+                            </div>
+                            <div class="col-4 text-center">
+                                <span style="border-top: 1px solid black; padding: 0 40px;">Approved By</span>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

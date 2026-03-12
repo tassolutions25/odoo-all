@@ -1,0 +1,43 @@
+<!-- <?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_applicant_view_form_inherit_custom" model="ir.ui.view">
+        <field name="name">hr.applicant.form.inherit.custom</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Insert new fields after 'Partner Phone' -->
+            <xpath expr="//field[@name='partner_phone']" position="after">
+                <field name="age"/>
+                <field name="gender"/>
+            </xpath>
+            
+            <!-- LinkedIn profile not required -->
+            <xpath expr="//field[@name='linkedin_profile']" position="attributes">
+                <attribute name="required">0</attribute>
+            </xpath>
+            
+            <!-- Add custom groups -->
+            <xpath expr="//group[@name='recruitment_contract']" position="after">
+                <group string="Educational Details">
+                    <field name="educational_qualification"/>
+                    <field name="institution_name"/>
+                </group>
+                <group string="Current Employment Details">
+                    <field name="current_position"/>
+                    <field name="years_in_current_position"/>
+                    <field name="current_employer"/>
+                    <field name="current_salary" widget="monetary" options="{'currency_field': 'company_currency_id'}"/>
+                    <field name="salary_expectation" widget="monetary" options="{'currency_field': 'company_currency_id'}"/>
+                </group>
+                <group string="Experience &amp; Location">
+                    <field name="total_years_banking_exp"/>
+                    <field name="current_location"/>
+                    <field name="preferred_location"/>
+                </group>
+                <group string="Application Documents">
+                    <field name="application_documents" widget="many2many_binary"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo> -->

@@ -1,0 +1,86 @@
+/*
+    Custom CSS for the Ahadu HR Leave Dashboard v3
+*/
+
+.o_form_view.o_form_nosheet .o_form_sheet {
+    background-color: transparent; /* Make the main sheet transparent */
+}
+
+.dashboard-kpi-card {
+    background-color: #f8f9fa;
+    border: none;
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.dashboard-kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+}
+
+.dashboard-kpi-card .kpi-icon {
+    font-size: 3rem;
+    margin-right: 1.5rem;
+}
+
+.dashboard-kpi-card .kpi-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.dashboard-kpi-card .kpi-content span {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+/* Specific Card Colors */
+.kpi-total { color: #8a3c60; }
+.kpi-female { color: #3b5998; }
+.kpi-male { color: #2e7d32; }
+
+.balance-card .card {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    border: 1px solid #dee2e6;
+    position: relative; /* Needed for banner positioning */
+    overflow: hidden;   /* Hides parts of the banner that stick out */
+}
+
+.balance-card .card:not(.is-expired):hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+/*
+    --- NEW STYLES FOR EXPIRED CARDS ---
+*/
+.balance-card .card.is-expired {
+    /* Unsaturated effect */
+    filter: grayscale(90%);
+    /* Faded effect */
+    opacity: 0.7;
+    background-color: #f8f9fa; /* A light grey background */
+    /* Prevent hover effects on expired cards */
+    pointer-events: none;
+}
+
+.expiry-banner {
+    position: absolute;
+    top: 10px;
+    right: -30px;
+    background-color: #d9534f; /* Bootstrap danger red */
+    color: white;
+    padding: 5px 30px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 10;
+}

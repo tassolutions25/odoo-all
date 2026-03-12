@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--
+        =====================================================
+        Shift Swap Request Views and Action
+        =====================================================
+        -->
+
+        <!-- Form View Definition -->
+        <record id="view_ab_hr_shift_swap_request_form" model="ir.ui.view">
+            <field name="name">ab.hr.shift.swap.request.form</field>
+            <field name="model">ab.hr.shift.swap.request</field>
+            <field name="arch" type="xml">
+                <form string="Shift Swap Request">
+                    <header>
+                        <!-- DEFINITIVE FIX: The 'invisible' attribute now uses a valid domain string -->
+                        <button name="action_submit" string="Submit" type="object" class="btn-primary" data-hotkey="s" invisible="[('state', '!=', 'draft')]"/>
+                        <button name="action_approve" string="Approve" type="object" class="btn-primary" data-hotkey="a" groups="hr.group_hr_manager" invisible="[('state', '!=', 'submitted')]"/>
+                        <button name="action_reject" string="Reject" type="object" data-hotkey="x" groups="hr.group_hr_manager" invisible="[('state', '!=', 'submitted')]"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                    </header>
+                    <sheet>
+                        <h1><field name="name" readonly="1"/></h1>
+                        <group>
+                            <group>
+                                <field name="requesting_employee_id"/>
+                                <field name="date_of_swap"/>
+                                <field name="my_shift_schedule_id"/>
+                            </group>
+                            <group>
+                                <field name="swapping_employee_id"/>
+                                <field name="their_shift_schedule_id" context="{'default_date_of_swap': date_of_swap}"/>
+                                <field name="manager_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Reason" name="reason_page">
+                                <field name="reason"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree View Definition -->
+        <record id="view_ab_hr_shift_swap_request_tree" model="ir.ui.view">
+            <field name="name">ab.hr.shift.swap.request.tree</field>
+            <field name="model">ab.hr.shift.swap.request</field>
+            <field name="arch" type="xml">
+                <list string="Shift Swap Requests">
+                    <field name="name"/>
+                    <field name="requesting_employee_id"/>
+                    <field name="swapping_employee_id"/>
+                    <field name="date_of_swap"/>
+                    <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-info="state == 'submitted'" decoration-danger="state == 'rejected'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Action Definition -->
+        <record id="action_ab_hr_shift_swap_request" model="ir.actions.act_window">
+            <field name="name">Shift Swap Requests</field>
+            <field name="res_model">ab.hr.shift.swap.request</field>
+            <field name="view_mode">list,form</field>
+        </record>
+    </data>
+</odoo>

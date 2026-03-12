@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="employee_type_clerical" model="hr.employee.type">
+            <field name="name">Clerical</field>
+            <field name="code">CL_STAFF</field>
+        </record>
+        <record id="employee_type_non_clerical" model="hr.employee.type">
+            <field name="name">Non-Clerical</field>
+            <field name="code">NON_CL</field>
+        </record>
+    </data>
+</odoo>

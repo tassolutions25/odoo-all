@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_attendance_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2>Attendance Report</h2>
+                    <div class="row mt32 mb32">
+                        <div class="col-6">
+                            <strong>Date From:</strong> <span t-esc="data['date_from']"/>
+                        </div>
+                        <div class="col-6">
+                            <strong>Date To:</strong> <span t-esc="data['date_to']"/>
+                        </div>
+                        <div class="col-12">
+                            <strong>Filters:</strong> <span t-esc="data['filters']"/>
+                        </div>
+                    </div>
+
+                    <!-- Fetch records from the IDs passed by the wizard -->
+                    <t t-set="attendances" t-value="env['hr.attendance'].browse(data['records'])"/>
+                    <t t-set="group_by" t-value="data['group_by']"/>
+
+                    <!-- ** Logic to Group Records ** -->
+                    <t t-set="grouped_records" t-value="{}"/>
+                    <t t-if="group_by == 'employee'">
+                        <t t-foreach="attendances" t-as="att">
+                            <t t-set="key" t-value="att.employee_id"/>
+                            <t t-if="key not in grouped_records">
+                                <t t-set="grouped_records[key]" t-value="[]"/>
+                            </t>
+                            <t t-esc="grouped_records[key].append(att)"/>
+                        </t>
+                    </t>
+                    <t t-if="group_by == 'date'">
+                         <t t-foreach="attendances" t-as="att">
+                            <t t-set="key" t-value="att.check_in.date()"/>
+                            <t t-if="key not in grouped_records">
+                                <t t-set="grouped_records[key]" t-value="[]"/>
+                            </t>
+                            <t t-esc="grouped_records[key].append(att)"/>
+                        </t>
+                    </t>
+                    <t t-if="group_by == 'department'">
+                         <t t-foreach="attendances" t-as="att">
+                            <t t-set="key" t-value="att.employee_id.department_id or env['hr.department']"/>
+                            <t t-if="key not in grouped_records">
+                                <t t-set="grouped_records[key]" t-value="[]"/>
+                            </t>
+                            <t t-esc="grouped_records[key].append(att)"/>
+                        </t>
+                    </t>
+
+                    <!-- ** Display Grouped Data ** -->
+                    <t t-foreach="grouped_records" t-as="group_key">
+                        <h4 class="mt-4"><t t-esc="group_key.name if group_key else (group_key.strftime('%A, %d %B %Y') if group_by == 'date' else 'Undefined')"/></h4>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th t-if="group_by != 'employee'">Employee</th>
+                                    <th>Check In</th>
+                                    <th>Check Out</th>
+                                    <th>Worked Hours</th>
+                                    <th>Status</th>
+                                    <th>Late (Mins)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="grouped_records[group_key]" t-as="line">
+                                    <tr>
+                                        <td t-if="group_by != 'employee'"><span t-field="line.employee_id.name"/></td>
+                                        <td><span t-field="line.check_in" t-options='{"widget": "datetime"}'/></td>
+                                        <td><span t-field="line.check_out" t-options='{"widget": "datetime"}'/></td>
+                                        <td><span t-esc="'{0:02.0f}:{1:02.0f}'.format(*divmod(line.worked_hours * 60, 60))"/></td>
+                                        <td><span t-field="line.attendance_status"/></td>
+                                        <td><span t-esc="line.late_minutes"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

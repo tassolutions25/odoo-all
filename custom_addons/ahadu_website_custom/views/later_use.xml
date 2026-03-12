@@ -1,0 +1,2107 @@
+<!-- <?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <template id="job_apply_form_inherit_custom" inherit_id="website_hr_recruitment.job_apply_form" name="Custom Job Apply Form">
+        <!-- The xpath now targets the specific div for the 'Your Email' field -->
+        <xpath expr="//div[@data-name='Field' and @data-type='email' and .//input[@name='email_from']]" position="after">
+            <h3>Additional Application Details</h3>
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="string" data-name="x_educational_qualification">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_educational_qualification">Educational Qualification</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="text" class="form-control s_website_form_input" name="x_educational_qualification" id="x_educational_qualification" required="true"/>
+                </div>
+            </div>
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="string" data-name="x_institution_name">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_institution_name">Name of Institution</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="text" class="form-control s_website_form_input" name="x_institution_name" id="x_institution_name"/>
+                </div>
+            </div>
+
+            <!-- Current Employment -->
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="string" data-name="x_current_position">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_current_position">Current Position</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="text" class="form-control s_website_form_input" name="x_current_position" id="x_current_position"/>
+                </div>
+            </div>
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="float" data-name="x_years_in_current_position">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_years_in_current_position">Years in Current Position</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="number" step="0.5" class="form-control s_website_form_input" name="x_years_in_current_position" id="x_years_in_current_position"/>
+                </div>
+            </div>
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="string" data-name="x_current_employer">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_current_employer">Current Employer</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="text" class="form-control s_website_form_input" name="x_current_employer" id="x_current_employer"/>
+                </div>
+            </div>
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="monetary" data-name="x_current_salary">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_current_salary">Current Salary</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="number" class="form-control s_website_form_input" name="x_current_salary" id="x_current_salary"/>
+                </div>
+            </div>
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="monetary" data-name="x_salary_expectation">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_salary_expectation">Salary Expectation</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="number" class="form-control s_website_form_input" name="x_salary_expectation" id="x_salary_expectation"/>
+                </div>
+            </div>
+            
+            <!-- Experience & Location -->
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="float" data-name="x_total_years_banking_exp">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_total_years_banking_exp">Total Years in Banking Industry</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="number" step="0.5" class="form-control s_website_form_input" name="x_total_years_banking_exp" id="x_total_years_banking_exp"/>
+                </div>
+            </div>
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="string" data-name="x_current_location">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_current_location">Current Location</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="text" class="form-control s_website_form_input" name="x_current_location" id="x_current_location"/>
+                </div>
+            </div>
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="string" data-name="x_preferred_location">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_preferred_location">Preferred Location</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="text" class="form-control s_website_form_input" name="x_preferred_location" id="x_preferred_location"/>
+                </div>
+            </div>
+
+            <!-- Documents (File Upload) -->
+            <div class="form-group row s_website_form_field s_website_form_custom" data-type="binary" data-name="x_application_documents">
+                <div class="col-lg-3 col-md-4 text-right">
+                    <label class="col-form-label" for="x_application_documents">Application Documents</label>
+                </div>
+                <div class="col-lg-7 col-md-8">
+                    <input type="file" class="form-control s_website_form_input" name="x_application_documents" id="x_application_documents" multiple="true" required="true"/>
+                    <small class="form-text text-muted">Upload application letter, updated CV, educational documents, and certificates of service/work experience (all in one or multiple files).</small>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo> -->
+
+<?
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_applicant_view_form_inherit_custom" model="ir.ui.view">
+        <field name="name">hr.applicant.form.inherit.custom</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Insert new fields after 'Partner Phone' or similar general contact info -->
+            <xpath expr="//field[@name='partner_phone']" position="after">
+                <field name="x_age"/>
+                <field name="x_gender"/>
+            </xpath>
+            <xpath expr="//field[@name='linkedin_profile']" position="attributes">
+                <attribute name="required">0</attribute>
+            </xpath>
+            <xpath expr="//group[@name='recruitment_contract']" position="after">
+                <group string="Educational Details">
+                    <field name="x_educational_qualification"/>
+                    <field name="x_institution_name"/>
+                </group>
+                <group string="Current Employment Details">
+                    <field name="x_current_position"/>
+                    <field name="x_years_in_current_position"/>
+                    <field name="x_current_employer"/>
+                    <field name="x_current_salary" widget="monetary"/>
+                    <field name="x_salary_expectation" widget="monetary"/>
+                </group>
+                <group string="Experience &amp; Location">
+                    <field name="x_total_years_banking_exp"/>
+                    <field name="x_current_location"/>
+                    <field name="x_preferred_location"/>
+                </group>
+                <group string="Application Documents">
+                    <field name="x_application_documents" widget="many2many_binary"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
+
+
+
+
+
+# hr_applicant.py
+import logging
+from odoo import models, fields, api
+
+_logger = logging.getLogger(__name__)
+_logger.critical("!!!!!!! custom_job_application/models/hr_applicant.py FILE HAS BEEN LOADED !!!!!!!")
+
+# ----------------------------------------------------
+# Extend hr.applicant (Your existing model)
+# ----------------------------------------------------
+class HrApplicantCustom(models.Model):
+    _inherit = 'hr.applicant'
+
+    # New fields for Age and Gender
+    x_age = fields.Integer(string="Age", required=True)
+    x_gender = fields.Selection([
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ], string="Gender", required=True)
+
+    # Education
+    x_educational_qualification = fields.Char(string="Educational Qualification", required=True)
+    x_institution_name = fields.Char(string="Name of Institution", required=True)
+
+    # Current Employment
+    x_current_position = fields.Char(string="Current Position", required=True)
+    x_years_in_current_position = fields.Float(string="Years in Current Position", required=False)
+    x_current_employer = fields.Char(string="Current Employer", required=True)
+
+    company_currency_id = fields.Many2one(
+        'res.currency',
+        related='company_id.currency_id',
+        string="Company Currency",
+        readonly=True,
+        store=True
+    )
+
+    x_current_salary = fields.Monetary(string="Current Salary", currency_field='company_currency_id', required=False)
+    x_salary_expectation = fields.Monetary(string="Salary Expectation", currency_field='company_currency_id', required=False)
+
+    # Experience
+    x_total_years_banking_exp = fields.Float(string="Total Years in Banking Industry", required=True)
+
+    # Location
+    x_current_location = fields.Char(string="Current Location", required=True)
+    x_preferred_location = fields.Char(string="Preferred Location", required=True)
+
+    # Documents (Attachment field)
+    x_application_documents = fields.Many2many(
+        'ir.attachment',
+        string="Application Documents",
+        help="Upload application letter, updated CV, educational documents, and certificates of service/work experience.",
+        required=True
+    )
+
+    @api.model
+    def _website_form_create(self, values):
+        _logger.critical("!!!!!! CUSTOM_JOB_APPLICATION _website_form_create IS BEING CALLED !!!!!!! Raw values: %s", values)
+
+        if 'x_salary_expectation' in values and values['x_salary_expectation'] is not False:
+            try:
+                values['salary_expected'] = float(values['x_salary_expectation'])
+            except ValueError:
+                values['salary_expected'] = 0.0
+        else:
+            values['salary_expected'] = 0.0
+
+        if 'x_age' in values and values['x_age']:
+            try:
+                values['x_age'] = int(values['x_age'])
+            except ValueError:
+                _logger.warning("Could not convert 'x_age' (%s) to integer. Setting to 0.", values['x_age'])
+                values['x_age'] = 0
+        elif 'x_age' not in values or not values['x_age']:
+            values['x_age'] = 0
+
+        for field_name in ['x_years_in_current_position', 'x_total_years_banking_exp']:
+            if field_name in values and values[field_name]:
+                try:
+                    values[field_name] = float(values[field_name])
+                except ValueError:
+                    _logger.warning("Could not convert '%s' (%s) to float. Setting to 0.0.", field_name, values[field_name])
+                    values[field_name] = 0.0
+            elif field_name not in values or not values[field_name]:
+                values[field_name] = 0.0
+
+        for field_name in ['x_current_salary', 'x_salary_expectation']:
+             if field_name in values and values[field_name]:
+                try:
+                    values[field_name] = float(values[field_name])
+                except ValueError:
+                    _logger.warning("Could not convert '%s' (%s) to float. Setting to 0.0.", field_name, values[field_name])
+                    values[field_name] = 0.0
+             elif field_name not in values or not values[field_name]:
+                values[field_name] = 0.0
+
+        _logger.info("Website form submission - Values after custom processing: %s", values)
+
+        return super()._website_form_create(values)
+
+    # Override the method that generates the candidate
+    def create_hr_recruitment_candidate(self):
+        self.ensure_one()
+        candidate = super().create_hr_recruitment_candidate()
+        
+        # Map your custom fields from hr.applicant to hr.recruitment.candidate
+        candidate.write({
+            'x_age': self.x_age,
+            'x_gender': self.x_gender,
+            'x_educational_qualification': self.x_educational_qualification,
+            'x_institution_name': self.x_institution_name,
+            'x_current_position': self.x_current_position,
+            'x_years_in_current_position': self.x_years_in_current_position,
+            'x_current_employer': self.x_current_employer,
+            'x_current_salary': self.x_current_salary,
+            'x_salary_expectation': self.x_salary_expectation,
+            'x_total_years_banking_exp': self.x_total_years_banking_exp,
+            'x_current_location': self.x_current_location,
+            'x_preferred_location': self.x_preferred_location,
+            'x_application_documents': [(6, 0, self.x_application_documents.ids)], # For Many2many fields
+        })
+        return candidate
+
+# ----------------------------------------------------
+# Extend hr.recruitment.candidate (THE CANDIDATE MODEL)
+# ----------------------------------------------------
+class HrRecruitmentCandidateCustom(models.Model):
+    _inherit = 'hr.recruitment.candidate'
+
+    # Add the SAME custom fields here that you added to hr.applicant
+    # This is crucial so the candidate model has these fields to store data.
+
+    x_age = fields.Integer(string="Age") # No required=True here usually, as it might not be mandatory for all candidates
+    x_gender = fields.Selection([
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ], string="Gender")
+
+    x_educational_qualification = fields.Char(string="Educational Qualification")
+    x_institution_name = fields.Char(string="Name of Institution")
+
+    x_current_position = fields.Char(string="Current Position")
+    x_years_in_current_position = fields.Float(string="Years in Current Position")
+    x_current_employer = fields.Char(string="Current Employer")
+
+    x_current_salary = fields.Monetary(string="Current Salary", currency_field='company_currency_id')
+    x_salary_expectation = fields.Monetary(string="Salary Expectation", currency_field='company_currency_id')
+
+    x_total_years_banking_exp = fields.Float(string="Total Years in Banking Industry")
+
+    x_current_location = fields.Char(string="Current Location")
+    x_preferred_location = fields.Char(string="Preferred Location")
+
+    x_application_documents = fields.Many2many(
+        'ir.attachment',
+        string="Application Documents",
+        help="Documents uploaded by the applicant."
+    )
+
+
+
+
+
+
+
+
+
+
+
+    # hr_applicant.py
+import logging # Add this line at the very top
+from odoo import models, fields, api
+
+_logger = logging.getLogger(__name__) # Add this line after imports, before the class definition
+_logger.critical("!!!!!!! custom_job_application/models/hr_applicant.py FILE HAS BEEN LOADED !!!!!!!") # NEW: Top-level logger
+
+class HrApplicantCustom(models.Model):
+    _inherit = 'hr.applicant'
+
+    # New fields for Age and Gender
+    x_age = fields.Integer(string="Age", required=True)
+    x_gender = fields.Selection([
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ], string="Gender", required=True)
+
+    # Education
+    x_educational_qualification = fields.Char(string="Educational Qualification", required=True)
+    x_institution_name = fields.Char(string="Name of Institution", required=True)
+
+    # Current Employment
+    x_current_position = fields.Char(string="Current Position", required=True)
+    x_years_in_current_position = fields.Float(string="Years in Current Position", required=False)
+    x_current_employer = fields.Char(string="Current Employer", required=True)
+
+    company_currency_id = fields.Many2one(
+        'res.currency',
+        related='company_id.currency_id',
+        string="Company Currency",
+        readonly=True,
+        store=True
+    )
+
+    x_current_salary = fields.Monetary(string="Current Salary", currency_field='company_currency_id', required=False)
+    x_salary_expectation = fields.Monetary(string="Salary Expectation", currency_field='company_currency_id', required=False)
+
+    # Experience
+    x_total_years_banking_exp = fields.Float(string="Total Years in Banking Industry", required=True)
+
+    # Location
+    x_current_location = fields.Char(string="Current Location", required=True)
+    x_preferred_location = fields.Char(string="Preferred Location", required=True)
+
+    # Documents (Attachment field)
+    x_application_documents = fields.Many2many(
+        'ir.attachment',
+        string="Application Documents",
+        help="Upload application letter, updated CV, educational documents, and certificates of service/work experience.",
+        required=True
+    )
+
+    # This method is specifically for website form submissions to create records.
+    # It receives the values directly from the web form POST request.
+    @api.model
+    def _website_form_create(self, values):
+        # --- Add your initial logger call here to see what's received from the form ---
+        _logger.critical("!!!!!! CUSTOM_JOB_APPLICATION _website_form_create IS BEING CALLED !!!!!!! Raw values: %s", values)
+
+        # We need to process the values here before calling the super method.
+        # The 'values' dictionary contains all form fields by their 'name' attribute.
+
+        # Ensure salary_expected is synced from x_salary_expectation
+        if 'x_salary_expectation' in values and values['x_salary_expectation'] is not False:
+            try:
+                values['salary_expected'] = float(values['x_salary_expectation'])
+            except ValueError:
+                values['salary_expected'] = 0.0
+        else:
+            values['salary_expected'] = 0.0
+
+        # For integer fields, explicit conversion is good for robustness,
+        # though Odoo's website_form often handles 'data-type="integer"' correctly.
+        if 'x_age' in values and values['x_age']:
+            try:
+                values['x_age'] = int(values['x_age'])
+            except ValueError:
+                _logger.warning("Could not convert 'x_age' (%s) to integer. Setting to 0.", values['x_age'])
+                values['x_age'] = 0 # Default to 0 or None if conversion fails
+        elif 'x_age' not in values or not values['x_age']: # Handle cases where it's missing or empty
+            values['x_age'] = 0
+
+
+        # For float fields, similar robust conversion.
+        for field_name in ['x_years_in_current_position', 'x_total_years_banking_exp']:
+            if field_name in values and values[field_name]:
+                try:
+                    values[field_name] = float(values[field_name])
+                except ValueError:
+                    _logger.warning("Could not convert '%s' (%s) to float. Setting to 0.0.", field_name, values[field_name])
+                    values[field_name] = 0.0
+            elif field_name not in values or not values[field_name]: # Handle cases where it's missing or empty
+                values[field_name] = 0.0
+
+
+        # For monetary fields, they are also typically handled as floats by the form controller.
+        for field_name in ['x_current_salary', 'x_salary_expectation']:
+             if field_name in values and values[field_name]:
+                try:
+                    values[field_name] = float(values[field_name])
+                except ValueError:
+                    _logger.warning("Could not convert '%s' (%s) to float. Setting to 0.0.", field_name, values[field_name])
+                    values[field_name] = 0.0
+             elif field_name not in values or not values[field_name]: # Handle cases where it's missing or empty
+                values[field_name] = 0.0
+
+
+        # --- Add another logger call here to see values AFTER your processing, before super() ---
+        _logger.info("Website form submission - Values after custom processing: %s", values)
+
+        # Call the original method to create the record with the prepared values
+        return super()._website_form_create(values)
+
+
+
+
+        <xpath expr="//form[@id='hr_recruitment_form' and @data-model_name='hr.applicant']" position="inside">
+            <attribute name="action">/ahadu/jobs/apply_custom</attribute>
+            <attribute name="enctype">multipart/form-data</attribute>
+        </xpath>
+
+
+          <!-- Remove the built-in Resume field completely -->
+        <xpath expr="//div[contains(@class, 's_website_form_field') and ./div/label[@for='recruitment6']]" position="replace"/>
+
+        <!-- Modify LinkedIn Profile field: make not required -->
+        <!-- Targeting the div containing the LinkedIn input -->
+        <xpath expr="//div[contains(@class, 's_website_form_field') and ./div/label[@for='recruitment4']]" position="attributes">
+            <!-- Ensure 's_website_form_required' is NOT present, only 's_website_form_custom' -->
+            <attribute name="class">col-12 mb-0 py-2 s_website_form_field s_website_form_custom</attribute> 
+        </xpath>
+        <xpath expr="//input[@id='recruitment4']" position="attributes">
+            <attribute name="required">false</attribute>
+        </xpath>
+        <!-- REMOVED THIS XPATH TO AVOID THE PARSE ERROR -->
+        <!-- The asterisk will be automatically removed if the field is not required -->
+        <!-- <xpath expr="//label[@for='recruitment4']/span[@class='s_website_form_mark']" position="replace"/> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        import logging
+from odoo import models, fields, api
+
+_logger = logging.getLogger(__name__) # Add this line
+
+class HrApplicant(models.Model):
+    _inherit = "hr.applicant"
+
+      # New fields for Age and Gender
+    age = fields.Integer(
+        string="Age", 
+        required=True, 
+        store=True, 
+        default=0
+    )
+    gender = fields.Selection([
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ], 
+    string="Gender", 
+    required=True, 
+    store=True, 
+    default='male'
+    )
+
+    # Education
+    educational_qualification = fields.Char(
+        string="Educational Qualification", 
+        required=True, 
+        store=True, 
+        default="Not Specified"
+    )
+    institution_name = fields.Char(
+        string="Name of Institution", 
+        required=True, 
+        store=True, 
+        default="Not Specified"
+    )
+
+    # Current Employment
+    current_position = fields.Char(
+        string="Current Position", 
+        required=True, 
+        store=True, 
+        default="Not Specified"
+    )
+    years_in_current_position = fields.Float(
+        string="Years in Current Position", 
+        required=False, 
+        store=True, 
+        default=0.0
+    )
+    current_employer = fields.Char(
+        string="Current Employer", 
+        required=True, 
+        store=True, 
+        default="Not Specified"
+   )
+
+    company_currency_id = fields.Many2one(
+        'res.currency',
+        related='company_id.currency_id',
+        string="Company Currency",
+        readonly=True,
+        store=True
+    )
+
+    current_salary = fields.Monetary(
+        string="Current Salary", 
+        currency_field='company_currency_id', 
+        required=False, 
+        store=True, 
+        default=0.0
+    )
+    salary_expectation = fields.Monetary(
+        string="Salary Expectation", 
+        currency_field='company_currency_id', 
+        required=False, 
+        store=True, 
+        default=0.0
+    )
+
+    # Experience
+    total_years_banking_exp = fields.Float(
+        string="Total Years in Banking Industry", 
+        required=True, 
+        store=True, 
+        default=0.0
+    )
+
+    # Location
+    current_location = fields.Char(
+        string="Current Location", 
+        required=True, 
+        store=True, 
+        default="Not Specified"
+    )
+    preferred_location = fields.Char(
+        string="Preferred Location", 
+        required=True, 
+        store=True, 
+        default="Not Specified"
+    )
+
+    # Documents
+    application_documents = fields.Many2many(
+        'ir.attachment',
+        string="Application Documents",
+        help="Upload application letter, updated CV, educational documents, and certificates of service/work experience.",
+        required=True,
+        store=True
+  )
+
+     # --- Interview Evaluation ---
+    interview_score = fields.Float(
+        string="Interview Score (%)",
+        tracking=True,
+        help="Enter the weighted score as a percentage (e.g., 85.5)."
+    )
+
+    interview_rating = fields.Selection([
+        ('0', 'No stars'),
+        ('1', 'Normal'),
+        ('2', 'Good'),
+        ('3', 'Very Good'),
+    ],
+        string="Interview Rating",
+        compute='_compute_interview_rating',
+        inverse='_inverse_interview_rating',
+        store=True,
+        readonly=False,
+        tracking=True
+    )
+
+    # --- Written Exam ---
+    written_exam_score = fields.Float(
+        string="Written Exam Score (%)",
+        tracking=True,
+        help="Enter the written exam score as a percentage (0-100)."
+    )
+
+     # --- Combined Score ---
+    combined_score = fields.Float(
+        string="Average Score (%)",
+        compute='_compute_combined_score',
+        store=True,
+        readonly=True
+    )
+
+    # --- Compute/Inverse Logic ---
+    @api.depends('interview_score')
+    def _compute_interview_rating(self):
+        for applicant in self:
+            score = applicant.interview_score or 0.0
+            if score >= 80:
+                applicant.interview_rating = '3'
+            elif score >= 60:
+                applicant.interview_rating = '2'
+            elif score > 0:
+                applicant.interview_rating = '1'
+            else:
+                applicant.interview_rating = '0'
+
+    def _inverse_interview_rating(self):
+        for applicant in self:
+            rating = applicant.interview_rating
+            if rating == '3':
+                applicant.interview_score = 80.0
+            elif rating == '2':
+                applicant.interview_score = 60.0
+            elif rating == '1':
+                applicant.interview_score = 40.0
+            else:
+                applicant.interview_score = 0.0
+
+    # --- Compute Combined Score ---
+    @api.depends('interview_score', 'written_exam_score')
+    def _compute_combined_score(self):
+        for applicant in self:
+            interview = applicant.interview_score or 0.0
+            written = applicant.written_exam_score or 0.0
+            applicant.combined_score = (interview + written) / 2.0
+
+    
+    
+    
+    
+    contoller file 
+    353245346t456t456y45645
+
+    # ahadu_website_custom/controllers/main.py
+import base64
+import logging
+from odoo import http
+from odoo.http import request
+
+_logger = logging.getLogger(__name__)
+
+NUM_FIELDS = {
+    'age': int,
+    'years_in_current_position': float,
+    'current_salary': float,
+    'salary_expectation': float,
+    'total_years_banking_exp': float,
+    'interview_score': float,
+    'written_exam_score': float,
+}
+
+# Accept both common website field names and model field names
+ALLOWED_FIELDS = {
+    # names as used in default website template
+    'partner_name', 'email_from', 'partner_phone', 'job_id',
+    # your custom fields (these must match name="..." in templates.xml)
+    'age', 'gender',
+    'educational_qualification', 'institution_name',
+    'current_position', 'years_in_current_position', 'current_employer',
+    'current_salary', 'salary_expectation',
+    'total_years_banking_exp', 'current_location', 'preferred_location',
+    # also accept some variants to be safe
+    'partner_email',
+}
+
+# mapping from incoming posted name -> hr.applicant field name (if different)
+NAME_MAP = {
+    'email_from': 'email_from',
+    'partner_email': 'email_from',   # in case the template uses this name
+    'partner_name': 'partner_name',
+    'partner_phone': 'partner_phone',
+    'job_id': 'job_id',
+    # the custom fields names are already same as model
+}
+
+class WebsiteHrRecruitmentCustom(http.Controller):
+
+    @http.route(['/ahadu/jobs/apply_custom'], type='http', auth='public', methods=['POST'], website=True)
+    def apply_custom(self, **post):
+        """
+        Instrumented handler: logs raw posted data, builds vals, creates hr.applicant,
+        saves attachments and logs final created record id + values.
+        """
+        env = request.env
+        _logger.info("=== Received /ahadu/jobs/apply_custom POST ===")
+        # log the raw POST keys & small preview of values
+        for k, v in post.items():
+            # only log small values to avoid huge logs for files
+            _logger.info("POST key=%s value_preview=%s", k, (v[:200] + '...') if isinstance(v, str) and len(v) > 200 else v)
+
+        vals = {}
+        # build values using either direct names or NAME_MAP
+        for k, v in post.items():
+            if k not in ALLOWED_FIELDS and k not in NAME_MAP:
+                continue
+            # resolve to a model field name
+            model_field = NAME_MAP.get(k, k)
+
+            # normalise value
+            val = (v or "").strip() if isinstance(v, str) else v
+            if val is None or val == '':
+                # skip empty values and let model defaults apply
+                continue
+
+            # numeric casting
+            if model_field in NUM_FIELDS:
+                try:
+                    vals[model_field] = NUM_FIELDS[model_field](val)
+                except Exception:
+                    _logger.warning("Failed to cast numeric field %s value=%r, defaulting to 0", model_field, val)
+                    vals[model_field] = 0
+            else:
+                vals[model_field] = val
+
+        # Special: ensure gender only allowed values (do not write invalid sentinel)
+        if 'gender' in vals and vals.get('gender') not in ('male', 'female'):
+            _logger.warning("Gender value %r not valid, removing to use model default", vals.get('gender'))
+            vals.pop('gender', None)
+
+        # Convert job_id to int if present
+        if 'job_id' in vals:
+            try:
+                vals['job_id'] = int(vals['job_id'])
+            except Exception:
+                _logger.warning("job_id casting failed for %r, removing", vals.get('job_id'))
+                vals.pop('job_id', None)
+
+        _logger.info("Final vals to create hr.applicant: %s", vals)
+
+        # create the applicant
+        try:
+            applicant = env['hr.applicant'].sudo().create(vals)
+        except Exception as e:
+            _logger.exception("Failed to create hr.applicant: %s", e)
+            # fallback redirect with error (could show a message)
+            return request.redirect('/jobs?error=1')
+
+        _logger.info("Created hr.applicant id=%s name=%s", applicant.id, applicant.partner_name or applicant.name)
+
+        # process file attachments (if any)
+        files = request.httprequest.files.getlist('application_documents')
+        attachment_ids = []
+        for f in files:
+            if not f:
+                continue
+            content = f.read()
+            if not content:
+                continue
+            try:
+                attachment = env['ir.attachment'].sudo().create({
+                    'name': f.filename or 'attachment',
+                    'datas': base64.b64encode(content),
+                    'datas_fname': f.filename,
+                    'mimetype': f.mimetype,
+                    'res_model': 'hr.applicant',
+                    'res_id': applicant.id,
+                })
+                attachment_ids.append(attachment.id)
+            except Exception:
+                _logger.exception("Failed creating attachment for applicant %s", applicant.id)
+
+        if attachment_ids:
+            applicant.sudo().write({'application_documents': [(6, 0, attachment_ids)]})
+            _logger.info("Linked attachments %s to applicant %s", attachment_ids, applicant.id)
+
+        # Log a database read-back to show what was stored
+        saved = env['hr.applicant'].sudo().browse(applicant.id)
+        _logger.info("Saved applicant fields: age=%s gender=%s educational_qualification=%s current_position=%s",
+                     saved.age, saved.gender, saved.educational_qualification, saved.current_position)
+
+        return request.redirect(post.get('redirect_url') or f'/jobs/{vals.get("job_id", "")}')
+
+
+
+
+
+
+
+
+ <xpath expr="//form[@id='hr_recruitment_form' and @data-model_name='hr.applicant']" position="replace">
+      <form id="hr_recruitment_form"
+            data-model_name="hr.applicant"
+            action="/ahadu/jobs/apply_custom"
+            method="post"
+            enctype="multipart/form-data"
+            class="s_website_form form-horizontal"
+            data-success-page="/jobs/thankyou">
+
+        <!-- important: reinsert the original form content -->
+        <t t-call="website_hr_recruitment.apply_form_content"/>
+
+      </form>
+    </xpath>
+
+
+
+     <xpath expr="//form[@id='hr_recruitment_form' and @data-model_name='hr.applicant']" position="inside">
+            <attribute name="action">/ahadu/jobs/apply_custom</attribute>
+            <attribute name="enctype">multipart/form-data</attribute>
+        </xpath>
+
+
+
+
+
+
+       <!-- <xpath expr="//div[contains(@class, 's_website_form_field') and ./div/label[@for='recruitment4']]" position="attributes">
+            <attribute name="class">col-12 mb-0 py-2 s_website_form_field s_website_form_custom</attribute>
+        </xpath>
+        <xpath expr="//input[@id='recruitment4']" position="attributes">
+            <attribute name="required">false</attribute>
+        </xpath> -->
+
+     <!-- <xpath expr="//label[contains(., 'LinkedIn')]/following-sibling::input[1]" position="attributes">
+            <attribute name="required">false</attribute>
+        </xpath> -->
+
+        <!-- ✅ Hide Resume Upload field -->
+      <!-- <xpath expr="//label[contains(., 'Resume')]" position="replace">
+            <t t-if="False">
+               
+            </t>
+        </xpath> -->
+
+
+<!-- <xpath expr="//div[contains(@class, 's_website_form_field') and ./div/label[@for='recruitment6']]" position="attributes">
+    <attribute name="style">display:none;</attribute>
+</xpath> -->
+
+
+
+
+
+
+
+
+
+        <xpath expr="//form[@id='hr_recruitment_form' and @data-model_name='hr.applicant']" position="replace">
+
+
+
+templates.xml
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ======================================== -->
+    <!-- 1️⃣ Create the required QWeb template   -->
+    <!-- ======================================== -->
+    <record id="website_hr_recruitment_apply_form_content" model="ir.ui.view">
+        <field name="name">Job Apply Form Content</field>
+        <field name="key">website_hr_recruitment.apply_form_content</field>
+        <field name="type">qweb</field>
+        <field name="arch" type="xml">
+            <div class="o_website_hr_apply_form">
+                <!-- You can add any default fields you want to keep here -->
+                <!-- <t t-call="website.hr_apply_form_content"/> -->
+            </div>
+        </field>
+    </record>
+
+    <!-- ======================================== -->
+    <!-- 2️⃣ Inherit the default apply template   -->
+    <!--    and inject custom fields             -->
+    <!-- ======================================== -->
+    <template id="job_apply_form_inherit_custom" inherit_id="website_hr_recruitment.apply" name="Custom Job Apply Form Inherit">
+       <xpath expr="//form[@id='hr_recruitment_form']" position="replace">
+            <form id="hr_recruitment_form"
+                  data-model_name="hr.applicant"
+                  action="/ahadu/jobs/apply_custom"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="s_website_form form-horizontal"
+                  data-success-page="/jobs/thankyou">
+                
+                <!-- Call the main template -->
+                <t t-call="website_hr_recruitment.apply_form_content"/>
+
+                <!-- ======================= -->
+                <!-- Custom Fields Section   -->
+                <!-- ======================= -->
+                <div id="custom_fields_block">
+
+                    <!-- Age -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="integer" data-name="age">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="age">
+                                <span class="s_website_form_label_content">Age</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input id="age" type="number" class="form-control s_website_form_input" name="age" required="true" min="16" max="99"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="selection" data-name="gender">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="gender">
+                                <span class="s_website_form_label_content">Gender</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <select id="gender" class="form-control s_website_form_input" name="gender" required="true">
+                                    <option value="">Select Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Educational Qualification -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="educational_qualification">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="educational_qualification">
+                                <span class="s_website_form_label_content">Educational Qualification</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="educational_qualification" id="educational_qualification" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Institution Name -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="institution_name">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="institution_name">
+                                <span class="s_website_form_label_content">Name of Institution</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="institution_name" id="institution_name" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Position -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="current_position">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="current_position">
+                                <span class="s_website_form_label_content">Current Position</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="current_position" id="current_position" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Employer -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="current_employer">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="current_employer">
+                                <span class="s_website_form_label_content">Current Employer</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="current_employer" id="current_employer" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Salary -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_custom" data-type="monetary" data-name="current_salary">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="current_salary">
+                                <span class="s_website_form_label_content">Current Salary</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="number" class="form-control s_website_form_input" name="current_salary" id="current_salary"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Salary Expectation -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_custom" data-type="monetary" data-name="salary_expectation">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="salary_expectation">
+                                <span class="s_website_form_label_content">Salary Expectation</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="number" class="form-control s_website_form_input" name="salary_expectation" id="salary_expectation"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Years in Banking -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="float" data-name="total_years_banking_exp">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="total_years_banking_exp">
+                                <span class="s_website_form_label_content">Total Years in Banking Industry</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="number" step="0.5" class="form-control s_website_form_input" name="total_years_banking_exp" id="total_years_banking_exp" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Location -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="current_location">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="current_location">
+                                <span class="s_website_form_label_content">Current Location</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="current_location" id="current_location" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preferred Location -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="preferred_location">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="preferred_location">
+                                <span class="s_website_form_label_content">Preferred Location</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="preferred_location" id="preferred_location" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Upload -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="many2many_binary">
+                <div class="row s_col_no_resize s_col_no_bgcolor">
+                    <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="application_documents">
+                        <span class="s_website_form_label_content">Application Documents</span>
+                        <span class="s_website_form_mark"> *</span>
+                    </label>
+                    <div class="col-sm">
+                        <div class="s_website_form_file form-control d-flex flex-wrap flex-fill">
+                            <span class="s_website_form_filename flex-grow-1 text-truncate text-muted">No file chosen</span>
+                            <input id="application_documents" 
+                                   type="file" 
+                                   class="d-none s_website_form_input" 
+                                   name="application_documents" 
+                                   multiple="true" 
+                                   required="true"/>
+                        </div>
+                        <small class="form-text text-muted">Upload application letter, CV, educational documents, and certificates.</small>
+                    </div>
+                </div>
+            </div>
+
+                </div> <!-- end custom_fields_block -->
+
+            </form>
+        </xpath>
+    </template>
+
+</odoo>
+
+main.py
+import base64
+import logging
+from odoo import http
+from odoo.http import request
+
+_logger = logging.getLogger(__name__)
+
+NUM_FIELDS = {
+    'age': int,
+    'years_in_current_position': float,
+    'current_salary': float,
+    'salary_expectation': float,
+    'total_years_banking_exp': float,
+    'interview_score': float,
+    'written_exam_score': float,
+}
+
+# Accept both common website field names and model field names
+ALLOWED_FIELDS = {
+    # names as used in default website template
+    'partner_name', 'email_from', 'partner_phone', 'job_id',
+    # your custom fields (these must match name="..." in templates.xml)
+    'age', 'gender',
+    'educational_qualification', 'institution_name',
+    'current_position', 'years_in_current_position', 'current_employer',
+    'current_salary', 'salary_expectation',
+    'total_years_banking_exp', 'current_location', 'preferred_location',
+    # also accept some variants to be safe
+    'partner_email',
+}
+
+# mapping from incoming posted name -> hr.applicant field name (if different)
+NAME_MAP = {
+    'email_from': 'email_from',
+    'partner_email': 'email_from',   # in case the template uses this name
+    'partner_name': 'partner_name',
+    'partner_phone': 'partner_phone',
+    'job_id': 'job_id',
+    # the custom fields names are already same as model
+}
+
+class WebsiteHrRecruitmentCustom(http.Controller):
+
+    @http.route(['/ahadu/jobs/apply_custom'], type='http', auth='public', methods=['POST'], website=True)
+    def apply_custom(self, **post):
+        """
+        Instrumented handler: logs raw posted data, builds vals, creates hr.applicant,
+        saves attachments and logs final created record id + values.
+        """
+        env = request.env
+        _logger.info("=== Received /ahadu/jobs/apply_custom POST ===")
+        # log the raw POST keys & small preview of values
+        for k, v in post.items():
+            # only log small values to avoid huge logs for files
+            _logger.info("POST key=%s value_preview=%s", k, (v[:200] + '...') if isinstance(v, str) and len(v) > 200 else v)
+
+        vals = {}
+        # build values using either direct names or NAME_MAP
+        for k, v in post.items():
+            if k not in ALLOWED_FIELDS and k not in NAME_MAP:
+                continue
+            # resolve to a model field name
+            model_field = NAME_MAP.get(k, k)
+
+            # normalise value
+            val = (v or "").strip() if isinstance(v, str) else v
+            if val is None or val == '':
+                # skip empty values and let model defaults apply
+                continue
+
+            # numeric casting
+            if model_field in NUM_FIELDS:
+                try:
+                    vals[model_field] = NUM_FIELDS[model_field](val)
+                except Exception:
+                    _logger.warning("Failed to cast numeric field %s value=%r, defaulting to 0", model_field, val)
+                    vals[model_field] = 0
+            else:
+                vals[model_field] = val
+
+        # Special: ensure gender only allowed values (do not write invalid sentinel)
+        if 'gender' in vals and vals.get('gender') not in ('male', 'female'):
+            _logger.warning("Gender value %r not valid, removing to use model default", vals.get('gender'))
+            vals.pop('gender', None)
+
+        # Convert job_id to int if present
+        if 'job_id' in vals:
+            try:
+                vals['job_id'] = int(vals['job_id'])
+            except Exception:
+                _logger.warning("job_id casting failed for %r, removing", vals.get('job_id'))
+                vals.pop('job_id', None)
+
+        _logger.info("Final vals to create hr.applicant: %s", vals)
+
+        # create the applicant
+        try:
+            applicant = env['hr.applicant'].sudo().create(vals)
+        except Exception as e:
+            _logger.exception("Failed to create hr.applicant: %s", e)
+            # fallback redirect with error (could show a message)
+            return request.redirect('/jobs?error=1')
+
+        _logger.info("Created hr.applicant id=%s name=%s", applicant.id, applicant.partner_name or applicant.name)
+
+        # process file attachments (if any)
+        files = request.httprequest.files.getlist('application_documents')
+        attachment_ids = []
+        for f in files:
+            if not f:
+                continue
+            content = f.read()
+            if not content:
+                continue
+            try:
+                attachment = env['ir.attachment'].sudo().create({
+                    'name': f.filename or 'attachment',
+                    'datas': base64.b64encode(content),
+                    'datas_fname': f.filename,
+                    'mimetype': f.mimetype,
+                    'res_model': 'hr.applicant',
+                    'res_id': applicant.id,
+                })
+                attachment_ids.append(attachment.id)
+            except Exception:
+                _logger.exception("Failed creating attachment for applicant %s", applicant.id)
+
+        if attachment_ids:
+            applicant.sudo().write({'application_documents': [(6, 0, attachment_ids)]})
+            _logger.info("Linked attachments %s to applicant %s", attachment_ids, applicant.id)
+
+        # Log a database read-back to show what was stored
+        saved = env['hr.applicant'].sudo().browse(applicant.id)
+        _logger.info("Saved applicant fields: age=%s gender=%s educational_qualification=%s current_position=%s",
+                     saved.age, saved.gender, saved.educational_qualification, saved.current_position)
+
+        return request.redirect(post.get('redirect_url') or f'/jobs/{vals.get("job_id", "")}')
+
+
+
+
+
+
+
+
+
+         <!-- data-model_name="hr.applicant" -->
+                    <!-- class="oe_website_form" -->
+
+
+
+
+
+
+
+
+
+
+
+
+/** @odoo-module **/
+
+import { registry } from "@web/core/registry";
+
+registry.category("public_root").add("ahadu_apply_form_fix", {
+    start() {
+        window.addEventListener("load", function () {
+            const form = document.getElementById("hr_recruitment_form");
+            if (!form) return;
+
+            const cleanAction = "/ahadu/jobs/apply_custom";
+
+            // Remove Odoo’s ajax and data handlers if any
+            form.removeAttribute("data-ajax");
+            form.removeEventListener("submit", form.onsubmit);
+            form.onsubmit = null;
+
+            // Detach all jQuery event handlers (if jQuery exists)
+            if (window.$) {
+                try {
+                    $(form).off("submit");
+                } catch (err) {
+                    console.warn("[Ahadu Fix] jQuery off error:", err);
+                }
+            }
+
+            // Force clean action and intercept submit
+            form.setAttribute("action", cleanAction);
+
+            form.addEventListener(
+                "submit",
+                function (e) {
+                    const current = form.getAttribute("action") || "";
+                    if (current.includes("undefined")) {
+                        e.preventDefault();
+                        console.warn("[Ahadu Fix] Bad action found:", current);
+                        form.setAttribute("action", cleanAction);
+                        console.info("[Ahadu Fix] Reset to:", cleanAction);
+                        form.submit();
+                        return false;
+                    }
+                    console.info("[Ahadu Fix] Submitting to:", current);
+                },
+                true
+            );
+
+            console.info("[Ahadu Fix] Recruitment form handler loaded.");
+        });
+    },
+});
+
+setInterval(() => {
+    const form = document.getElementById("hr_recruitment_form");
+    if (form && form.action.includes("undefined")) {
+        form.action = "/ahadu/jobs/apply_custom";
+        console.warn("[Ahadu Fix] Auto-corrected bad form action.");
+    }
+}, 500);
+
+
+
+
+main.py
+import base64
+import logging
+import re
+from odoo import http
+from odoo.http import request
+
+_logger = logging.getLogger(__name__)
+
+NUM_FIELDS = {
+    'age': int,
+    'years_in_current_position': float,
+    'current_salary': float,
+    'salary_expectation': float,
+    'total_years_banking_exp': float,
+    'interview_score': float,
+    'written_exam_score': float,
+}
+
+# Accept both common website field names and model field names
+ALLOWED_FIELDS = {
+    'partner_name', 'email_from', 'partner_phone', 'job_id',
+    'age', 'gender',
+    'educational_qualification', 'institution_name',
+    'current_position', 'years_in_current_position', 'current_employer',
+    'current_salary', 'salary_expectation',
+    'total_years_banking_exp', 'current_location',
+    'partner_email',
+    'linkedin_profile',
+}
+
+NAME_MAP = {
+    'email_from': 'email_from',
+    'partner_email': 'email_from',
+    'partner_name': 'partner_name',
+    'partner_phone': 'partner_phone',
+    'job_id': 'job_id',
+}
+
+
+class WebsiteHrRecruitmentCustom(http.Controller):
+
+    @http.route(['/ahadu/jobs/apply_custom'], type='http', auth='public', methods=['POST'], website=True)
+    def apply_custom(self, **post):
+        env = request.env
+        _logger.info("=== Received /ahadu/jobs/apply_custom POST ===")
+
+        # Log POST keys for debugging
+        for k, v in post.items():
+            _logger.info(
+                "POST key=%s value_preview=%s",
+                k,
+                (v[:200] + '...') if isinstance(v, str) and len(v) > 200 else v
+            )
+
+        vals = {}
+
+        # Build values from POST
+        for k, v in post.items():
+            if k not in ALLOWED_FIELDS and k not in NAME_MAP:
+                continue
+            model_field = NAME_MAP.get(k, k)
+            val = (v or "").strip() if isinstance(v, str) else v
+            if not val:
+                continue
+
+            if model_field in NUM_FIELDS:
+                try:
+                    vals[model_field] = NUM_FIELDS[model_field](val)
+                except Exception:
+                    _logger.warning(
+                        "Failed to cast numeric field %s value=%r, defaulting to 0",
+                        model_field, val
+                    )
+                    vals[model_field] = 0
+            else:
+                vals[model_field] = val
+
+        # ---------------------------------------------------------------------
+        # ✅ Name validation logic (added)
+        # ---------------------------------------------------------------------
+        name = vals.get('partner_name', '').strip()
+        if not name:
+            _logger.warning("Missing name in application submission")
+            return request.make_json_response({
+                'success': False,
+                'error': "Full name is required."
+            })
+
+        # Allow only letters, spaces, hyphens, apostrophes
+        if not re.match(r"^[A-Za-zÀ-ÿ' -]{2,}$", name):
+            _logger.warning("Invalid name submitted: %s", name)
+            return request.make_json_response({
+                'success': False,
+                'error': "Please enter a valid full name (letters only)."
+            })
+
+        # Normalize gender
+        if 'gender' in vals and vals['gender'] not in ('male', 'female'):
+            _logger.warning("Invalid gender value %r removed", vals['gender'])
+            vals.pop('gender', None)
+
+        # Convert job_id
+        if 'job_id' in vals:
+            try:
+                vals['job_id'] = int(vals['job_id'])
+            except Exception:
+                _logger.warning("job_id casting failed for %r", vals['job_id'])
+                vals.pop('job_id', None)
+
+        _logger.info("Final vals to create hr.applicant: %s", vals)
+
+        # ---------------------------------------------------------------------
+        # Ensure candidate record exists (since hr.applicant.candidate_id is required)
+        # ---------------------------------------------------------------------
+        try:
+            email = vals.get('email_from')
+            candidate = False
+            if email:
+                candidate = env['hr.candidate'].sudo().search(
+                    [('email_from', '=', email)], limit=1
+                )
+            if not candidate:
+                candidate_vals = {}
+                if 'partner_name' in vals:
+                    candidate_vals['partner_name'] = vals['partner_name']
+                if email:
+                    candidate_vals['email_from'] = email
+                if 'partner_phone' in vals:
+                    candidate_vals['partner_phone'] = vals['partner_phone']
+                if 'linkedin_profile' in vals:
+                    candidate_vals['linkedin_profile'] = vals['linkedin_profile']    
+
+                _logger.info("Creating hr.candidate with values: %s", candidate_vals)
+                candidate = env['hr.candidate'].sudo().create(candidate_vals)
+
+            # LINK CANDIDATE TO APPLICANT
+            vals['candidate_id'] = candidate.id
+            _logger.info("Linked or created hr.candidate id=%s for applicant", candidate.id)
+
+            # ----------------- NEW: Sync Salary Expectation -----------------
+            if 'salary_expectation' in vals:
+                try:
+                    candidate.sudo().write({'salary_expectation': vals['salary_expectation']})
+                    _logger.info(
+                        "✅ Synced salary_expectation to hr.candidate.expected_salary: %s",
+                        vals['salary_expectation']
+                    )
+                except Exception as e:
+                    _logger.warning("⚠️ Failed to sync salary_expectation to candidate: %s", e)
+         
+            # Ensure linkedin_profile is set on candidate if provided (safe write)
+            if 'linkedin_profile' in vals:
+                try:
+                    candidate.sudo().write({'linkedin_profile': vals['linkedin_profile']})
+                    _logger.info("✅ Synced linkedin_profile to hr.candidate: %s", vals['linkedin_profile'])
+                except Exception as e:
+                    # If hr.candidate doesn't have linkedin_profile, log and continue
+                    _logger.debug("hr.candidate has no linkedin_profile field; skipping candidate write: %s", e)
+        
+        except Exception as e:
+            _logger.exception("Failed ensuring candidate record: %s", e)
+            return request.redirect('/jobs?error=1')
+
+        # ---------------------------------------------------------------------
+        # Normalize & validate Ethiopian phone before creating applicant
+        # ---------------------------------------------------------------------
+        ETHIOPIAN_PHONE_REGEX = re.compile(r"^\+2519\d{8}$")  # Only normalized +2519XXXXXXXX
+
+        phone = vals.get('partner_phone')
+        if phone:
+            phone = phone.strip().replace(" ", "")  # remove whitespace
+            # Auto-normalize: convert 09XXXXXXXX to +2519XXXXXXXX
+            if phone.startswith('09'):
+                phone = '+251' + phone[1:]
+            vals['partner_phone'] = phone
+
+            # Server-side validation
+            if not ETHIOPIAN_PHONE_REGEX.match(phone):
+                _logger.warning("Invalid Ethiopian phone submitted: %s", phone)
+                return request.make_json_response({
+                    'success': False,
+                    'error': "Invalid Ethiopian phone number. Use +251911123456."
+                })
+
+        # ---------------------------------------------------------------------
+        # Create the applicant record
+        # ---------------------------------------------------------------------
+        try:
+             # Mirror custom salary_expectation → Odoo default salary_expected
+            if 'salary_expectation' in vals:
+                vals['salary_expected'] = vals['salary_expectation']
+
+            applicant = env['hr.applicant'].sudo().create(vals)
+            _logger.info("Created hr.applicant id=%s for candidate=%s", applicant.id, vals['candidate_id'])
+        except Exception as e:
+            _logger.exception("Failed to create hr.applicant: %s", e)
+            return request.redirect('/jobs?error=1')
+
+        # ---------------------------------------------------------------------
+        # Handle attachments — improved version (supports multiple & indexed files)
+        # ---------------------------------------------------------------------
+        files = []
+        try:
+            # Grab any file whose field name includes 'application_documents'
+            for key in request.httprequest.files.keys():
+                if 'application_documents' in key:
+                    for f in request.httprequest.files.getlist(key):
+                        if f and getattr(f, 'filename', None):
+                            files.append(f)
+        except Exception:
+            _logger.exception("Error while collecting uploaded files")
+
+        attachment_ids = []
+        for f in files:
+            try:
+                content = f.read()
+            except Exception:
+                _logger.exception("Failed reading uploaded file %s", getattr(f, 'filename', None))
+                continue
+            if not content:
+                _logger.warning("Uploaded file %s was empty, skipping", getattr(f, 'filename', None))
+                continue
+
+            try:
+                # base64 encode binary content
+                b64 = base64.b64encode(content)
+                attachment_vals = {
+                    'name': f.filename or 'attachment',
+                    'mimetype': getattr(f, 'mimetype', None) or None,
+                    'res_model': 'hr.applicant',
+                    'res_id': applicant.id,
+                }
+
+                # 🧩 Dynamically use correct field name for file binary data
+                if 'raw' in env['ir.attachment']._fields:
+                    attachment_vals['raw'] = b64
+                else:
+                    attachment_vals['datas'] = b64
+
+                attachment = env['ir.attachment'].sudo().create(attachment_vals)
+                attachment_ids.append(attachment.id)
+                _logger.info(
+                    "✅ Created attachment '%s' (id=%s) for applicant %s",
+                    f.filename, attachment.id, applicant.id
+                )
+
+            except Exception:
+                _logger.exception(
+                    "Failed creating attachment for applicant %s file=%s",
+                    applicant.id, getattr(f, 'filename', None)
+                )
+
+        if attachment_ids:
+            try:
+                applicant.sudo().write({'application_documents': [(6, 0, attachment_ids)]})
+                _logger.info("✅ Linked attachments %s to applicant %s", attachment_ids, applicant.id)
+            except Exception:
+                _logger.exception("Failed linking attachments to applicant %s", applicant.id)
+
+        # ---------------------------------------------------------------------
+        # ✅ Return JSON response
+        # ---------------------------------------------------------------------
+        return request.redirect('/jobs/thankyou')
+
+    @http.route(['/jobs/thankyou'], type='http', auth='public', website=True)
+    def jobs_thankyou(self, **kw):
+        return request.render('ahadu_website_custom.jobs_thankyou_template')
+
+
+
+
+
+
+
+
+<odoo>
+    <template id="job_apply_assets" inherit_id="website_hr_recruitment.apply" name="Job Apply Safe JS">
+        <xpath expr="." position="inside">
+            <!-- Load after website_hr_recruitment JS -->
+            <script type="text/javascript" src="/ahadu_website_custom/static/src/js/job_apply_fix.js"></script>
+        </xpath>
+    </template>
+</odoo>
+
+
+
+
+
+
+
+
+
+
+
+
+
+the new controller
+import base64
+import logging
+import re
+from odoo import http
+from odoo.http import request
+
+_logger = logging.getLogger(__name__)
+
+NUM_FIELDS = {
+    'age': int,
+    'years_in_current_position': float,
+    'current_salary': float,
+    'salary_expectation': float,
+    'total_years_banking_exp': float,
+    'interview_score': float,
+    'written_exam_score': float,
+}
+
+# Accept both common website field names and model field names
+ALLOWED_FIELDS = {
+    'partner_name', 'email_from', 'partner_phone', 'job_id',
+    'age', 'gender',
+    'educational_qualification', 'institution_name',
+    'current_position', 'years_in_current_position', 'current_employer',
+    'current_salary', 'salary_expectation',
+    'total_years_banking_exp', 'current_location',
+    'partner_email',
+    'linkedin_profile',
+}
+
+NAME_MAP = {
+    'email_from': 'email_from',
+    'partner_email': 'email_from',
+    'partner_name': 'partner_name',
+    'partner_phone': 'partner_phone',
+    'job_id': 'job_id',
+}
+
+
+class WebsiteHrRecruitmentCustom(http.Controller):
+
+    @http.route(['/ahadu/jobs/apply_custom'], type='http', auth='public', methods=['POST'], website=True)
+    def apply_custom(self, **post):
+        env = request.env
+        _logger.info("=== Received /ahadu/jobs/apply_custom POST ===")
+
+        # Log POST keys for debugging
+        for k, v in post.items():
+            _logger.info(
+                "POST key=%s value_preview=%s",
+                k,
+                (v[:200] + '...') if isinstance(v, str) and len(v) > 200 else v
+            )
+
+        vals = {}
+
+        # Build values from POST
+        for k, v in post.items():
+            if k not in ALLOWED_FIELDS and k not in NAME_MAP:
+                continue
+            model_field = NAME_MAP.get(k, k)
+            val = (v or "").strip() if isinstance(v, str) else v
+            if not val:
+                continue
+
+            if model_field in NUM_FIELDS:
+                try:
+                    vals[model_field] = NUM_FIELDS[model_field](val)
+                except Exception:
+                    _logger.warning(
+                        "Failed to cast numeric field %s value=%r, defaulting to 0",
+                        model_field, val
+                    )
+                    vals[model_field] = 0
+            else:
+                vals[model_field] = val
+
+        # ---------------------------------------------------------------------
+        # ✅ Name validation logic (added)
+        # ---------------------------------------------------------------------
+        name = vals.get('partner_name', '').strip()
+        if not name:
+            _logger.warning("Missing name in application submission")
+            return request.make_json_response({
+                'success': False,
+                'error': "Full name is required."
+            })
+
+        # Allow only letters, spaces, hyphens, apostrophes
+        if not re.match(r"^[A-Za-zÀ-ÿ' -]{2,}$", name):
+            _logger.warning("Invalid name submitted: %s", name)
+            return request.make_json_response({
+                'success': False,
+                'error': "Please enter a valid full name (letters only)."
+            })
+
+        # Normalize gender
+        if 'gender' in vals and vals['gender'] not in ('male', 'female'):
+            _logger.warning("Invalid gender value %r removed", vals['gender'])
+            vals.pop('gender', None)
+
+        # Convert job_id
+        if 'job_id' in vals:
+            try:
+                vals['job_id'] = int(vals['job_id'])
+            except Exception:
+                _logger.warning("job_id casting failed for %r", vals['job_id'])
+                vals.pop('job_id', None)
+
+        _logger.info("Final vals to create hr.applicant: %s", vals)
+
+        # ---------------------------------------------------------------------
+        # Ensure candidate record exists (since hr.applicant.candidate_id is required)
+        # ---------------------------------------------------------------------
+        try:
+            email = vals.get('email_from')
+            candidate = False
+            if email:
+                candidate = env['hr.candidate'].sudo().search(
+                    [('email_from', '=', email)], limit=1
+                )
+            if not candidate:
+                candidate_vals = {}
+                if 'partner_name' in vals:
+                    candidate_vals['partner_name'] = vals['partner_name']
+                if email:
+                    candidate_vals['email_from'] = email
+                if 'partner_phone' in vals:
+                    candidate_vals['partner_phone'] = vals['partner_phone']
+                if 'linkedin_profile' in vals:
+                    candidate_vals['linkedin_profile'] = vals['linkedin_profile']    
+
+                _logger.info("Creating hr.candidate with values: %s", candidate_vals)
+                candidate = env['hr.candidate'].sudo().create(candidate_vals)
+
+            # LINK CANDIDATE TO APPLICANT
+            vals['candidate_id'] = candidate.id
+            _logger.info("Linked or created hr.candidate id=%s for applicant", candidate.id)
+
+            # ----------------- NEW: Sync Salary Expectation -----------------
+            if 'salary_expectation' in vals:
+                try:
+                    candidate.sudo().write({'salary_expectation': vals['salary_expectation']})
+                    _logger.info(
+                        "✅ Synced salary_expectation to hr.candidate.expected_salary: %s",
+                        vals['salary_expectation']
+                    )
+                except Exception as e:
+                    _logger.warning("⚠️ Failed to sync salary_expectation to candidate: %s", e)
+         
+            # Ensure linkedin_profile is set on candidate if provided (safe write)
+            if 'linkedin_profile' in vals:
+                try:
+                    candidate.sudo().write({'linkedin_profile': vals['linkedin_profile']})
+                    _logger.info("✅ Synced linkedin_profile to hr.candidate: %s", vals['linkedin_profile'])
+                except Exception as e:
+                    # If hr.candidate doesn't have linkedin_profile, log and continue
+                    _logger.debug("hr.candidate has no linkedin_profile field; skipping candidate write: %s", e)
+        
+        except Exception as e:
+            _logger.exception("Failed ensuring candidate record: %s", e)
+            return request.redirect('/jobs?error=1')
+
+        # ---------------------------------------------------------------------
+        # Normalize & validate Ethiopian phone before creating applicant
+        # ---------------------------------------------------------------------
+        ETHIOPIAN_PHONE_REGEX = re.compile(r"^\+2519\d{8}$")  # Only normalized +2519XXXXXXXX
+
+        phone = vals.get('partner_phone')
+        if phone:
+            phone = phone.strip().replace(" ", "")  # remove whitespace
+            # Auto-normalize: convert 09XXXXXXXX to +2519XXXXXXXX
+            if phone.startswith('09'):
+                phone = '+251' + phone[1:]
+            vals['partner_phone'] = phone
+
+            # Server-side validation
+            if not ETHIOPIAN_PHONE_REGEX.match(phone):
+                _logger.warning("Invalid Ethiopian phone submitted: %s", phone)
+                return request.make_json_response({
+                    'success': False,
+                    'error': "Invalid Ethiopian phone number. Use +251911123456."
+                })
+
+        # ---------------------------------------------------------------------
+        # Create the applicant record
+        # ---------------------------------------------------------------------
+        try:
+             # Mirror custom salary_expectation → Odoo default salary_expected
+            if 'salary_expectation' in vals:
+                vals['salary_expected'] = vals['salary_expectation']
+
+            applicant = env['hr.applicant'].sudo().create(vals)
+            _logger.info("Created hr.applicant id=%s for candidate=%s", applicant.id, vals['candidate_id'])
+
+              # ----------------- Send application confirmation email -----------------
+            try:
+                # Prefer official template if it exists
+                template = env.ref('hr_recruitment.email_template_data_applicant_congratulations', raise_if_not_found=False)
+                if template:
+                    # template.model should be 'hr.applicant'; send_mail will render template
+                    template.sudo().send_mail(applicant.id, force_send=True)
+                    _logger.info("✅ Sent confirmation email using hr_recruitment template to: %s", applicant.email_from)
+                else:
+                    # Fallback: create and send a mail.mail record manually
+                    if applicant.email_from:
+                        mail_vals = {
+                            'subject': "Application received",
+                            'body_html': "<p>Thank you for applying. We received your application.</p>",
+                            'email_to': applicant.email_from,
+                            'auto_delete': True,
+                            'model': 'hr.applicant',
+                            'res_id': applicant.id,
+                        }
+                        mail = env['mail.mail'].sudo().create(mail_vals)
+                        mail.sudo().send()
+                        _logger.info("✅ Sent fallback confirmation mail.mail to: %s", applicant.email_from)
+                    else:
+                        _logger.warning("Cannot send confirmation: applicant has no email_from")
+            except Exception as e:
+                _logger.exception("❌ Failed to send confirmation email: %s", e)
+  
+       
+        except Exception as e:
+            _logger.exception("Failed to create hr.applicant: %s", e)
+            return request.redirect('/jobs?error=1')
+
+        # ---------------------------------------------------------------------
+        # Handle attachments — improved version (supports multiple & indexed files)
+        # ---------------------------------------------------------------------
+        files = []
+        try:
+            # Grab any file whose field name includes 'application_documents'
+            for key in request.httprequest.files.keys():
+                if 'application_documents' in key:
+                    for f in request.httprequest.files.getlist(key):
+                        if f and getattr(f, 'filename', None):
+                            files.append(f)
+        except Exception:
+            _logger.exception("Error while collecting uploaded files")
+
+        attachment_ids = []
+        for f in files:
+            # ✅ File type validation (server-side)
+            allowed_mimetypes = ['application/pdf', 'image/png', 'image/jpeg']
+            mimetype = getattr(f, 'mimetype', '').lower()
+            filename = getattr(f, 'filename', '')
+
+            if mimetype not in allowed_mimetypes:
+                _logger.warning("Rejected invalid file type: %s (%s)", filename, mimetype)
+                return request.make_json_response({
+                    'success': False,
+                    'error': f"Invalid file type for {filename}. Only PDF, PNG, and JPEG files are allowed."
+               })
+
+            try:
+                content = f.read()
+
+            except Exception:
+                _logger.exception("Failed reading uploaded file %s", getattr(f, 'filename', None))
+                continue
+            if not content:
+                _logger.warning("Uploaded file %s was empty, skipping", getattr(f, 'filename', None))
+                continue
+
+            try:
+                # base64 encode binary content
+                b64 = base64.b64encode(content)
+                attachment_vals = {
+                    'name': f.filename or 'attachment',
+                    'mimetype': getattr(f, 'mimetype', None) or None,
+                    'res_model': 'hr.applicant',
+                    'res_id': applicant.id,
+                }
+
+                # 🧩 Dynamically use correct field name for file binary data
+                if 'raw' in env['ir.attachment']._fields:
+                    attachment_vals['raw'] = b64
+                else:
+                    attachment_vals['datas'] = b64
+
+                attachment = env['ir.attachment'].sudo().create(attachment_vals)
+                attachment_ids.append(attachment.id)
+                _logger.info(
+                    "✅ Created attachment '%s' (id=%s) for applicant %s",
+                    f.filename, attachment.id, applicant.id
+                )
+
+            except Exception:
+                _logger.exception(
+                    "Failed creating attachment for applicant %s file=%s",
+                    applicant.id, getattr(f, 'filename', None)
+                )
+
+        if attachment_ids:
+            try:
+                applicant.sudo().write({'application_documents': [(6, 0, attachment_ids)]})
+                _logger.info("✅ Linked attachments %s to applicant %s", attachment_ids, applicant.id)
+            except Exception:
+                _logger.exception("Failed linking attachments to applicant %s", applicant.id)
+
+        # ---------------------------------------------------------------------
+        # ✅ Return JSON response
+        # ---------------------------------------------------------------------
+        return request.redirect('/jobs/thankyou')
+
+    @http.route(['/jobs/thankyou'], type='http', auth='public', website=True)
+    def jobs_thankyou(self, **kw):
+        return request.render('ahadu_website_custom.jobs_thankyou_template')
+
+
+
+
+menu_items.xml
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+     <!-- Main Menu -->
+    <menuitem id="menu_ahadu_hr_root" name="Ahadu HR" sequence="10"/>
+        
+     <!-- HR REPORTING DASHBOARD MENU -->
+    <record id="action_ahadu_hr_reporting_dashboard" model="ir.actions.client">
+        <field name="name">HR Reporting Dashboard</field>
+        <field name="tag">ahadu_hr.reporting_dashboard</field>
+    </record>
+    <menuitem id="menu_ahadu_hr_reporting_dashboard"
+        name="HR Dashboard"
+        parent="menu_ahadu_hr_root"
+        action="action_ahadu_hr_reporting_dashboard"
+        sequence="5"/>
+
+     <!-- ============================================= -->
+     <!-- ==== Employee Activities Section ==== -->
+     <!-- ============================================= -->
+    <menuitem id="menu_employee_activities" name="Employee Activities" parent="menu_ahadu_hr_root" action="action_employee_activities_dashboard" sequence="20"/>
+        
+     <!-- Client Action for JS Dashboard -->
+    <record id="action_employee_activities_dashboard" model="ir.actions.client">
+        <field name="name">Activities Dashboard</field>
+        <field name="tag">employee_activity_dashboard</field>
+    </record>
+        
+    <!-- <menuitem id="menu_employee_activities_dashboard" name="Activities Dashboard"
+              parent="menu_employee_activities" action="action_employee_activities_dashboard" sequence="5"/> -->
+
+     <!-- Window Action for Employees List -->
+    <record id="action_hr_employee_list_ahadu" model="ir.actions.act_window">
+        <field name="name">Employees</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form,activity,graph,pivot,hierarchy</field>
+
+        <field name="search_view_id" ref="hr.view_employee_filter"/>
+        <!-- FIX: Add the default help message for a better user experience -->
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create a new employee
+          </p><p>
+            Add a new employee to your company and manage all human resource related activities.
+          </p>
+        </field>
+    </record>
+    <!-- <menuitem
+        id="menu_employee_list_ahadu"
+        name="Employees"
+        parent="menu_ahadu_hr_root"
+        action="action_hr_employee_list_ahadu"
+        sequence="10"/> -->
+    <menuitem
+        id="menu_employee_list_ahadu"
+        name="Employees"
+        parent="menu_ahadu_hr_root"
+        action="hr.open_view_employee_list"
+        sequence="10"/>
+    <menuitem
+        id="menu_ahadu_employee_list"
+        name="Employees"
+        parent="menu_employee_list_ahadu"
+        action="action_hr_employee_list_ahadu"
+        sequence="1"/>
+    
+    <!-- <menuitem id="menu_ahadu_org_chart" name="Org Chart" parent="menu_employee_list_ahadu" action="hr_org_chart.action_hr_employee_org_chart" sequence="2"/> -->
+
+    <menuitem
+        id="menu_ahadu_contracts"
+        name="Contracts"
+        parent="menu_employee_list_ahadu"
+        action="hr_contract.action_hr_contract"
+        sequence="3"/>
+
+     <menuitem 
+        id="menu_ahadu_departments" 
+        name="Departments" 
+        parent="menu_ahadu_hr_root"
+        action="hr.hr_department_tree_action" 
+        sequence="20"/>
+
+
+    <menuitem 
+        id="menu_ahadu_reporting" 
+        name="Reporting" 
+        parent="menu_ahadu_hr_root"
+        action="hr_skills.hr_employee_skill_report_action" 
+        sequence="60"/>
+        
+<menuitem id="hr.menu_hr_configuration" name="Configuration" parent="menu_ahadu_hr_root" sequence="70"/>
+
+<!-- Settings Group -->
+<menuitem id="hr.menu_hr_settings_group" name="Settings" parent="hr.menu_hr_configuration" sequence="10"/>
+<menuitem id="hr.menu_hr_activity_plan" name="Activity Plan" parent="hr.menu_hr_settings_group" action="project.mail_activity_plan_action_config_project_task_plan" sequence="10"/>
+
+<!-- Employee Group -->
+<menuitem id="hr.menu_hr_employee_group" name="Employee" parent="hr.menu_hr_configuration" sequence="20"/>
+<menuitem id="hr.menu_hr_work_location" name="Work Locations" parent="hr.menu_hr_employee_group" action="hr.hr_work_location_action" sequence="10"/>
+<menuitem id="hr.menu_hr_departure_reasons" name="Departure Reasons" parent="hr.menu_hr_employee_group" action="hr.hr_departure_reason_action" sequence="20"/>
+<menuitem id="hr.menu_hr_category" name="Tags" parent="hr.menu_hr_employee_group" action="hr.open_view_categ_form" sequence="30"/>
+<menuitem id="hr_skills.hr_resume_type_menu" name="Resume Line Types" parent="hr.menu_hr_employee_group" action="hr_skills.hr_resume_type_action" sequence="40"/>
+
+<!-- Recruitment Group -->
+<menuitem id="hr.menu_hr_recruitment_group" name="Recruitment" parent="hr.menu_hr_configuration" sequence="30"/>
+<menuitem id="hr.menu_hr_job_position" name="Job Positions" parent="hr.menu_hr_recruitment_group" action="hr.action_hr_job" sequence="10"/>
+<menuitem id="hr_contract.hr_contract_type_action" name="Employment Types" parent="hr.menu_hr_recruitment_group" action="hr.hr_contract_type_action" sequence="20"/>
+<menuitem id="hr_skills.hr_skill_type_menu" name="Skill Types" parent="hr.menu_hr_recruitment_group" action="hr_skills.hr_skill_type_action" sequence="30"/>
+
+<!-- Contracts Group -->
+<menuitem id="hr.menu_hr_contracts_group" name="Contracts" parent="hr.menu_hr_configuration" sequence="40"/>
+<menuitem id="hr.menu_hr_working_time" name="Working Schedules" parent="hr.menu_hr_contracts_group" action="resource.action_resource_calendar_form" sequence="10"/>
+        
+     <!-- Window Actions for individual activity models -->
+    <record id="action_employee_promotion" model="ir.actions.act_window">
+        <field name="name">Employee Promotions</field>
+        <field name="res_model">hr.employee.promotion</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record>
+    <record id="action_employee_transfer" model="ir.actions.act_window">
+        <field name="name">Employee Transfers</field>
+        <field name="res_model">hr.employee.transfer</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record>
+    <!-- <record id="action_employee_lateral" model="ir.actions.act_window">
+        <field name="name">Employee Lateral Movements</field>
+        <field name="res_model">hr.employee.lateral</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record> -->
+    <!-- <record id="action_employee_retirement" model="ir.actions.act_window">
+        <field name="name">Employee Retirements</field>
+        <field name="res_model">hr.employee.retirement</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record> -->
+    <record id="action_employee_disciplinary" model="ir.actions.act_window">
+        <field name="name">Disciplinary Actions</field>
+        <field name="res_model">hr.employee.disciplinary</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record>
+    <record id="action_employee_guarantee" model="ir.actions.act_window">
+        <field name="name">Employee Guarantees</field>
+        <field name="res_model">hr.employee.guarantee</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record>
+
+    <menuitem id="hr.menu_hr_customfield_group" name="Custom Fields" parent="hr.menu_hr_configuration" sequence="30"/>
+
+    <!-- ============================================= -->
+    <!-- ==== NEW REPORTING SECTION ==== -->
+    <!-- ============================================= -->
+    
+    <menuitem id="menu_hr_reporting_root"
+        name="Reporting"
+        parent="menu_ahadu_hr_root"
+        sequence="50"/>
+
+    <menuitem id="menu_employee_headcount_report"
+        name="Headcount Analysis"
+        parent="menu_hr_reporting_root"
+        action="action_employee_headcount_report"
+        sequence="10"/>
+
+    <menuitem id="menu_hr_analytics_dashboard"
+        name="Analytics Dashboard"
+        parent="menu_hr_reporting_root"
+        action="action_hr_analytics_dashboard"
+        sequence="20"/>
+    
+    <menuitem id="menu_hr_grade" 
+        name="Grades" 
+        parent="hr.menu_hr_configuration" 
+        action="action_hr_grade" 
+        sequence="50"/>
+    
+    
+    <!-- Menu items for individual activities -->
+    <!-- <menuitem id="menu_employee_promotion" name="Promotions" parent="menu_employee_activities" action="action_employee_promotion" sequence="20"/>
+    <menuitem id="menu_employee_transfer" name="Transfers" parent="menu_employee_activities" action="action_employee_transfer" sequence="30"/>
+    <menuitem id="menu_employee_lateral" name="Lateral Movements" parent="menu_employee_activities" action="action_employee_lateral" sequence="40"/>
+    <menuitem id="menu_employee_retirement" name="Retirements" parent="menu_employee_activities" action="action_employee_retirement" sequence="50"/>
+    <menuitem id="menu_employee_disciplinary" name="Disciplinary Actions" parent="menu_employee_activities" action="action_employee_disciplinary" sequence="60"/>
+    <menuitem id="menu_employee_guarantee" name="Guarantees" parent="menu_employee_activities" action="action_employee_guarantee" sequence="70"/> -->
+                  
+    
+</odoo>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Grade Levels 1-16 -->
+        <record id="grade_level_1" model="hr.grade">
+            <field name="name">Level 1</field>
+            <field name="level">1</field>
+            <field name="description">Entry Level</field>
+        </record>
+        
+        <record id="grade_level_2" model="hr.grade">
+            <field name="name">Level 2</field>
+            <field name="level">2</field>
+        </record>
+        
+        <record id="grade_level_3" model="hr.grade">
+            <field name="name">Level 3</field>
+            <field name="level">3</field>
+        </record>
+        
+        <record id="grade_level_4" model="hr.grade">
+            <field name="name">Level 4</field>
+            <field name="level">4</field>
+        </record>
+        
+        <record id="grade_level_5" model="hr.grade">
+            <field name="name">Level 5</field>
+            <field name="level">5</field>
+        </record>
+        
+        <record id="grade_level_6" model="hr.grade">
+            <field name="name">Level 6</field>
+            <field name="level">6</field>
+        </record>
+        
+        <record id="grade_level_7" model="hr.grade">
+            <field name="name">Level 7</field>
+            <field name="level">7</field>
+        </record>
+        
+        <record id="grade_level_8" model="hr.grade">
+            <field name="name">Level 8</field>
+            <field name="level">8</field>
+        </record>
+        
+        <record id="grade_level_9" model="hr.grade">
+            <field name="name">Level 9</field>
+            <field name="level">9</field>
+        </record>
+        
+        <record id="grade_level_10" model="hr.grade">
+            <field name="name">Level 10</field>
+            <field name="level">10</field>
+        </record>
+        
+        <record id="grade_level_11" model="hr.grade">
+            <field name="name">Level 11</field>
+            <field name="level">11</field>
+        </record>
+        
+        <record id="grade_level_12" model="hr.grade">
+            <field name="name">Level 12</field>
+            <field name="level">12</field>
+        </record>
+        
+        <record id="grade_level_13" model="hr.grade">
+            <field name="name">Level 13</field>
+            <field name="level">13</field>
+        </record>
+        
+        <record id="grade_level_14" model="hr.grade">
+            <field name="name">Level 14</field>
+            <field name="level">14</field>
+        </record>
+        
+        <record id="grade_level_15" model="hr.grade">
+            <field name="name">Level 15</field>
+            <field name="level">15</field>
+        </record>
+        
+        <record id="grade_level_16" model="hr.grade">
+            <field name="name">Level 16</field>
+            <field name="level">16</field>
+            <field name="description">Executive Level</field>
+        </record>
+    </data>
+</odoo>

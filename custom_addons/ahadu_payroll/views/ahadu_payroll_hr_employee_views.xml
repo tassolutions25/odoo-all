@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Inherit Standard Search View -->
+    <record id="view_employee_filter_inherit_ahadu_search" model="ir.ui.view">
+        <field name="name">hr.employee.search.inherit.ahadu</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <!-- Add Employee ID field to search -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="employee_id" string="Employee ID" filter_domain="[('employee_id', 'ilike', self)]"/>
+            </xpath>
+            <!-- Update Name field to also search by Employee ID -->
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="filter_domain">['|', ('name', 'ilike', self), ('employee_id', 'ilike', self)]</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- 2. Inherit Headcount Search View (This is likely the view used in the payroll wizard) -->
+    <record id="view_employee_headcount_search_inherit_ahadu" model="ir.ui.view">
+        <field name="name">hr.employee.headcount.search.inherit.ahadu</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="ahadu_hr.view_employee_headcount_search"/>
+        <field name="arch" type="xml">
+            <!-- Add Name and Employee ID fields to search box -->
+            <xpath expr="//field[@name='department_id']" position="before">
+                <field name="name" string="Employee Name" filter_domain="['|', ('name', 'ilike', self), ('employee_id', 'ilike', self)]"/>
+                <field name="employee_id" string="Employee ID" filter_domain="[('employee_id', 'ilike', self)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

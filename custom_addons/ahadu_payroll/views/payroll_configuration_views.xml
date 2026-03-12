@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========================================== -->
+    <!-- 1. VIEWS FOR CUSTOM MODELS                 -->
+    <!-- ========================================== -->
+    <record id="view_ahadu_account_tree" model="ir.ui.view">
+        <field name="name">ahadu.account.list</field>
+        <field name="model">ahadu.account</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code" />
+                <field name="name" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ahadu_account_form" model="ir.ui.view">
+        <field name="name">ahadu.account.form</field>
+        <field name="model">ahadu.account</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="code" />
+                        <field name="name" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Pay Group Views -->
+    <record id="view_ahadu_pay_group_tree" model="ir.ui.view">
+        <field name="name">ahadu.pay.group.list</field>
+        <field name="model">ahadu.pay.group</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code" />
+                <field name="name" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ahadu_pay_group_form" model="ir.ui.view">
+        <field name="name">ahadu.pay.group.form</field>
+        <field name="model">ahadu.pay.group</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="code" />
+                        <field name="name" />
+                        <field name="job_ids" widget="many2many_tags" options="{'no_create': True}" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Region Fuel Tax Deduction Config Views -->
+    <record id="view_ahadu_payroll_region_config_tree" model="ir.ui.view">
+        <field name="name">ahadu.payroll.region.config.list</field>
+        <field name="model">ahadu.payroll.region.config</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="region_id" />
+                <field name="transport_allowance_exemption" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ahadu_payroll_region_config_form" model="ir.ui.view">
+        <field name="name">ahadu.payroll.region.config.form</field>
+        <field name="model">ahadu.payroll.region.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Region">
+                            <field name="region_id" />
+                        </group>
+                        <group string="Tax Exemptions">
+                            <field name="transport_allowance_exemption" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- 2. ACTIONS FOR CUSTOM CONFIG MODELS        -->
+    <!-- ========================================== -->
+    <record id="action_ahadu_account" model="ir.actions.act_window">
+        <field name="name">Payroll Accounts</field>
+        <field name="res_model">ahadu.account</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_ahadu_pay_group" model="ir.actions.act_window">
+        <field name="name">Pay Groups</field>
+        <field name="res_model">ahadu.pay.group</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_ahadu_payroll_region_config" model="ir.actions.act_window">
+        <field name="name">Region Fuel Tax Deduction Config</field>
+        <field name="res_model">ahadu.payroll.region.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Configure region-specific payroll rules</p>
+            <p>Define transport allowance exemptions for each region.</p>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- 3. ACTIONS FOR STANDARD PAYROLL MODELS     -->
+    <!-- ========================================== -->
+    <record id="action_ahadu_structure_standard" model="ir.actions.act_window">
+        <field name="name">Salary Structures</field>
+        <field name="res_model">hr.payroll.structure</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_ahadu_rule_standard" model="ir.actions.act_window">
+        <field name="name">Salary Rules</field>
+        <field name="res_model">hr.salary.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_ahadu_payslip" model="ir.actions.act_window">
+        <field name="name">Employee Payslips</field>
+        <field name="res_model">hr.payslip</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_ahadu_payslip_run" model="ir.actions.act_window">
+        <field name="name">Payslip Batches</field>
+        <field name="res_model">hr.payslip.run</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- 4. ROOT MENUS                              -->
+    <!-- ========================================== -->
+    <menuitem
+        id="menu_ahadu_root"
+        name="Ahadu Payroll"
+        groups="payroll.group_payroll_user"
+        sequence="10" />
+
+    <menuitem
+        id="menu_ahadu_operations"
+        name="Operations"
+        parent="menu_ahadu_root"
+        groups="payroll.group_payroll_user"
+        sequence="10" />
+
+    <menuitem
+        id="menu_ahadu_reports_root"
+        name="Reports"
+        parent="menu_ahadu_root"
+        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="20" />
+
+    <menuitem
+        id="menu_ahadu_config_root"
+        name="Configuration"
+        parent="menu_ahadu_root"
+        groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+        sequence="100" />
+
+    <!-- ========================================== -->
+    <!-- 5. SUB MENUS (For actions in this file)    -->
+    <!-- ========================================== -->
+    <menuitem id="menu_ahadu_payslip_run" name="Payslip Batches" parent="menu_ahadu_operations" action="action_ahadu_payslip_run" sequence="10" />
+    <menuitem id="menu_ahadu_payslip" name="Employee Payslips" parent="menu_ahadu_operations" action="action_ahadu_payslip" sequence="20" />
+
+    <menuitem id="menu_ahadu_department" name="Departments" parent="menu_ahadu_config_root" action="hr.hr_department_tree_action" sequence="5" />
+    <menuitem id="menu_ahadu_branch" name="Branches" parent="menu_ahadu_config_root" action="ahadu_hr.action_hr_branch" sequence="6" />
+    <menuitem id="menu_ahadu_cost_center" name="Cost Centers" parent="menu_ahadu_config_root" action="ahadu_hr.action_hr_cost_center" sequence="7" />
+    
+    <menuitem id="menu_ahadu_account" name="Payroll Accounts" parent="menu_ahadu_config_root" action="action_ahadu_account" sequence="10" />
+    <menuitem id="menu_ahadu_pay_group" name="Pay Groups" parent="menu_ahadu_config_root" action="action_ahadu_pay_group" sequence="25" />
+    <menuitem id="menu_ahadu_payroll_region_config" name="Region Fuel Tax Deduction Config" parent="menu_ahadu_config_root" action="action_ahadu_payroll_region_config" sequence="26" />
+    <menuitem id="menu_ahadu_salary_structure" name="Salary Structures" parent="menu_ahadu_config_root" action="action_ahadu_structure_standard" sequence="30" />
+    <menuitem id="menu_ahadu_salary_rules" name="Salary Rules" parent="menu_ahadu_config_root" action="action_ahadu_rule_standard" sequence="40" />
+
+</odoo>

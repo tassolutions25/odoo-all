@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Loan Type Views -->
+    <record id="view_hr_loan_type_tree" model="ir.ui.view">
+        <field name="name">hr.loan.type.list</field>
+        <field name="model">hr.loan.type</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="interest_rate"/>
+                <field name="eligibility_months_doj"/>
+                <field name="salary_multiple_limit"/>
+                <field name="max_installment_months"/>
+                <field name="is_credit_committee_required"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_loan_type_form" model="ir.ui.view">
+        <field name="name">hr.loan.type.form</field>
+        <field name="model">hr.loan.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Housing Loan"/></h1>
+                    </div>
+                    <group>
+                        <group string="Interest &amp; Limits">
+                            <field name="interest_rate"/>
+                            <field name="salary_multiple_limit"/>
+                            <field name="max_installment_months"/>
+                        </group>
+                        <group string="Eligibility &amp; Approval">
+                            <field name="eligibility_months_doj"/>
+                            <field name="is_credit_committee_required"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Loan Views -->
+    <record id="view_hr_loan_tree" model="ir.ui.view">
+        <field name="name">hr.loan.list</field>
+        <field name="model">hr.loan</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'" decoration-warning="state == 'committee_approval'" decoration-success="state == 'approved'" decoration-muted="state == 'completed'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="loan_type_id"/>
+                <field name="principal_amount"/>
+                <field name="date_request"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'committee_approval'" decoration-success="state == 'approved'" decoration-muted="state == 'completed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_loan_form" model="ir.ui.view">
+        <field name="name">hr.loan.form</field>
+        <field name="model">hr.loan</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_committee_approve" string="Approve (Committee)" type="object" class="oe_highlight" invisible="state != 'committee_approval'" groups="ahadu_payroll.group_loan_credit_committee"/>
+                    <button name="action_refuse" string="Refuse" type="object" invisible="state not in ['submitted', 'committee_approval']" groups="payroll.group_payroll_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Employee Information">
+                            <field name="is_editable" invisible="1"/>
+                            <field name="employee_id" readonly="not is_editable"/>
+                            <field name="date_request"/>
+                            <field name="retirement_date"/>
+                            <field name="max_settlement_date"/>
+                        </group>
+                        <group string="Loan Details">
+                            <field name="loan_type_id" readonly="not is_editable"/>
+                            <field name="principal_amount" readonly="not is_editable"/>
+                            <field name="interest_rate" readonly="not is_editable"/>
+                            <field name="installment_months" readonly="not is_editable"/>
+                            <field name="date_start" readonly="not is_editable"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="bank_account_id" readonly="not is_editable" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Calculations">
+                            <field name="total_interest" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_repayment" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="monthly_installment" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </group>
+                        <group string="Other Options">
+                            <field name="is_spouse_income_used" readonly="not is_editable"/>
+                            <field name="spouse_income_deposit_required" invisible="not is_spouse_income_used"/>
+                            <field name="refusal_reason" invisible="state != 'refused'" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Mandatory Documents" name="documents">
+                            <field name="document_ids" readonly="state == 'approved'">
+                                <list editable="bottom">
+                                    <field name="document_type"/>
+                                    <field name="attachment_filename" invisible="1"/>
+                                    <field name="attachment" widget="binary" filename="attachment_filename"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_loan_search" model="ir.ui.view">
+        <field name="name">hr.loan.search</field>
+        <field name="model">hr.loan</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="loan_type_id"/>
+                <filter string="My Loans" name="my_loans" domain="[('employee_id.user_id', '=', uid)]"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="To Approve" name="to_approve" domain="[('state', '=', 'committee_approval')]"/>
+                <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Employee" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Loan Type" name="group_loan_type" context="{'group_by': 'loan_type_id'}"/>
+                    <filter string="Status" name="group_status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_hr_loan" model="ir.actions.act_window">
+        <field name="name">Loans</field>
+        <field name="res_model">hr.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_loan_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new loan request
+            </p>
+        </field>
+    </record>
+
+    <record id="action_hr_loan_type" model="ir.actions.act_window">
+        <field name="name">Loan Types</field>
+        <field name="res_model">hr.loan.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="menu_hr_loan"
+              name="Loans"
+              parent="menu_ahadu_operations"
+              action="action_hr_loan"
+              sequence="25"/>
+
+    <menuitem id="menu_hr_loan_type"
+              name="Loan Types"
+              parent="menu_ahadu_config_root"
+              action="action_hr_loan_type"
+              sequence="55"/>
+</odoo>

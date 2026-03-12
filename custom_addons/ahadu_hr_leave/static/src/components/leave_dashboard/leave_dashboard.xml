@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="ahadu_hr_leave.LeaveDashboard" owl="1">
+        <div class="o_dashboard_leave p-4">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">Leave Dashboard</h1>
+            </div>
+
+            <!-- Top Row: Navigation Cards -->
+            <div class="row">
+                <t t-foreach="dashboardData.nav_cards" t-as="card" t-key="card.name">
+                    <div class="col-lg-3 col-md-6 p-2 nav-card" t-on-click="() => this.onNavCardClick(card.action_name)">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i t-att-class="'fa ' + card.icon"/>
+                                <h5><t t-esc="card.name"/></h5>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <!-- Bottom Row: Leave Balance Cards -->
+            <h3 class="mt-5">My Leave Balances</h3>
+            <div class="row">
+                <!-- <t t-if="dashboardData.balance_cards.length > 0">
+                    <t t-foreach="dashboardData.balance_cards" t-as="card" t-key="card.name">
+                        <div class="col-lg-3 col-md-6 p-2 balance-card">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="text-muted"><t t-esc="card.name"/></h5>
+                                    <span class="balance-days"><t t-esc="card.days"/></span>
+                                    <div t-if="card.expiry_date" class="expiry-text mt-2">
+                                        Expires on <t t-esc="card.expiry_date"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t> -->
+
+
+                <!-- //////////////////////////////////// -->
+                <t t-if="dashboardData.balance_cards.length > 0">
+                    <t t-foreach="dashboardData.balance_cards" t-as="card" t-key="card.name">
+                        <div class="col-lg-3 col-md-6 p-2 balance-card">
+                            <!--
+                                KEY CHANGE 1: We add an 'is-expired' class if the card is expired.
+                                We also make the card container relative for the banner positioning.
+                            -->
+                            <div class="card text-center h-100" t-att-class="card.is_expired ? 'is-expired' : ''">
+                                <!-- KEY CHANGE 2: Conditionally add the expired banner -->
+                                <div t-if="card.is_expired" class="expiry-banner">
+                                    <span>EXPIRED</span>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <h5 class="text-muted"><t t-esc="card.name"/></h5>
+                                    <span class="balance-days"><t t-esc="card.days"/></span>
+                                    <div t-if="card.expiry_date and !card.is_expired" class="expiry-text mt-2">
+                                        Expires on <t t-esc="card.expiry_date"/>
+                                    </div>
+                                    <div t-if="card.is_expired" class="expiry-text mt-2 text-danger">
+                                        Expired on <t t-esc="card.expiry_date"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+                <!-- ////////////////////////////////// -->
+                <t t-else="">
+                    <div class="col-12">
+                        <div class="alert alert-info" role="alert">
+                            You have no active leave balances.
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

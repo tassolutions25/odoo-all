@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ahadu_leave_report_wizard_form" model="ir.ui.view">
+        <field name="name">ahadu.leave.report.wizard.form</field>
+        <field name="model">ahadu.leave.report.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="report_type" widget="radio" />
+                    </group>
+                    <group>
+                        <field name="date_from" />
+                        <field name="date_to" />
+                    </group>
+                </group>
+                <group string="Filters">
+                    <group>
+                        <field name="employee_ids" widget="many2many_tags" 
+                               invisible="not is_hr_officer" />
+                        <field name="department_ids" widget="many2many_tags" 
+                               invisible="not is_hr_officer" />
+                        <field name="is_hr_officer" invisible="1" />
+                    </group>
+                    <group>
+                        <field name="leave_type_ids" widget="many2many_tags" 
+                               invisible="report_type not in ['balance', 'request']" />
+                        <field name="status" 
+                               invisible="report_type != 'request'" />
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print_report" string="Generate Report" type="object" class="btn-primary" />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ahadu_leave_report_wizard" model="ir.actions.act_window">
+        <field name="name">Leave Master Reports</field>
+        <field name="res_model">ahadu.leave.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+
+</odoo>

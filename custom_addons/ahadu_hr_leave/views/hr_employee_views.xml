@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        This record adds the Leave Entitlement Class directly after
+        the 'Position Classification' field inside the 'Work Information' tab.
+        This is the definitive and correct placement based on your screenshot.
+    -->
+    <record id="hr_employee_view_form_inherit_leave_class_ahadu" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.leave.class.ahadu</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form" />
+        <field name="arch" type="xml">
+            <!--
+                THE FIX: Find the 'position_classification' field, which we can
+                see in the screenshot, and place our new field right after it.
+            -->
+            <xpath expr="//page[@name='hr_settings']//field[@name='employee_type']" position="after">
+                <field name="leave_entitlement_class" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- This is your existing button for the pro-rata wizard -->
+    <!-- <record id="hr_employee_view_form_inherit_pro_rata_ahadu" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.pro.rata.ahadu</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form" />
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_open_pro_rata_wizard"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-pie-chart"
+                    groups="hr_holidays.group_hr_holidays_manager">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Pro-Rata</span>
+                        <span class="o_stat_text">Allocation</span>
+                    </div>
+                </button>
+            </div>
+        </field>
+    </record> -->
+</odoo>

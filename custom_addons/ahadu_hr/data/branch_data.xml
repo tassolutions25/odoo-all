@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sample Branch Data -->
+        <record id="branch_head_office" model="hr.branch">
+            <field name="name">Head Office</field>
+            <field name="code">HO</field>
+            <field name="district_id" ref="district_addis_ababa"/>
+            <field name="address">Addis Ababa, Ethiopia</field>
+        </record>
+        
+        <record id="branch_bole" model="hr.branch">
+            <field name="name">Bole Branch</field>
+            <field name="code">BOL</field>
+            <field name="district_id" ref="district_addis_ababa"/>
+            <field name="address">Bole, Addis Ababa</field>
+        </record>
+        
+        <record id="branch_piazza" model="hr.branch">
+            <field name="name">Piazza Branch</field>
+            <field name="code">PIZ</field>
+            <field name="district_id" ref="district_addis_ababa"/>
+            <field name="address">Piazza, Addis Ababa</field>
+        </record>
+        
+        <record id="branch_merkato" model="hr.branch">
+            <field name="name">Merkato Branch</field>
+            <field name="code">MER</field>
+            <field name="district_id" ref="district_addis_ababa"/>
+            <field name="address">Merkato, Addis Ababa</field>
+        </record>
+        
+        <record id="branch_bahir_dar" model="hr.branch">
+            <field name="name">Bahir Dar Branch</field>
+            <field name="code">BD</field>
+            <field name="district_id" ref="district_amhara"/>
+            <field name="address">Bahir Dar, Amhara</field>
+        </record>
+        
+        <record id="branch_gondar" model="hr.branch">
+            <field name="name">Gondar Branch</field>
+            <field name="code">GON</field>
+            <field name="district_id" ref="district_amhara"/>
+            <field name="address">Gondar, Amhara</field>
+        </record>
+        
+        <record id="branch_adama" model="hr.branch">
+            <field name="name">Adama Branch</field>
+            <field name="code">ADA</field>
+            <field name="district_id" ref="district_oromia"/>
+            <field name="address">Adama, Oromia</field>
+        </record>
+        
+        <record id="branch_jimma" model="hr.branch">
+            <field name="name">Jimma Branch</field>
+            <field name="code">JIM</field>
+            <field name="district_id" ref="district_oromia"/>
+            <field name="address">Jimma, Oromia</field>
+        </record>
+        
+        <record id="branch_mekelle" model="hr.branch">
+            <field name="name">Mekelle Branch</field>
+            <field name="code">MEK</field>
+            <field name="district_id" ref="district_tigray"/>
+            <field name="address">Mekelle, Tigray</field>
+        </record>
+        
+        <record id="branch_hawassa" model="hr.branch">
+            <field name="name">Hawassa Branch</field>
+            <field name="code">HAW</field>
+            <field name="district_id" ref="district_snnp"/>
+            <field name="address">Hawassa, SNNP</field>
+        </record>
+    </data>
+</odoo>

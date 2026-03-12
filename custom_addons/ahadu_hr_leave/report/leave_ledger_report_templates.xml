@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_leave_ledger" model="ir.actions.report">
+        <field name="name">Annual Leave Ledger</field>
+        <field name="model">ahadu.leave.ledger.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_hr_leave.template_leave_ledger</field>
+        <field name="report_file">ahadu_hr_leave.template_leave_ledger</field>
+        <field name="print_report_name">'Leave Ledger - %s' % object.employee_id.name</field>
+        <field name="binding_model_id" eval="False" />
+    </record>
+
+    <template id="template_leave_ledger">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <!-- THE FIX: Call the python method to get all data into a variable -->
+                <t t-set="data" t-value="doc._get_report_data()" />
+
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">Annual Leave Ledger</h2>
+
+                        <!-- Header now reads from the wizard record 'doc' -->
+                        <div class="row mt-4 mb-3">
+                            <div class="col-6">
+                                <strong>Employee:</strong>
+                                <span t-esc="doc.employee_id.name" />
+                                <br />
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Period:</strong>
+                                <span t-esc="doc.date_from"
+                                    t-options="{'widget': 'date'}" /> to <span t-esc="doc.date_to"
+                                    t-options="{'widget': 'date'}" />
+                            </div>
+                        </div>
+
+                        <!-- The table body now reads from our 'data' variable -->
+                        <table class="table table-sm table-bordered">
+                            <thead>...</thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5">
+                                        <strong>Opening Balance</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>
+                                            <t t-esc="'%.2f' % data['opening_balance']" />
+                                        </strong>
+                                    </td>
+                                </tr>
+                                <tr t-foreach="data['lines']" t-as="line">
+                                    <td>
+                                        <span t-esc="line['date']" t-options="{'widget': 'date'}" />
+                                    </td>
+                                    <td>
+                                        <span t-esc="line['type']" />
+                                    </td>
+                                    <td>
+                                        <span t-esc="line['details']" />
+                                    </td>
+                                    <td class="text-center text-success">
+                                        <t t-esc="'%.2f' % line['debit'] if line['debit'] else ''" />
+                                    </td>
+                                    <td class="text-center text-danger">
+                                        <t t-esc="'%.2f' % line['credit'] if line['credit'] else ''" />
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-esc="'%.2f' % line['balance']" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>...</tfoot>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

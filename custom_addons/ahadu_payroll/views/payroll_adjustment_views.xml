@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_payslip_form_inherit_lop_adjustment" model="ir.ui.view">
+        <field name="name">hr.payslip.form.inherit.lop.adjustment</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="payroll.hr_payslip_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Add LOP Adjustment tab to notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page name="lop_adjustment" string="LOP Adjustment">
+                    <group string="LOP Adjustment (Reversal)">
+                        <group>
+                            <field name="lop_adjustment" string="Adjustment Amount (ETB)"/>
+                            <field name="lop_adjustment_reference" placeholder="e.g., November 2024 Payslip"/>
+                        </group>
+                        <group>
+                            <field name="lop_adjustment_reason" 
+                                   placeholder="Explain why this adjustment is needed"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

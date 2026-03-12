@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="ahadu_hr.EthiopianDateField" owl="1">
+        <div class="o_ethiopian_date_widget d-flex">
+            <input type="number" class="o_input" placeholder="YYYY" t-model.lazy="state.year" t-on-change="_onDateChange"/>
+            <span class="o_form_label mx-1">/</span>
+            <input type="number" class="o_input" placeholder="MM" t-model.lazy="state.month" t-on-change="_onDateChange"/>
+            <span class="o_form_label mx-1">/</span>
+            <input type="number" class="o_input" placeholder="DD" t-model.lazy="state.day" t-on-change="_onDateChange"/>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="ahadu_hr_leave.AhaduCalendarView" owl="1">
+        <div class="o_ahadu_calendar_page">
+            <!-- Header (remains the same) -->
+            <div class="calendar_header">
+                <div class="btn-group">
+                    <button class="btn btn-secondary" t-on-click="onPreviousYear"><i class="fa fa-chevron-left"/></button>
+                    <button class="btn btn-secondary" t-on-click="onNextYear"><i class="fa fa-chevron-right"/></button>
+                </div>
+                <button class="btn btn-secondary ms-2" t-on-click="onToday">Today</button>
+                <h2 class="ms-3 my-0">Year <t t-esc="state.year"/></h2>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="calendar_main_content">
+                <!-- Vertically Scrollable Calendar Grids -->
+                <div class="calendar_scroll_container">
+                    <!-- Gregorian Section -->
+                    <div class="calendar_section">
+                        <h3 class="section_title">Gregorian Calendar</h3>
+                        <div class="calendar_grid_vertical">
+                            <t t-foreach="state.calendarData.gregorian_months" t-as="month" t-key="month.name">
+                                <div class="month_block">
+                                    <h5 class="month_title"><t t-esc="month.name"/></h5>
+                                    <table class="table table-sm text-center">
+                                        <thead><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr></thead>
+                                        <tbody>
+                                            <tr t-foreach="month.weeks" t-as="week" t-key="week_index">
+                                                <t t-foreach="week" t-as="day" t-key="day_index">
+                                                    <td t-if="day.is_day" t-att-class="'day_cell ' + (day.is_today ? 'is_today' : '') + (day.is_leave ? 'leave_' + day.leave_status : '') + (day.is_holiday ? 'is_holiday' : '')" t-att-title="day.is_holiday ? day.holiday_name : ''">
+                                                        <span class="day_number"><t t-esc="day.gregorian_day"/></span>
+                                                    </td>
+                                                    <td t-else="" class="empty_cell"/>
+                                                </t>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                    <!-- Ethiopian Section -->
+                    <div class="calendar_section">
+                        <h3 class="section_title">Ethiopian Calendar</h3>
+                        <div class="calendar_grid_vertical">
+                            <t t-foreach="state.calendarData.ethiopian_months" t-as="month" t-key="month.name">
+                                <div class="month_block">
+                                    <h5 class="month_title"><t t-esc="month.name"/></h5>
+                                    <table class="table table-sm text-center">
+                                        <thead><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr></thead>
+                                        <tbody>
+                                            <tr t-foreach="month.weeks" t-as="week" t-key="week_index">
+                                                <t t-foreach="week" t-as="day" t-key="day_index">
+                                                    <td t-if="day.is_day" t-att-class="'day_cell ' + (day.is_today ? 'is_today' : '') + (day.is_leave ? 'leave_' + day.leave_status : '') + (day.is_holiday ? 'is_holiday' : '')">
+                                                        <span class="day_number"><t t-esc="day.ethiopian_day"/></span>
+                                                    </td>
+                                                    <td t-else="" class="empty_cell"/>
+                                                </t>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fixed Legend Pane (Right Navbar) -->
+                <!-- <div class="calendar_legend_pane">
+                    <h5>Legend</h5>
+                    <hr/>
+                    <div class="legend_item"><div class="legend_color_box
+                color_validated"/><span>Validated</span></div>
+                    <div class="legend_item"><div class="legend_color_box color_confirm"/><span>To Approve</span></div>
+                    <div class="legend_item"><div class="legend_color_box color_refused"/><span>Refused</span></div>
+                    <div class="legend_item"><div class="legend_color_box color_holiday"/><span>Public
+                Holiday</span></div>
+                </div> -->
+
+                <!-- //////////////////////////////// -->
+
+                <div class="calendar_legend_pane">
+                    <h5>Legend</h5>
+                    <hr/>
+                    <div class="legend_item">
+                        <div class="legend_color_box color_validated"/>
+                        <span>Validated</span>
+                    </div>
+                    <div class="legend_item">
+                        <div class="legend_color_box color_confirm"/>
+                        <span>To Approve</span>
+                    </div>
+                    <div class="legend_item">
+                        <div class="legend_color_box color_refused"/>
+                        <span>Refused</span>
+                    </div>
+                    
+                    <h5 class="mt-4">Public Holidays</h5>
+                    <hr/>
+                    <div class="public_holidays_list">
+
+                        <!-- /////////////////// -->
+
+                        <!-- <t t-if="state.calendarData.public_holidays.length > 0">
+                            <div t-foreach="state.calendarData.public_holidays" t-as="holiday" t-key="holiday.name"
+                        class="holiday_item">
+                                <strong><t t-esc="holiday.date"/>:</strong>
+                                <span><t t-esc="holiday.name"/></span>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <span class="text-muted">No public holidays found for this year.</span>
+                        </t> -->
+                <ul class="ps-0">
+                        <li t-foreach="leaveState.bankHolidays" t-as="bankHoliday" t-key="bankHoliday.id" class="mt-2
+                list-unstyled">
+                            <strong
+                                t-esc="getFormattedDateSpan(bankHoliday.start, bankHoliday.end)"/>
+                            : <t t-esc="bankHoliday.title"/>
+                        </li>
+                    </ul>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </t>
+</templates>

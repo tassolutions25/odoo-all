@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+     
+        <record id="policy_document_request" model="hr.approval.policy">
+            <field name="name">Document Request Approval</field>
+            <field name="model_id" ref="ahadu_hr_self_service.model_hr_document_request"/>
+            <field name="domain">[]</field> 
+            <field name="sequence">10</field>
+        </record>
+      
+    </data>
+</odoo>

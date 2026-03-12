@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Attach JS only on job application page -->
+    <template id="assets_job_apply_custom" inherit_id="website_hr_recruitment.apply">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/ahadu_website_custom/static/src/js/job_apply_fix.js"/>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,68 @@
+.o_payroll_dashboard {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+/* Hide standard Odoo control panel (breadcrumbs/pager) for the dashboard */
+:root:has(.o_payroll_dashboard_form) .o_control_panel {
+    display: none !important;
+}
+
+.o_payroll_dashboard_header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 1rem;
+}
+
+.o_payroll_dashboard_header h1 {
+    color: #2c3e50;
+    font-weight: 700;
+    margin: 0;
+}
+
+.o_payroll_dashboard_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.o_payroll_card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    text-decoration: none !important;
+    color: #495057 !important;
+}
+
+.o_payroll_card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+    border-color: #860037;
+}
+
+.o_payroll_card_icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #860037;
+}
+
+.o_payroll_card_title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.o_payroll_card_description {
+    font-size: 0.9rem;
+    color: #6c757d;
+}

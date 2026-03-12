@@ -1,0 +1,16 @@
+/*
+    This file contains general backend styles for the Ahadu Attendance app.
+*/
+
+/* Style for the "Open Record" button in list views */
+.btn-open-record {
+    /* Use Odoo's primary color variable for consistency */
+    color: var(--o-primary-color) !important;
+    font-size: 1.1em;
+    
+    &:hover {
+        /* Use Odoo's darker primary color variable */
+        color: var(--o-primary-color-dark) !important;
+        transform: scale(1.1);
+    }
+}

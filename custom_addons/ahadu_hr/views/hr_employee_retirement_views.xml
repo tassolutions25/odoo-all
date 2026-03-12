@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_employee_retirement_tree" model="ir.ui.view">
+            <field name="name">hr.employee.retirement.tree</field>
+            <field name="model">hr.employee.retirement</field>
+            <field name="arch" type="xml">
+                <list string="Employee Retirements">
+                    <field name="employee_id"/>
+                    <field name="retirement_date"/>
+                    <field name="retirement_type"/>
+                    <field name="years_of_service"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_employee_retirement_form" model="ir.ui.view">
+            <field name="name">hr.employee.retirement.form</field>
+            <field name="model">hr.employee.retirement</field>
+           <field name="arch" type="xml">
+                 <form string="Employee Retirement">
+                     <header>
+                        <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <button name="action_approve_step" string="Approve" type="object" class="btn-success" invisible="can_approve == False"/>
+                        <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="can_approve == False"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>Employee Retirement</h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="employee_id"/>
+                                <field name="retirement_date"/>
+                                <field name="retirement_type"/>
+                            </group>
+                            <group>
+                                <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                                <field name="can_approve" invisible="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="years_of_service" readonly="1"/>
+                                <field name="final_salary"/>
+                            </group>
+                            <group>
+                                <field name="pension_amount"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="reason" placeholder="Enter reason for retirement..."/>
+                        </group>
+                        <notebook>
+                            <page string="Approval History">
+                                <field name="approval_line_ids">
+                                    <list>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="approver_id"/>
+                                        <field name="status"/>
+                                        <field name="approval_date"/>
+                                        <field name="comments"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,39 @@
+.dashboard-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+}
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+.dashboard-card-icon {
+  font-size: 3rem;
+  color: #860037;
+}
+.dashboard-card .card-title {
+  font-weight: 600;
+  color: #495057;
+}
+.o_onboarding_form .card-header {
+  background-color: #f8f9fa;
+}
+
+.o_onboarding_form {
+  font-size: 0.9rem;
+}
+.o_onboarding_form .lead {
+  font-size: 1.1rem;
+}
+.o_onboarding_form h2 {
+  font-size: 1.8rem;
+}
+.o_onboarding_form h5 {
+  font-size: 1.15rem;
+}
+.o_onboarding_form .btn-lg {
+  font-size: 1.1rem;
+}
+.o_onboarding_form .nav-link {
+  font-size: 0.9rem;
+}

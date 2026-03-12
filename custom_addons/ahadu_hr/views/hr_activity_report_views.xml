@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Activity Analysis Views -->
+
+        <!-- Promotion Analysis Views -->
+        <record id="hr_employee_promotion_view_graph" model="ir.ui.view">
+            <field name="name">hr.employee.promotion.graph</field>
+            <field name="model">hr.employee.promotion</field>
+            <field name="arch" type="xml">
+                <graph string="Promotion Analysis" sample="1">
+                    <field name="new_grade_id"/>
+                    <field name="state" type="row"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="hr_employee_promotion_view_pivot" model="ir.ui.view">
+            <field name="name">hr.employee.promotion.pivot</field>
+            <field name="model">hr.employee.promotion</field>
+            <field name="arch" type="xml">
+                <pivot string="Promotion Analysis" sample="1">
+                    <field name="new_grade_id" type="row"/>
+                    <field name="promotion_date" interval="month" type="col"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="hr_employee_promotion_view_search_reports" model="ir.ui.view">
+            <field name="name">hr.employee.promotion.search.reports</field>
+            <field name="model">hr.employee.promotion</field>
+            <field name="arch" type="xml">
+                <search string="Promotion Analysis">
+                    <field name="employee_id"/>
+                    <field name="new_grade_id"/>
+                    <field name="new_job_id"/>
+                    <field name="new_department_id"/>
+                    <separator/>
+                    <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/>
+                    <filter string="This Year" name="this_year" domain="[('promotion_date', '&gt;=', datetime.datetime.now().replace(month=1, day=1))]"/>
+                    <separator/>
+                    <group expand="1" string="Group By">
+                        <filter string="Grade" name="group_by_grade" context="{'group_by': 'new_grade_id'}"/>
+                        <filter string="Department" name="group_by_department" context="{'group_by': 'new_department_id'}"/>
+                        <filter string="Job Position" name="group_by_job" context="{'group_by': 'new_job_id'}"/>
+                        <filter string="State" name="group_by_state" context="{'group_by': 'state'}"/>
+                        <filter string="Promotion Date" name="group_by_date" context="{'group_by': 'promotion_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Transfer Analysis Views -->
+        <record id="hr_employee_transfer_view_graph" model="ir.ui.view">
+            <field name="name">hr.employee.transfer.graph</field>
+            <field name="model">hr.employee.transfer</field>
+            <field name="arch" type="xml">
+                <graph string="Transfer Analysis" sample="1">
+                    <field name="new_branch_id"/>
+                    <field name="state" type="row"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="hr_employee_transfer_view_pivot" model="ir.ui.view">
+            <field name="name">hr.employee.transfer.pivot</field>
+            <field name="model">hr.employee.transfer</field>
+            <field name="arch" type="xml">
+                <pivot string="Transfer Analysis" sample="1">
+                    <field name="current_branch_id" type="row"/>
+                    <field name="new_branch_id" type="col"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="hr_employee_transfer_view_search_reports" model="ir.ui.view">
+            <field name="name">hr.employee.transfer.search.reports</field>
+            <field name="model">hr.employee.transfer</field>
+            <field name="arch" type="xml">
+                <search string="Transfer Analysis">
+                    <field name="employee_id"/>
+                    <field name="current_branch_id"/>
+                    <field name="new_branch_id"/>
+                    <field name="new_department_id"/>
+                    <separator/>
+                    <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/>
+                    <filter string="This Year" name="this_year" domain="[('transfer_date', '&gt;=', datetime.datetime.now().replace(month=1, day=1))]"/>
+                    <separator/>
+                    <group expand="1" string="Group By">
+                        <filter string="Current Branch" name="group_by_current_branch" context="{'group_by': 'current_branch_id'}"/>
+                        <filter string="New Branch" name="group_by_new_branch" context="{'group_by': 'new_branch_id'}"/>
+                        <filter string="Department" name="group_by_department" context="{'group_by': 'new_department_id'}"/>
+                        <filter string="State" name="group_by_state" context="{'group_by': 'state'}"/>
+                        <filter string="Transfer Date" name="group_by_date" context="{'group_by': 'transfer_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Retirement Analysis Views -->
+        <!-- <record id="hr_employee_retirement_view_graph" model="ir.ui.view">
+            <field name="name">hr.employee.retirement.graph</field>
+            <field name="model">hr.employee.retirement</field>
+            <field name="arch" type="xml">
+                <graph string="Retirement Analysis" sample="1">
+                    <field name="retirement_type"/>
+                    <field name="years_of_service" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="hr_employee_retirement_view_pivot" model="ir.ui.view">
+            <field name="name">hr.employee.retirement.pivot</field>
+            <field name="model">hr.employee.retirement</field>
+            <field name="arch" type="xml">
+                <pivot string="Retirement Analysis" sample="1">
+                    <field name="retirement_type" type="row"/>
+                    <field name="retirement_date" interval="month" type="col"/>
+                    <field name="years_of_service" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="hr_employee_retirement_view_search_reports" model="ir.ui.view">
+            <field name="name">hr.employee.retirement.search.reports</field>
+            <field name="model">hr.employee.retirement</field>
+            <field name="arch" type="xml">
+                <search string="Retirement Analysis">
+                    <field name="employee_id"/>
+                    <field name="retirement_type"/>
+                    <separator/>
+                    <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/>
+                    <filter string="This Year" name="this_year" domain="[('retirement_date', '&gt;=', datetime.datetime.now().replace(month=1, day=1))]"/>
+                    <separator/>
+                    <group expand="1" string="Group By">
+                        <filter string="Retirement Type" name="group_by_type" context="{'group_by': 'retirement_type'}"/>
+                        <filter string="State" name="group_by_state" context="{'group_by': 'state'}"/>
+                        <filter string="Retirement Date" name="group_by_date" context="{'group_by': 'retirement_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record> -->
+
+        <!-- Demotion Analysis Views -->
+        <record id="hr_employee_demotion_view_graph" model="ir.ui.view">
+            <field name="name">hr.employee.demotion.graph</field>
+            <field name="model">hr.employee.demotion</field>
+            <field name="arch" type="xml">
+                <graph string="Demotion Analysis" sample="1">
+                    <field name="new_grade_id"/>
+                    <field name="state" type="row"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="hr_employee_demotion_view_pivot" model="ir.ui.view">
+            <field name="name">hr.employee.demotion.pivot</field>
+            <field name="model">hr.employee.demotion</field>
+            <field name="arch" type="xml">
+                <pivot string="Demotion Analysis" sample="1">
+                    <field name="current_grade_id" type="row"/>
+                    <field name="new_grade_id" type="col"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="hr_employee_demotion_view_search_reports" model="ir.ui.view">
+            <field name="name">hr.employee.demotion.search.reports</field>
+            <field name="model">hr.employee.demotion</field>
+            <field name="arch" type="xml">
+                <search string="Demotion Analysis">
+                    <field name="employee_id"/>
+                    <field name="current_grade_id"/>
+                    <field name="new_grade_id"/>
+                    <separator/>
+                    <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/>
+                    <filter string="This Year" name="this_year" domain="[('demotion_date', '&gt;=', datetime.datetime.now().replace(month=1, day=1))]"/>
+                    <separator/>
+                    <group expand="1" string="Group By">
+                        <filter string="Current Grade" name="group_by_current_grade" context="{'group_by': 'current_grade_id'}"/>
+                        <filter string="New Grade" name="group_by_new_grade" context="{'group_by': 'new_grade_id'}"/>
+                        <filter string="State" name="group_by_state" context="{'group_by': 'state'}"/>
+                        <filter string="Demotion Date" name="group_by_date" context="{'group_by': 'demotion_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Disciplinary Analysis Views -->
+        <record id="hr_employee_disciplinary_view_graph" model="ir.ui.view">
+            <field name="name">hr.employee.disciplinary.graph</field>
+            <field name="model">hr.employee.disciplinary</field>
+            <field name="arch" type="xml">
+                <graph string="Disciplinary Analysis" sample="1">
+                    <field name="action_type"/>
+                    <field name="state" type="row"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="hr_employee_disciplinary_view_pivot" model="ir.ui.view">
+            <field name="name">hr.employee.disciplinary.pivot</field>
+            <field name="model">hr.employee.disciplinary</field>
+            <field name="arch" type="xml">
+                <pivot string="Disciplinary Analysis" sample="1">
+                    <field name="action_type" type="row"/>
+                    <field name="action_date" interval="month" type="col"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="hr_employee_disciplinary_view_search_reports" model="ir.ui.view">
+            <field name="name">hr.employee.disciplinary.search.reports</field>
+            <field name="model">hr.employee.disciplinary</field>
+            <field name="arch" type="xml">
+                <search string="Disciplinary Analysis">
+                    <field name="employee_id"/>
+                    <field name="action_type"/>
+                    <separator/>
+                    <filter string="Active" name="active" domain="[('state', '=', 'active')]"/>
+                    <filter string="This Year" name="this_year" domain="[('action_date', '&gt;=', datetime.datetime.now().replace(month=1, day=1))]"/>
+                    <separator/>
+                    <group expand="1" string="Group By">
+                        <filter string="Action Type" name="group_by_type" context="{'group_by': 'action_type'}"/>
+                        <filter string="State" name="group_by_state" context="{'group_by': 'state'}"/>
+                        <filter string="Action Date" name="group_by_date" context="{'group_by': 'action_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Window Actions for Activity Reports -->
+        <record id="action_promotion_analysis_report" model="ir.actions.act_window">
+            <field name="name">Promotion Analysis</field>
+            <field name="res_model">hr.employee.promotion</field>
+            <field name="view_mode">graph,pivot,list,form</field>
+            <field name="search_view_id" ref="hr_employee_promotion_view_search_reports"/>
+            <field name="context">{'search_default_approved': 1, 'search_default_group_by_grade': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No promotions found.
+                </p>
+                <p>
+                    This dashboard provides an overview of employee promotions.
+                    Use the 'Group By' and 'Measures' menus to build your own reports.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_transfer_analysis_report" model="ir.actions.act_window">
+            <field name="name">Transfer Analysis</field>
+            <field name="res_model">hr.employee.transfer</field>
+            <field name="view_mode">graph,pivot,list,form</field>
+            <field name="search_view_id" ref="hr_employee_transfer_view_search_reports"/>
+            <field name="context">{'search_default_approved': 1, 'search_default_group_by_new_branch': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No transfers found.
+                </p>
+                <p>
+                    This dashboard provides an overview of employee transfers.
+                    Use the 'Group By' and 'Measures' menus to build your own reports.
+                </p>
+            </field>
+        </record>
+
+        <!-- <record id="action_retirement_analysis_report" model="ir.actions.act_window">
+            <field name="name">Retirement Analysis</field>
+            <field name="res_model">hr.employee.retirement</field>
+            <field name="view_mode">graph,pivot,list,form</field>
+            <field name="search_view_id" ref="hr_employee_retirement_view_search_reports"/>
+            <field name="context">{'search_default_approved': 1, 'search_default_group_by_type': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No retirements found.
+                </p>
+                <p>
+                    This dashboard provides an overview of employee retirements.
+                    Use the 'Group By' and 'Measures' menus to build your own reports.
+                </p>
+            </field>
+        </record> -->
+
+        <record id="action_demotion_analysis_report" model="ir.actions.act_window">
+            <field name="name">Demotion Analysis</field>
+            <field name="res_model">hr.employee.demotion</field>
+            <field name="view_mode">graph,pivot,list,form</field>
+            <field name="search_view_id" ref="hr_employee_demotion_view_search_reports"/>
+            <field name="context">{'search_default_approved': 1, 'search_default_group_by_new_grade': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No demotions found.
+                </p>
+                <p>
+                    This dashboard provides an overview of employee demotions.
+                    Use the 'Group By' and 'Measures' menus to build your own reports.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_disciplinary_analysis_report" model="ir.actions.act_window">
+            <field name="name">Disciplinary Analysis</field>
+            <field name="res_model">hr.employee.disciplinary</field>
+            <field name="view_mode">graph,pivot,list,form</field>
+            <field name="search_view_id" ref="hr_employee_disciplinary_view_search_reports"/>
+            <field name="context">{'search_default_active': 1, 'search_default_group_by_type': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No disciplinary actions found.
+                </p>
+                <p>
+                    This dashboard provides an overview of disciplinary actions.
+                    Use the 'Group By' and 'Measures' menus to build your own reports.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

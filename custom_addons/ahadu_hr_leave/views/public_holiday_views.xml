@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Public Holiday list View (List View) -->
+    <record id="public_holiday_view_list" model="ir.ui.view">
+        <field name="name">ahadu.public.holiday.list</field>
+        <field name="model">ahadu.public.holiday</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name" />
+                <field name="date" />
+                <field name="company_id" groups="base.group_multi_company" />
+            </list>
+        </field>
+    </record>
+
+    <!-- Public Holiday Form View -->
+    <record id="public_holiday_view_form" model="ir.ui.view">
+        <field name="name">ahadu.public.holiday.form</field>
+        <field name="model">ahadu.public.holiday</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="date" />
+                        <field name="company_id" groups="base.group_multi_company" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+     <!-- Action to open the Public Holidays views -->
+    <!-- <record id="public_holiday_action" model="ir.actions.act_window">
+        <field name="name">Public Holidays</field>
+        <field name="res_model">ahadu.public.holiday</field>
+        <field name="view_mode">tree,form</field>
+    </record> -->
+
+    <!-- Action to open the Public Holidays views -->
+    <record id="public_holiday_action" model="ir.actions.act_window">
+        <field name="name">Public Holidays</field>
+        <field name="res_model">ahadu.public.holiday</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new public holiday.
+            </p>
+            <p>
+                Define the public holidays for your company. These will be automatically excluded
+                from Leave calculations.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item under Leave > Configuration -->
+    <!-- <menuitem
+        id="public_holiday_menu"
+        name="Public Holidays"
+        action="public_holiday_action"
+        parent="hr_holidays.ahadu_hr_leave_menu_root"
+        sequence="99" /> -->
+
+</odoo>

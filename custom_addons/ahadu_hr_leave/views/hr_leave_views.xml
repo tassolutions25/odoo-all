@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_leave_view_form_manager_inherit_cancel" model="ir.ui.view">
+        <field name="name">hr.leave.view.form.manager.inherit.cancel</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form_manager" />
+        <field name="arch" type="xml">
+
+            <xpath expr="//form" position="attributes">
+                <attribute name="create">false</attribute>
+            </xpath>
+
+            <xpath expr="//header/button[@name='action_cancel']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//header" position="inside">
+
+                <!-- Employee Buttons -->
+                <button name="action_withdraw" string="Withdraw Request" type="object"
+                    class="btn-secondary" invisible="state != 'confirm'" />
+
+                <button name="%(ahadu_hr_leave.action_ahadu_leave_full_cancel_wizard)d"
+                    string="Request Full Cancellation"
+                    type="action"
+                    class="btn-warning"
+                    invisible="state != 'validate'" />
+
+                <!-- Correctly assigned to the manager group -->
+                <button name="action_approve_cancel" string="Approve Cancellation" type="object"
+                    class="btn-success" invisible="state != 'to_cancel'"
+                    groups="hr_holidays.group_hr_holidays_manager" />
+                <button name="action_reject_cancel" string="Reject Cancellation" type="object"
+                    class="btn-danger" invisible="state != 'to_cancel'"
+                    groups="hr_holidays.group_hr_holidays_manager" />
+
+                <!-- Buttons for PARTIAL Cancellation Approval -->
+                <button name="action_approve_partial_cancel" string="Approve Partial Cancellation"
+                    type="object"
+                    class="btn-success" invisible="state != 'to_cancel_partially'"
+                    groups="hr_holidays.group_hr_holidays_manager" />
+                <button name="action_reject_partial_cancel" string="Reject Partial Cancellation"
+                    type="object"
+                    class="btn-danger" invisible="state != 'to_cancel_partially'"
+                    groups="hr_holidays.group_hr_holidays_manager" />
+
+                <!-- Button to launch the Partial Cancellation Wizard -->
+                <button name="%(ahadu_hr_leave.action_ahadu_leave_partial_cancel_wizard)d"
+                    string="Partially Cancel"
+                    type="action"
+                    class="btn-secondary"
+                    invisible="['|', ('state', '!=', 'validate'), ('request_date_to', '&lt;', context_today().strftime('%Y-%m-%d'))]" />
+            </xpath>
+
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">
+                    draft,confirm,to_cancel,to_cancel_partially,validate</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_leave_view_tree_my_with_wizard_button" model="ir.ui.view">
+        <field name="name">hr.leave.tree.my.wizard</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_tree_my" />
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="create">false</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

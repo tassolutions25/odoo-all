@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ahadu_payroll_dashboard_form" model="ir.ui.view">
+        <field name="name">ahadu.payroll.dashboard.form</field>
+        <field name="model">ahadu.payroll.dashboard</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0" string="Payroll Dashboard" class="o_payroll_dashboard_form">
+                <sheet>
+                    <div class="o_payroll_dashboard">
+                        <div class="o_payroll_dashboard_header">
+                            <h1>Ahadu Payroll Dashboard</h1>
+                        </div>
+                        
+                        <div class="o_payroll_dashboard_grid">
+                            <!-- Payslip Batches Card -->
+                            <button name="action_go_to_payslip_batches" type="object" class="o_payroll_card o_payroll_card_batches">
+                                <i class="fa fa-list-alt o_payroll_card_icon"/>
+                                <div class="o_payroll_card_title">Payslip Batches</div>
+                                <div class="o_payroll_card_description">View and manage monthly payroll processing batches.</div>
+                            </button>
+
+                            <!-- Cash Indemnity Tracking Card -->
+                            <button name="action_go_to_cash_indemnity" type="object" class="o_payroll_card o_payroll_card_indemnity">
+                                <i class="fa fa-money-bill-wave o_payroll_card_icon"/>
+                                <div class="o_payroll_card_title">Cash Indemnity Tracking</div>
+                                <div class="o_payroll_card_description">Track cash indemnity payments and approvals.</div>
+                            </button>
+
+                            <!-- Overtime Tracking Card -->
+                            <button name="action_go_to_overtime" type="object" class="o_payroll_card o_payroll_card_overtime">
+                                <i class="fa fa-clock o_payroll_card_icon"/>
+                                <div class="o_payroll_card_title">Overtime Tracking</div>
+                                <div class="o_payroll_card_description">Calculate and track employee overtime hours.</div>
+                            </button>
+
+                            <!-- Taxation Rules Card -->
+                            <button name="action_go_to_taxation_rules" type="object" class="o_payroll_card o_payroll_card_taxation">
+                                <i class="fa fa-university o_payroll_card_icon"/>
+                                <div class="o_payroll_card_title">Taxation Rules</div>
+                                <div class="o_payroll_card_description">Manage income tax brackets and regional exemptions.</div>
+                            </button>
+
+                            <!-- Fuel Rate Card -->
+                            <button name="action_go_to_fuel_rate" type="object" class="o_payroll_card o_payroll_card_fuel">
+                                <i class="fa fa-gas-pump o_payroll_card_icon"/>
+                                <div class="o_payroll_card_title">Fuel Rate</div>
+                                <div class="o_payroll_card_description">Set and update current fuel prices for transport allowances.</div>
+                            </button>
+
+                            <!-- Loans Card -->
+                            <button name="action_go_to_loan" type="object" class="o_payroll_card o_payroll_card_loan">
+                                <i class="fa fa-handshake-o o_payroll_card_icon"/>
+                                <div class="o_payroll_card_title">Loans</div>
+                                <div class="o_payroll_card_description">View and manage employee loan requests and approvals.</div>
+                            </button>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ahadu_payroll_dashboard" model="ir.actions.act_window">
+        <field name="name">Dashboard</field>
+        <field name="res_model">ahadu.payroll.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem
+        id="menu_ahadu_payroll_dashboard"
+        name="Dashboard"
+        parent="menu_ahadu_root"
+        action="action_ahadu_payroll_dashboard"
+        sequence="5" />
+</odoo>

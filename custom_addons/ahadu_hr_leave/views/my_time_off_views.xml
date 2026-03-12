@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+    Step 1: Define our custom view using the correct <list> tag for Odoo 18.
+    -->
+    <record id="ahadu_hr_leave_my_requests_view_list" model="ir.ui.view">
+        <field name="name">ahadu.hr.leave.my.requests.list</field>
+        <field name="model">hr.leave</field>
+        <field name="arch" type="xml">
+            <list string="My Leave Requests" create="false" sample="1">
+                <field name="holiday_status_id" />
+                <field name="name" string="Title" />
+                <field name="number_of_days" string="Duration" />
+                <field name="request_date_from" string="Start Date" />
+                <field name="request_date_to" string="End Date" />
+                <field name="ethiopian_date_from" optional="show" />
+                <field name="ethiopian_date_to" optional="show" />
+                <field name="state" widget="badge" decoration-success="state == 'validate'"
+                    decoration-info="state == 'confirm'" />
+            </list>
+        </field>
+    </record>
+
+    <!--
+    Step 2: Define the Window Action.
+    THE KEY FIX: The view_mode now correctly uses 'list' instead of 'tree'.
+    -->
+    <record id="action_ahadu_my_time_off_hub" model="ir.actions.act_window">
+        <field name="name">My Leaves</field>
+        <field name="res_model">hr.leave</field>
+        <field name="view_mode">list,calendar,form</field>
+        <field name="context">{'search_default_my_leaves': 1, 'search_default_year': 1}</field>
+        <field name="domain">[('employee_id', '!=', False)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                You have no leave requests yet.
+            </p>
+            <p>
+                Click the button below to start.
+            </p>
+            <control>
+                <button name="%(ahadu_hr_leave.action_ahadu_leave_request_wizard)d"
+                    string="New Request" type="action" class="btn-primary" />
+            </control>
+        </field>
+    </record>
+
+</odoo>

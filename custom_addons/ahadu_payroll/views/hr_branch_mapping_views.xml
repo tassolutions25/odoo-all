@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ahadu_branch_mapping_tree" model="ir.ui.view">
+        <field name="name">ahadu.branch.mapping.tree</field>
+        <field name="model">ahadu.branch.mapping</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="branch_id"/>
+                <field name="cost_center_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_ahadu_branch_mapping" model="ir.actions.act_window">
+        <field name="name">Branch Mapping</field>
+        <field name="res_model">ahadu.branch.mapping</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new branch to cost center mapping.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_ahadu_branch_mapping"
+              name="Branch Mappings"
+              parent="menu_ahadu_config_root"
+              action="action_ahadu_branch_mapping"
+              groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+              sequence="100"/>
+</odoo>

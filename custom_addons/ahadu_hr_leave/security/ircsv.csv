@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_leave_ahadu,Ahadu HR Leave Access,model_hr_leave,base.group_user,1,1,1,1
+access_ahadu_hr_leave_dashboard,Ahadu HR Leave Dashboard Access,model_ahadu_hr_leave_dashboard,base.group_user,1,0,0,0
+access_ahadu_public_holiday_manager,Public Holiday Access for Leave Manager,model_ahadu_public_holiday,hr_holidays.group_hr_holidays_manager,1,1,1,1
+access_ahadu_pro_rata_wizard,Pro-Rata Leave Wizard Access,model_ahadu_pro_rata_leave_wizard,hr_holidays.group_hr_holidays_manager,1,1,1,1
+access_ahadu_upcoming_leave,Upcoming Leave Dashboard Line,model_ahadu_upcoming_leave,base.group_user,1,1,1,1
+access_ahadu_leave_balance_report_wizard,Leave Balance Report Wizard,model_ahadu_leave_balance_report_wizard,hr_holidays.group_hr_holidays_user,1,1,1,1

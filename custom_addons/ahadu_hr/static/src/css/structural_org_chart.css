@@ -1,0 +1,176 @@
+.o_structural_chart_container {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  overflow: auto;
+  height: 100%;
+  width: 100%;
+}
+
+.o_structural_chart {
+  display: inline-block;
+  min-width: 100%;
+}
+
+.o_structural_chart,
+.o_structural_chart ul,
+.o_structural_chart li {
+  position: relative;
+}
+
+.o_structural_chart ul {
+  padding-top: 20px;
+  margin: 0 auto;
+  display: table;
+}
+
+.o_structural_chart li {
+  text-align: center;
+  list-style-type: none;
+  padding: 20px 5px 0 5px;
+  display: table-cell;
+  vertical-align: top;
+}
+
+.o_structural_chart li::before,
+.o_structural_chart li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 50%;
+  border-top: 2px solid #ccc;
+  width: 50%;
+  height: 20px;
+}
+
+.o_structural_chart li::after {
+  right: auto;
+  left: 50%;
+  border-left: 2px solid #ccc;
+}
+
+.o_structural_chart li:only-child::after,
+.o_structural_chart li:only-child::before {
+  display: none;
+}
+
+.o_structural_chart li:only-child {
+  padding-top: 0;
+}
+
+.o_structural_chart li:first-child::before,
+.o_structural_chart li:last-child::after {
+  border: 0 none;
+}
+
+.o_structural_chart li:last-child::before {
+  border-right: 2px solid #ccc;
+  border-radius: 0 5px 0 0;
+}
+
+.o_structural_chart li:first-child::after {
+  border-radius: 5px 0 0 0;
+}
+
+.o_structural_chart ul ul::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 2px solid #ccc;
+  width: 0;
+  height: 20px;
+}
+
+.o_structural_chart > ul > li::before,
+.o_structural_chart > ul > li::after {
+  border: 0 none;
+}
+
+.o_structural_node_card {
+  border: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  display: inline-block;
+  min-width: 250px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.card_main_content {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  text-align: left;
+}
+
+.card_image {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.card_name {
+  font-weight: 600;
+  color: #333;
+}
+
+.card_position {
+  color: #860037;
+  font-size: 0.85em;
+}
+
+.card_toggle_container {
+  border-top: 1px solid #f0f0f0;
+}
+
+.card_toggle_button {
+  width: 100%;
+  border: none;
+  background-color: #fcfcfc;
+  padding: 6px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.toggle_count {
+  background-color: #dc3545;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.toggle_icon {
+  margin-left: auto;
+  margin-right: 5px;
+}
+
+.o_structural_chart_filter_bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background-color: #ffffff;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.filter_label {
+  font-weight: 600;
+  color: #860037;
+  margin: 0;
+}
+
+.filter_controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}

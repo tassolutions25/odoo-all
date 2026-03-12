@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- TERMINATION PAYSLIP VIEW -->
+    <record id="view_hr_termination_payslip_list" model="ir.ui.view">
+        <field name="name">hr.termination.payslip.list</field>
+        <field name="model">hr.termination.payslip</field>
+        <field name="arch" type="xml">
+            <list string="Termination Payslips">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="termination_date"/>
+                <field name="leave_days"/>
+                <field name="leave_pay_net" sum="Total Leave Pay"/>
+                <field name="net_payable" sum="Total Payable"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'calculated'" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_termination_payslip_form" model="ir.ui.view">
+        <field name="name">hr.termination.payslip.form</field>
+        <field name="model">hr.termination.payslip</field>
+        <field name="arch" type="xml">
+            <form string="Termination Payslip">
+                <header>
+                    <button name="compute_sheet" string="Compute" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_confirm" string="Confirm" type="object" class="oe_highlight" invisible="state != 'calculated'" groups="payroll.group_payroll_manager"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state == 'done'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,calculated,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="termination_date"/>
+                            <field name="run_id"/>
+                        </group>
+                        <group>
+                            <field name="wage"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Leave Pay">
+                            <group>
+                                <group string="Calculation">
+                                    <field name="leave_days"/>
+                                    <field name="leave_pay_gross"/>
+                                    <field name="leave_pay_tax"/>
+                                    <field name="leave_pay_net" class="oe_subtotal_footer_separator"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Salary &amp; Benefits">
+                            <group>
+                                <group string="Unpaid Earnings">
+                                    <field name="present_days"/>
+                                    <field name="unpaid_salary"/>
+                                    <field name="representation_allowance"/>
+                                    <field name="unpaid_transport"/>
+                                    <field name="unpaid_housing"/>
+                                    <field name="unpaid_mobile"/>
+                                    <field name="gross_amount" class="oe_subtotal_footer_separator"/>
+                                </group>
+                                <group string="Taxes &amp; Deductions">
+                                    <field name="taxable_amount"/>
+                                    <field name="tax_salary"/>
+                                    <field name="grand_tax" class="oe_subtotal_footer_separator"/>
+                                    
+                                    <separator string="Pension"/>
+                                    <field name="pension_emp"/>
+                                    <field name="pension_comp"/>
+                                    
+                                    <separator string="Other Deductions"/>
+                                    <field name="lost_id_card"/>
+                                    <field name="vat_on_id_card"/>
+                                    <field name="other_deductions"/>
+                                    
+                                    <field name="total_deduction" class="oe_subtotal_footer_separator"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="net_payable" class="oe_subtotal_footer_separator"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- TERMINATION RUN VIEW -->
+    <record id="view_hr_termination_run_list" model="ir.ui.view">
+        <field name="name">hr.termination.run.list</field>
+        <field name="model">hr.termination.run</field>
+        <field name="arch" type="xml">
+            <list string="Termination Batches">
+                <field name="name"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_termination_run_form" model="ir.ui.view">
+        <field name="name">hr.termination.run.form</field>
+        <field name="model">hr.termination.run</field>
+        <field name="arch" type="xml">
+            <form string="Termination Batch">
+                <header>
+                    <button name="action_compute_sheet" string="Compute All" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_confirm" string="Confirm All" type="object" class="oe_highlight" invisible="state != 'calculated'" groups="payroll.group_payroll_manager"/>
+                    <button name="action_print_excel" string="Print Report" type="object" icon="fa-download" invisible="state == 'draft'"/>
+                    <button name="action_draft" string="Set to Draft" type="object" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="branch_id" readonly="1" groups="base.group_user"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Payslips">
+                            <field name="slip_ids">
+                                <list editable="bottom">
+                                    <field name="employee_id"/>
+                                    <field name="termination_date" readonly="1" force_save="1"/>
+                                    <field name="wage" optional="show"/>
+                                    <field name="leave_days" optional="show"/>
+                                    <field name="net_payable" sum="Total"/>
+                                    <field name="state" readonly="1"/>
+                                    <button name="compute_sheet" type="object" icon="fa-calculator" title="Compute"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- ACTIONS -->
+    <record id="action_hr_termination_run" model="ir.actions.act_window">
+        <field name="name">Termination Batches</field>
+        <field name="res_model">hr.termination.run</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_hr_termination_payslip" model="ir.actions.act_window">
+        <field name="name">Termination Payslips</field>
+        <field name="res_model">hr.termination.payslip</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- MENUS -->
+    <menuitem id="menu_hr_termination_root" 
+              name="Termination" 
+              parent="menu_ahadu_root" 
+              sequence="30"/>
+
+    <menuitem id="menu_hr_termination_run" 
+              name="Termination Batches" 
+              parent="menu_hr_termination_root" 
+              action="action_hr_termination_run" 
+              sequence="10"/>
+
+    <menuitem id="menu_hr_termination_payslip" 
+              name="Termination Payslips" 
+              parent="menu_hr_termination_root" 
+              action="action_hr_termination_payslip" 
+              sequence="20"/>
+
+</odoo>

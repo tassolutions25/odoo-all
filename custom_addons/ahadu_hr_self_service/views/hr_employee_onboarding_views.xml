@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_onboarding_education_tree" model="ir.ui.view">
+        <field name="name">hr.employee.onboarding.education.tree</field>
+        <field name="model">hr.employee.education</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="onboarding_id" invisible="1"/>
+                <field name="type_of_institution"/>
+                <field name="school"/>
+                <field name="certificate_level"/>
+                <field name="field_of_study"/>
+                <field name="end_date"/>
+                <field name="cgpa"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_onboarding_family_tree" model="ir.ui.view">
+        <field name="name">hr.employee.onboarding.family.tree</field>
+        <field name="model">hr.employee.onboarding.family</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="onboarding_id" invisible="1"/>
+                <field name="relationship"/>
+                <field name="full_name"/>
+                <field name="contact_number"/>
+                <field name="gender"/>
+                <field name="nationality_id"/>
+                <field name="dependent"/>
+                <field name="insured"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Tree view for Bank -->
+    <record id="view_hr_employee_onboarding_bank_tree" model="ir.ui.view">
+        <field name="name">hr.employee.onboarding.bank.account.tree</field>
+        <field name="model">hr.employee.onboarding.bank.account</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="onboarding_id" invisible="1"/>
+                <field name="bank_id"/>
+                <field name="account_number"/>
+                <field name="account_holder_name"/>
+                <field name="account_type"/>
+                <field name="bank_country_id"/>
+                <field name="currency_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_onboarding_form" model="ir.ui.view">
+        <field name="name">hr.employee.onboarding.form</field>
+        <field name="model">hr.employee.onboarding</field>
+        <field name="arch" type="xml">
+            <form string="Employee Onboarding Request">
+                <header>
+                    <button name="action_approve_step" string="Approve" type="object" class="btn-success" invisible="can_approve == False"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="can_approve == False"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="create_date" string="Submission Date"/>
+                        </group>
+                        <group>
+                            <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                            <field name="can_approve" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Personal Information">
+                            <group>
+                                <group>
+                                    <field name="salutation"/>
+                                    <field name="first_name" readonly="1"/>
+                                    <field name="middle_name" readonly="1"/>
+                                    <field name="last_name" readonly="1"/>
+                                    <field name="gender_updated"/>
+                                    <field name="birthday"/>
+                                    <field name="birth_place"/>
+                                    <field name="blood_group"/>
+                                </group>
+                                <group>
+                                    <field name="marital"/>
+                                    <field name="wedding_date" invisible="marital != 'married'"/>
+                                    <field name="nationality_id"/>
+                                    <field name="country_id"/>
+                                    <field name="subcity"/>
+                                    <field name="language_ids" widget="many2many_tags"/>
+                                </group>
+                            </group>
+                            <group string="Physical Condition">
+                                <field name="physical_challenge"/>
+                                <field name="physical_challenge_detail" invisible="physical_challenge != 'yes'"/>
+                            </group>
+                        </page>
+                        <page string="Contact &amp; ID">
+                             <group>
+                                <group string="Contact Details">
+                                    <field name="work_phone"/>
+                                    <field name="mobile_phone"/>
+                                    <field name="work_email"/>
+                                    <field name="private_email"/>
+                                </group>
+                                <group string="Identification">
+                                    <field name="identification_id"/>
+                                    <field name="national_id_file" widget="binary" filename="national_id_filename"/>
+                                    <field name="national_id_filename" invisible="1"/>
+                                    <field name="kebele_id"/>
+                                    <field name="kebele_id_file" widget="binary" filename="kebele_id_filename"/>
+                                    <field name="kebele_id_filename" invisible="1"/>
+                                </group>
+                                <group string="Current Address">
+                                    <field name="subcity"/>
+                                    <field name="woreda"/>
+                                    <field name="house_number"/>
+                                </group>
+                                <group string="Permanent Address">
+                                    <field name="permanent_address_city"/>
+                                    <field name="permanent_address_country_id"/>
+                                </group>
+                             </group>
+                        </page>
+                        <page string="Emergency &amp; Bank">
+                            <group string="Emergency Contact">
+                                <field name="emergency_contact_name"/>
+                                <field name="emergency_contact_relationship"/>
+                                <field name="emergency_contact_phone"/>
+                                <field name="emergency_contact_address_city"/>
+                                <field name="emergency_contact_address_country_id"/>
+                            </group>
+                            <separator string="Bank Accounts"/>
+        <field name="bank_account_ids" context="{'tree_view_ref': 'ahadu_hr_self_service.view_hr_employee_onboarding_bank_tree'}"/>
+                        </page>
+                        <page string="Family Details">
+                            <field name="family_ids" context="{'tree_view_ref': 'ahadu_hr_self_service.view_hr_employee_onboarding_family_tree'}"/>
+                        </page>
+                        <page string="Education History">
+                            <field name="education_ids" nolabel="1"
+                                   context="{'tree_view_ref': 'ahadu_hr_self_service.view_hr_employee_onboarding_education_tree'}"/>
+                        </page>
+                        <page string="Passport &amp; Cost-Sharing">
+                             <group string="Passport Details">
+                                <field name="passport_name"/>
+                                <field name="passport_id"/>
+                                <field name="passport_issue_place"/>
+                                <field name="passport_issue_date"/>
+                                <field name="passport_expiry_date"/>
+                                <field name="encr_required"/>
+                                <field name="passport_file" widget="binary" filename="passport_filename"/>
+                                <field name="passport_filename" invisible="1"/>
+                            </group>
+                            <group string="Cost-Sharing Details">
+                                <field name="cost_sharing_institution"/>
+                                <field name="cost_sharing_status"/>
+                                <field name="cost_sharing_document" widget="binary" filename="cost_sharing_document_filename"/>
+                                <field name="cost_sharing_document_filename" invisible="1"/>
+                            </group>
+                        </page>
+                        <page string="Approval History">
+                            <field name="approval_line_ids" readonly="1">
+                         <list>
+                            <field name="sequence" widget="handle"/>
+                            <field name="approver_id"/>
+                            <field name="status" widget="badge" decoration-success="status == 'approved'" decoration-warning="status == 'pending'" decoration-danger="status == 'rejected'"/>
+                            <field name="approval_date"/>
+                            <field name="comments"/>
+                        </list>
+                    </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_onboarding_tree" model="ir.ui.view">
+        <field name="name">hr.employee.onboarding.tree</field>
+        <field name="model">hr.employee.onboarding</field>
+        <field name="arch" type="xml">
+            <list string="Onboarding Requests" decoration-info="state=='submitted'" decoration-success="state=='approved'" decoration-danger="state=='rejected'">
+                <field name="employee_id"/>
+                <field name="create_date" string="Submitted On"/>
+                <field name="next_approver_ids" widget="many2many_tags"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_hr_employee_onboarding" model="ir.actions.act_window">
+        <field name="name">Onboarding Requests</field>
+        <field name="res_model">hr.employee.onboarding</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+
+</odoo>

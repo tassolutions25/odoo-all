@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="benefit_type_representation" model="hr.benefit.type">
+            <field name="name">Representation Allowance</field>
+            <field name="code">REPRESENTATION</field>
+            <field name="value_type">fixed</field>
+        </record>
+        <record id="benefit_type_housing" model="hr.benefit.type">
+            <field name="name">Housing Allowance</field>
+            <field name="code">HOUSING</field>
+            <field name="value_type">fixed</field>
+        </record>
+        <record id="benefit_type_mobile" model="hr.benefit.type">
+            <field name="name">Mobile</field>
+            <field name="code">MOBILE</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_fuel" model="hr.benefit.type">
+            <field name="name">Fuel</field>
+            <field name="code">FUEL</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_gym" model="hr.benefit.type">
+            <field name="name">GYM Financing</field>
+            <field name="code">GYM</field>
+            <field name="value_type">percentage</field>
+        </record>
+        <record id="benefit_type_severance" model="hr.benefit.type">
+            <field name="name">Severance Pay</field>
+            <field name="code">SEVERANCE</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_perdiem_local" model="hr.benefit.type">
+            <field name="name">Per diem/Travel Allowance (Local)</field>
+            <field name="code">PERDIEM_L</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_perdiem_foreign" model="hr.benefit.type">
+            <field name="name">Per diem/Travel Allowance (Foreign)</field>
+            <field name="code">PERDIEM_F</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_medical_abroad" model="hr.benefit.type">
+            <field name="name">Medical- Abroad</field>
+            <field name="code">MED_ABROAD</field>
+            <field name="value_type">fixed</field>
+        </record>
+        <record id="benefit_type_medical_domestic" model="hr.benefit.type">
+            <field name="name">Medical- Domestic</field>
+            <field name="code">MED_DOMESTIC</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_representation_perc" model="hr.benefit.type">
+            <field name="name">Representation Allowance (%)</field>
+            <field name="code">REPRESENTATION_PERC</field>
+            <field name="value_type">percentage</field>
+        </record>
+        <record id="benefit_type_cash_indemnity" model="hr.benefit.type">
+            <field name="name">Cash Indemnity</field>
+            <field name="code">CASH_INDEMNITY</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_salary_advance" model="hr.benefit.type">
+            <field name="name">Salary Advance</field>
+            <field name="code">SALARY_ADV</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_mortgage_loan" model="hr.benefit.type">
+            <field name="name">Mortgage loan</field>
+            <field name="code">LOAN_MORTGAGE</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_vehicle_loan" model="hr.benefit.type">
+            <field name="name">Vehicle Acquisition Loan</field>
+            <field name="code">LOAN_VEHICLE</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_personal_loan" model="hr.benefit.type">
+            <field name="name">Personal Loan</field>
+            <field name="code">LOAN_PERSONAL</field>
+            <field name="value_type">in_kind</field>
+        </record>
+        <record id="benefit_type_hardship" model="hr.benefit.type">
+            <field name="name">Hardship Allowance</field>
+            <field name="code">HARDSHIP</field>
+            <field name="value_type">in_kind</field>
+        </record>
+
+        <!-- Defining Benefit Packages and their Lines -->
+
+        <!-- CEO Package -->
+        <record id="benefit_package_ceo" model="hr.benefit.package">
+            <field name="name">CEO Benefit Package</field>
+            <field name="job_ids" eval="[(6, 0, [ref('job_ceo')])]"/>
+            <field name="line_ids" eval="[
+                (0, 0, {'benefit_type_id': ref('benefit_type_representation'), 'value_fixed': 50000}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_housing'), 'value_fixed': 50000}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_mobile'), 'value_in_kind': 'Mobile Apparatus with unlimited airtime'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_fuel'), 'value_in_kind': 'Automobile with Coupons for unlimited liters of fuel.'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_gym'), 'value_percentage': 100}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_severance'), 'value_in_kind': '2 or more years of experience, three months net Salary'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_perdiem_local'), 'value_in_kind': '1. Perdiem: ETB 1500/day\n2. Accomodation: per Receipt'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_perdiem_foreign'), 'value_in_kind': '1. Perdiem: USD 300/day\n2. Accomodation: per Receipt\n3. Taxi in: USD 30/day\n4. Incenental: In USD 30/day'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_medical_domestic'), 'value_in_kind': 'unlimited'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_medical_abroad'), 'value_in_kind': 10000 USD})
+            ]"/>
+        </record>
+
+        <!-- Chiefs Package -->
+        <record id="benefit_package_chiefs" model="hr.benefit.package">
+            <field name="name">Chief Officers Benefit Package</field>
+            <field name="job_ids" eval="[(6, 0, [
+                ref('job_chief_marketing_strategy'),
+                ref('job_chief_corp_services'),
+                ref('job_chief_operations'),
+                ref('job_chief_information')
+            ])]"/>
+            <field name="line_ids" eval="[
+                (0, 0, {'benefit_type_id': ref('benefit_type_representation_perc'), 'value_percentage': 10}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_housing'), 'value_fixed': 20000}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_mobile'), 'value_in_kind': 'Mobile Apparatus with unlimited airtime'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_fuel'), 'value_in_kind': 'Automobile with Coupons for unlimited liters of fuel.'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_gym'), 'value_percentage': 100}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_severance'), 'value_in_kind': '2 or more years of experience, three months net Salary'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_perdiem_local'), 'value_in_kind': '1. Perdiem 1500\n2. Accomodation: per Receipt'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_perdiem_foreign'), 'value_in_kind': '1. Perdiem: USD 250 /day\n2. Accomodation: Per receipt upto USD 300\n3. Taxi in: USD 25 /day\n4. Incenental: In USD 25 /day'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_medical_domestic'), 'value_in_kind': '90/10'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_medical_abroad'), 'value_fixed': 10000})
+            ]"/>
+        </record>
+
+        <!-- Directors Package -->
+        <record id="benefit_package_directors" model="hr.benefit.package">
+            <field name="name">Directors Benefit Package</field>
+            <field name="job_ids" eval="[(6, 0, [
+                ref('job_internal_audit_director'), ref('job_risk_compliance_director'), ref('job_legal_services_director'), ref('job_project_office_director'),
+                ref('job_director_district_north'), ref('job_director_district_south'), ref('job_director_marketing_comm'), ref('job_director_enterprise_strategy'),
+                ref('job_director_finance_treasury'), ref('job_director_procurement_facilities'), ref('job_director_human_capital'), ref('job_director_msme_rural'),
+                ref('job_director_institutional_rel'), ref('job_director_credit_appraisal'), ref('job_director_corporate_rel'), ref('job_director_international_banking'),
+                ref('job_director_it_app'), ref('job_director_it_infra')
+            ])]"/>
+            <field name="line_ids" eval="[
+                (0, 0, {'benefit_type_id': ref('benefit_type_representation_perc'), 'value_percentage': 10}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_housing'), 'value_fixed': 10000}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_mobile'), 'value_in_kind': 'ETB 800'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_fuel'), 'value_in_kind': 'Automobile with Birr equivalent of 300 liters of fuel'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_severance'), 'value_in_kind': '3 or more years of experience, three months net Salary'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_perdiem_local'), 'value_in_kind': '1. Perdiem ETB 1,000\n2. Accomodation: per Receipt upto ETB 1200'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_perdiem_foreign'), 'value_in_kind': '1. Perdiem: USD 200 /day\n2. Accomodation: per Receipt\n3. Taxi in: USD 20/day\n4. Incenental: In USD 20/day'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_medical_domestic'), 'value_in_kind': '90/10'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_medical_abroad'), 'value_fixed': 10000})
+            ]"/>
+        </record>
+
+        <!-- Common to All Package -->
+        <record id="benefit_package_common" model="hr.benefit.package">
+            <field name="name">Common Staff Benefit Package</field>
+            <field name="job_ids" eval="[(6, 0, [
+                ref('job_mgr_digital_biz'), ref('job_mgr_agency_merchant'), ref('job_mgr_digital_innovation'), ref('job_mgr_financial_strategy'),
+                ref('job_mgr_engineering'), ref('job_mgr_tech_arch'), ref('job_mgr_it_support'), ref('job_mgr_it_security'), ref('job_mgr_mis_team'),
+                ref('job_mgr_treasury_fund'), ref('job_mgr_gen_accounts'), ref('job_mgr_talent_acq'), ref('job_mgr_talent_dev'), ref('job_mgr_talent_prog'),
+                ref('job_mgr_facilities_prop'), ref('job_mgr_procurement_contract'), ref('job_head_gen_service'), ref('job_mgr_cbs_aux'),
+                ref('job_mgr_digital_apps'), ref('job_mgr_network_admin'), ref('job_mgr_sys_db_admin'), ref('job_mgr_digital_channel'),
+                ref('job_mgr_cust_exp'), ref('job_mgr_corp_comm'), ref('job_mgr_marketing_branding'), ref('job_mgr_enterprise_strategy'),
+                ref('job_mgr_research_market'), ref('job_mgr_partnership_msme'), ref('job_mgr_institutional_rel'), ref('job_mgr_corporate_rel'),
+                ref('job_mgr_credit_analysis'), ref('job_mgr_credit_portfolio'), ref('job_mgr_trade_services'), ref('job_mgr_intl_remittance')
+            ])]"/>
+             <field name="line_ids" eval="[
+                (0, 0, {'benefit_type_id': ref('benefit_type_salary_advance'), 'value_in_kind': 'Six months\' salary amount, interest free with personal guarantee payable in 36 equal monthly installments'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_mortgage_loan'), 'value_in_kind': 'The bank allows a loan to acquire or construct a residential house with a prevailing minimum saving interest rate plus 1%'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_vehicle_loan'), 'value_in_kind': 'The bank allows a loan to acquire a vehicle with a prevailing minimum saving interest rate plus 1%'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_personal_loan'), 'value_in_kind': '1 Year salary amount, payable in 36 equal monthly installments with a prevailing minimum saving interest rate plus 1%'}),
+                (0, 0, {'benefit_type_id': ref('benefit_type_hardship'), 'value_in_kind': 'Provide 10% to 40% but exact rate for each location depends upon circumstance.\n* Make the rate determination part of branch feasibility study\n* Harsh locations. 20% Assosa Branch\n* Jigjiga and Assosa Branches 15%'})
+            ]"/>
+        </record>
+
+    </data>
+</odoo>

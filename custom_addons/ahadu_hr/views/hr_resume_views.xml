@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_employee_view_form_inherit_resume_ahadu" model="ir.ui.view">
+        <field name="name">hr.employee.form.resume.inherit.ahadu</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr_skills.hr_employee_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='skills_resume']" position="attributes">
+                <attribute name="string">Resume and Experience</attribute>
+            </xpath>
+            <xpath expr="//field[@name='resume_line_ids']/preceding-sibling::separator[1]" position="attributes">
+                <attribute name="string">Experience</attribute>
+            </xpath>
+            <!-- Add the separate CV/Resume upload section after the experience lines -->
+            <xpath expr="//field[@name='resume_line_ids']" position="after">
+                <separator string="CV / Resume File"/>
+                <group>
+                    <field name="resume_attachment" widget="binary" filename="resume_attachment_filename"/>
+                    <field name="resume_attachment_filename" invisible="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- <record id="hr_resume_line_tree_view_inherit_ahadu_new" model="ir.ui.view">
+        <field name="name">hr.resume.line.tree.inherit.ahadu</field>
+        <field name="model">hr.resume.line</field>
+        <field name="inherit_id" ref="hr_skills.resume_line_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="experience_place"/>
+                <field name="attachment" widget="binary" filename="attachment_filename"/>
+                <field name="attachment_filename" invisible="1"/>
+            </xpath>
+        </field>
+    </record> -->
+    
+    <record id="hr_resume_line_form_view_inherit_ahadu_attachment" model="ir.ui.view">
+        <field name="name">hr.resume.line.form.inherit.ahadu.attachment</field>
+        <field name="model">hr.resume.line</field>
+        <field name="inherit_id" ref="hr_skills.resume_line_view_form"/>
+        <field name="arch" type="xml">
+        <xpath expr="//field[@name='name']" position="after">
+                 <field name="experience_place" placeholder="Experience Place"/>
+             </xpath>
+             <xpath expr="//group" position="inside">
+                <group string="Attachment">
+                    <field name="attachment" widget="binary" filename="attachment_filename"/>
+                    <field name="attachment_filename" invisible="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

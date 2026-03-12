@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- This cron job is now obsolete and replaced by the automatic creation on employee approval but may be used later based on hr department decision-->
+        <!--
+        <record id="ir_cron_create_probation_reviews" model="ir.cron">
+            <field name="name">HR: Generate Upcoming Probation Reviews</field>
+            <field name="model_id" ref="model_hr_contract"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_generate_probation_reviews()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+        -->
+
+        <!-- Scheduled Action to send reminders for probation reviews -->
+        <record id="ir_cron_send_probation_reminders" model="ir.cron">
+            <field name="name">HR: Send Probation Period Reminders</field>
+            <field name="model_id" ref="ahadu_hr.model_hr_employee_probation"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_send_probation_reminders()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Employee Form to add simple 'Payroll' tab -->
+    <record id="view_employee_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.ahadu</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Payroll" name="ahadu_payroll_tab">
+                    
+                    <!-- Button to View Payslips -->
+                    <div class="oe_button_box" name="payroll_button_box">
+                        <button name="action_view_payslips" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-money">
+                            <field name="payslip_count" widget="statinfo" string="Payslips"/>
+                        </button>
+                        <button name="%(ahadu_payroll.action_hr_loan)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-credit-card"
+                                context="{'search_default_employee_id': id, 'default_employee_id': id}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Loans</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <!-- Current Salary Information -->
+                    <group string="Salary Information">
+                        <field name="current_salary" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    
+                    <!-- Tax & Pension Information -->
+                    <group string="Tax &amp; Pension Information">
+                        <field name="tin_number" string="TIN Number"/>
+                        <field name="ssnid" string="Pension Registration No"/>
+                    </group>
+                    
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherit Contract Form -->
+    <record id="hr_contract_view_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">hr.contract.form.inherit.ahadu</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form" />
+        <field name="arch" type="xml">
+
+            <!-- Add Cost Center -->
+            <xpath expr="//field[@name='structure_type_id']" position="after">
+                <field name="cost_center_id" string="Payroll Cost Center (Ahadu)" />
+            </xpath>
+
+            <!-- Add Salary Structure Field -->
+            <xpath expr="//field[@name='job_id']" position="after">
+                <field name="struct_id" string="Salary Structure" required="1" />
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

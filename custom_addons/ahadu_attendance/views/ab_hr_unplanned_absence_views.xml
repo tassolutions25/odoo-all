@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ab_hr_unplanned_absence_tree" model="ir.ui.view">
+        <field name="name">ab.hr.unplanned.absence.tree</field>
+        <field name="model">ab.hr.unplanned.absence</field>
+        <field name="arch" type="xml">
+            <list decoration-warning="state=='detected'" string="Unplanned Absences">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="manager_id"/>
+                <field name="state" widget="badge" decoration-info="state == 'excused'" decoration-success="state == 'confirmed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ab_hr_unplanned_absence_form" model="ir.ui.view">
+        <field name="name">ab.hr.unplanned.absence.form</field>
+        <field name="model">ab.hr.unplanned.absence</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" string="Confirm Absence" type="object" class="btn-primary" invisible="state != 'detected'"/>
+                    <button name="action_excuse" string="Mark as Excused" type="object" invisible="state != 'detected'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="detected,confirmed,excused"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="date"/>
+                        <field name="manager_id"/>
+                    </group>
+                    <notebook>
+                        <page string="Manager Notes">
+                            <field name="notes" placeholder="e.g., Employee called in sick, reason provided..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ab_hr_unplanned_absence" model="ir.actions.act_window">
+        <field name="name">Unplanned Absences</field>
+        <field name="res_model">ab.hr.unplanned.absence</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- <menuitem
+        id="menu_ab_hr_unplanned_absence"
+        name="Unplanned Absences"
+        parent="ahadu_attendance.menu_ahadu_management_root"
+        action="action_ab_hr_unplanned_absence"
+        sequence="70"/> -->
+</odoo>

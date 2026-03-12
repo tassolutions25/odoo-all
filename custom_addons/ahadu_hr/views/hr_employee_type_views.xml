@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_type_tree" model="ir.ui.view">
+        <field name="name">hr.employee.type.tree</field>
+        <field name="model">hr.employee.type</field>
+        <field name="arch" type="xml">
+            <list string="Employee Types">
+                <field name="name"/>
+                <field name="code"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_type_form" model="ir.ui.view">
+        <field name="name">hr.employee.type.form</field>
+        <field name="model">hr.employee.type</field>
+        <field name="arch" type="xml">
+            <form string="Employee Type">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                    </group>
+                    <notebook>
+                        <page string="Applicable Job Positions" name="job_positions">
+                            <field name="job_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="department_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_employee_type" model="ir.actions.act_window">
+        <field name="name">Employee Type</field>
+        <field name="res_model">hr.employee.type</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Employee Type
+            </p>
+        </field>
+    </record>
+</odoo>

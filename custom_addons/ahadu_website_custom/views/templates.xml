@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        We don't need the empty 'website_hr_recruitment_apply_form_content' template
+        if we are completely replacing the form. Instead, we will put ALL fields
+        (default Odoo ones + custom ones) directly into our inheriting template.
+    -->
+
+    <template id="job_apply_form_inherit_custom" inherit_id="website_hr_recruitment.apply" name="Custom Job Apply Form Inherit">
+       <!-- This xpath REPLACES the entire original form. -->
+       <xpath expr="//form[@id='hr_recruitment_form']" position="replace">
+            <form id="custom_hr_recruitment_form"
+                  action="/ahadu/jobs/apply_custom"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="custom_recruitment_form"
+                  data-ajax="false"
+                  data-success-page="/jobs/thankyou">
+     <!-- ✅ Include CSRF token for Odoo form validation -->
+        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                <!-- HIDDEN FIELDS: These are often passed from the job page URL context -->
+                <t t-if="job">
+                    <input type="hidden" name="job_id" t-att-value="job.id"/>
+                    <!-- department_id is often linked to the job, pass it if needed -->
+                    <input type="hidden" name="department_id" t-att-value="job.department_id.id"/>
+                </t>
+
+                <!-- ======================= -->
+                <!-- STANDARD ODOO FIELDS    -->
+                <!-- ======================= -->
+
+                <!-- Your Name -->
+                <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required" data-type="char" data-name="partner_name">
+                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                        <label class="col-sm-auto s_website_form_label" style="width: 200px" for="partner_name">
+                            <span class="s_website_form_label_content">Your Name</span>
+                            <span class="s_website_form_mark"> *</span>
+                        </label>
+                        <div class="col-sm">
+                            <input id="partner_name" type="text" class="form-control s_website_form_input" name="partner_name" required="true" pattern="[A-Za-z\s'-]+" title="Name can only contain letters, spaces, hyphens, or apostrophes."/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required" data-type="email" data-name="email_from">
+                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                        <label class="col-sm-auto s_website_form_label" style="width: 200px" for="email_from">
+                            <span class="s_website_form_label_content">Email</span>
+                            <span class="s_website_form_mark"> *</span>
+                        </label>
+                        <div class="col-sm">
+                            <input id="email_from" type="email" class="form-control s_website_form_input" name="email_from" required="true"/>
+                        </div>
+                    </div>
+                </div>
+
+               <!-- Phone -->
+<div class="col-12 mb-0 py-2 s_website_form_field" data-type="tel" data-name="partner_phone">
+    <div class="row s_col_no_resize s_col_no_bgcolor">
+        <label class="col-sm-auto s_website_form_label" style="width: 200px" for="partner_phone">
+            <span class="s_website_form_label_content">Phone Number</span>
+        </label>
+        <div class="col-sm">
+            <input id="partner_phone"
+                   type="tel"
+                   class="form-control s_website_form_input"
+                   name="partner_phone"
+                   pattern="(\+2519\d{8}|09\d{8})"
+                   placeholder="+251911123456 or 0911123456"
+                   title="Please enter a valid Ethiopian phone number, e.g., +251911123456 or 0911123456"
+                   required="true"/>
+        </div>
+    </div>
+</div>
+
+
+                <!-- LinkedIn Profile -->
+                <div class="col-12 mb-0 py-2 s_website_form_field" data-type="url" data-name="linkedin_profile">
+                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                        <label class="col-sm-auto s_website_form_label" style="width: 200px" for="linkedin_profile">
+                            <span class="s_website_form_label_content">LinkedIn Profile URL</span>
+                        </label>
+                        <div class="col-sm">
+                            <input id="linkedin_profile" type="url" class="form-control s_website_form_input" name="linkedin_profile"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Short Introduction / Applicant Notes -->
+                <!-- <div class="col-12 mb-0 py-2 s_website_form_field" data-type="text" data-name="applicant_notes">
+                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                        <label class="col-sm-auto s_website_form_label" style="width: 200px" for="applicant_notes">
+                            <span class="s_website_form_label_content">Short Introduction</span>
+                        </label>
+                        <div class="col-sm">
+                            <textarea id="applicant_notes" class="form-control s_website_form_input" name="applicant_notes" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div> -->
+
+                <!-- ======================= -->
+                <!-- Custom Fields Section   -->
+                <!-- ======================= -->
+                <div id="custom_fields_block">
+
+                    <!-- Age -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="integer" data-name="age">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="age">
+                                <span class="s_website_form_label_content">Age</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input id="age" type="number" class="form-control s_website_form_input" name="age" required="true" min="16" max="99"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="selection" data-name="gender">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="gender">
+                                <span class="s_website_form_label_content">Gender</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <select id="gender" class="form-control s_website_form_input" name="gender" required="true">
+                                    <option value="">Select Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Educational Qualification -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="educational_qualification">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="educational_qualification">
+                                <span class="s_website_form_label_content">Educational Qualification</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="educational_qualification" id="educational_qualification" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Institution Name -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="institution_name">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="institution_name">
+                                <span class="s_website_form_label_content">Name of Institution</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="institution_name" id="institution_name" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Position -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="current_position">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="current_position">
+                                <span class="s_website_form_label_content">Current Position</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="current_position" id="current_position" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Employer -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="current_employer">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="current_employer">
+                                <span class="s_website_form_label_content">Current Employer</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="current_employer" id="current_employer" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Salary -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_custom" data-type="monetary" data-name="current_salary">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="current_salary">
+                                <span class="s_website_form_label_content">Current Salary</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="number" class="form-control s_website_form_input" name="current_salary" id="current_salary"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Years in Current Position -->
+<div class="col-12 mb-0 py-2 s_website_form_field s_website_form_custom" data-type="float" data-name="years_in_current_position">
+    <div class="row s_col_no_resize s_col_no_bgcolor">
+        <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="years_in_current_position">
+            <span class="s_website_form_label_content">Years in Current Position</span>
+        </label>
+        <div class="col-sm">
+            <input type="number" step="0.1" class="form-control s_website_form_input" name="years_in_current_position" id="years_in_current_position"/>
+        </div>
+    </div>
+</div>
+
+                    <!-- Salary Expectation -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_custom" data-type="monetary" data-name="salary_expectation">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="salary_expectation">
+                                <span class="s_website_form_label_content">Salary Expectation</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="number" class="form-control s_website_form_input" name="salary_expectation" id="salary_expectation"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Years in Banking -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="float" data-name="total_years_banking_exp">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="total_years_banking_exp">
+                                <span class="s_website_form_label_content">Total Years in Banking Industry</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="number" step="0.5" class="form-control s_website_form_input" name="total_years_banking_exp" id="total_years_banking_exp" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Location -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="string" data-name="current_location">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="current_location">
+                                <span class="s_website_form_label_content">Current Location</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text" class="form-control s_website_form_input" name="current_location" id="current_location" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Upload -->
+                    <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_custom" data-type="many2many_binary">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="application_documents">
+                                <span class="s_website_form_label_content">Application Documents</span>
+                                <span class="s_website_form_mark"> *</span>
+                            </label>
+                            <div class="col-sm">
+                                <div class="s_website_form_file form-control d-flex flex-wrap flex-fill">
+                                    <span class="s_website_form_filename flex-grow-1 text-truncate text-muted">No file chosen</span>
+                                   <input id="application_documents"
+       type="file"
+       class="s_website_form_input"
+       name="application_documents"
+       multiple="multiple"
+       required="true"
+       accept=".pdf,image/png,image/jpeg"/>
+
+
+                                </div>
+                                <small class="form-text text-muted">Upload application letter, CV, educational documents, and certificates.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- end custom_fields_block -->
+
+                <!-- Submit Button -->
+                <div class="mb-0 py-2 col-12 s_website_form_field s_website_form_submit">
+                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                        <div class="offset-sm-4 offset-lg-3 offset-xl-4 col-sm-8 col-lg-9 col-xl-8">
+                         <button type="button" id="custom_submit_button" class="btn btn-primary s_website_form_send">Apply Now</button>
+                            <span id="o_website_form_loading" class="fa fa-spinner fa-spin text-primary d-none"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- This is where Odoo usually injects its success/error messages -->
+                <div id="o_website_form_result"/>
+
+            </form>
+        </xpath>
+    </template>
+
+    <template id="job_description_inherit_years_exp"
+          inherit_id="website_hr_recruitment.detail"
+          name="Add Years of Experience to Job Detail Page">
+
+    <!-- Add the new info below job name and location -->
+    <xpath expr="//div[@class='col-md-9']" position="inside">
+        <t t-if="job.years_of_experience">
+            <p class="mt-2 text-muted">
+                <i class="fa fa-briefcase me-1"></i>
+                <strong>Years of Experience Required:</strong>
+                <span><t t-esc="job.years_of_experience"/> years</span>
+            </p>
+        </t>
+    </xpath>
+</template>
+
+<template id="job_description_with_sticky_sidebar"
+          inherit_id="website_hr_recruitment.detail"
+          name="Job Description with Sticky Sidebar">
+
+    <!-- Wrap description and sidebar in a row -->
+    <xpath expr="//div[@id='wrap']//div[@itemtype='https://schema.org/JobPosting']//div[@t-field='job.website_description']" position="replace">
+        <section class="mt-4 mb-4">
+            <div class="container">
+                <div class="row">
+
+                    <!-- Left Sticky Sidebar -->
+                    <div class="col-md-3">
+                        <aside class="job-sticky-sidebar" style="position: sticky; top: 100px; z-index: 10;">
+                            <div class="card p-3 mb-4" style="background-color:#fafafa; border-radius:10px;">
+                                <h5 class="fw-bold mb-3 text-primary">Job Details</h5>
+                                <ul class="list-unstyled" style="font-size:14px; color:#444;">
+                                    <li><strong>Job:</strong> <span t-esc="job.name or 'N/A'"/></li>
+                                    <li><strong>Location:</strong> <span t-esc="job.address_id and job.address_id.city or 'N/A'"/></li>
+                                    <li><strong>Department:</strong> <span t-esc="job.department_id.name or 'N/A'"/></li>
+                                    <li><strong>Employment Type:</strong> <span t-esc="job.contract_type_id.name or 'N/A'"/></li>
+                                    <li t-if="job.years_of_experience"><strong>Experience Required:</strong> <span t-esc="job.years_of_experience"/> years</li>
+                                   <li t-if="job.skill_ids">
+    <strong class="d-block mb-1">Expected Skills:</strong>
+    <div class="d-flex flex-wrap">
+        <t t-foreach="job.skill_ids" t-as="skill">
+            <span class="me-1 mb-1" t-esc="skill.name"/>
+        </t>
+    </div>
+</li>
+
+
+                                    <li><strong>Process:</strong> 1 Phone Call, 1 Onsite Interview</li>
+                                    <li><strong>Days to get Offer:</strong> 4 Days after Interview</li>
+                                </ul>
+                            </div>
+                        </aside>
+                    </div>
+
+                    <!-- Right Content: Job Description -->
+                    <div class="col-md-9">
+                        <t t-if="job.description">
+                            <p t-field="job.description" style="font-size:16px; line-height:1.7;"/>
+                        </t>
+                        <t t-else="">
+                            <p>No summary available for this job.</p>
+                        </t>
+                    </div>
+
+                </div> <!-- end row -->
+            </div> <!-- end container -->
+        </section>
+    </xpath>
+
+
+</template>
+
+
+     <template id="jobs_thankyou_template" name="Jobs Thank You">
+        <t t-call="website.layout">
+            <div class="container mt-5 mb-5">
+                <h1>Thank you for your application!</h1>
+                <p>We have received your submission and will get back to you soon.</p>
+                <a href="/jobs" class="btn btn-primary mt-3">Back to Jobs</a>
+            </div>
+        </t>
+    </template>
+
+</odoo>

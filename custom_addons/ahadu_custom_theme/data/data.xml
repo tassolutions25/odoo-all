@@ -1,0 +1,7 @@
+<odoo>
+    <template id="custom_favicon" inherit_id="web.layout">
+        <xpath expr="//head" position="inside">
+            <link rel="icon" type="image/x-icon" href="/ahadu_custom_theme/static/src/img/favicon.ico"/>
+        </xpath>
+    </template>
+</odoo>

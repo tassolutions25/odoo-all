@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_approval_reject_wizard_form" model="ir.ui.view">
+        <field name="name">hr.approval.reject.wizard.form</field>
+        <field name="model">hr.approval.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Rejection Reason">
+                <group>
+                    <field name="rejection_reason" nolabel="1" placeholder="Please provide a clear reason for rejecting this request..."/>
+                </group>
+                <footer>
+                    <button name="action_confirm_rejection" string="Confirm Rejection" type="object" class="btn-danger" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

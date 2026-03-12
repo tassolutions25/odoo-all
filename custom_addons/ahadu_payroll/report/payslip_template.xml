@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_payslip_ahadu">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+
+                        <!-- HEADER SECTION -->
+                        <div class="text-center mb-4">
+                            <h2>Ahadu Bank S.C</h2>
+                            <h4>Payslip for the Month of <span t-field="o.date_from"
+                                    t-options='{"format": "MMMM yyyy"}' /></h4>
+                        </div>
+
+                        <!-- EMPLOYEE DETAILS GRID -->
+                        <table class="table table-sm table-bordered">
+                            <tr>
+                                <td>
+                                    <strong>Employee ID:</strong>
+                                   <span t-field="o.employee_id.barcode" />
+                                </td>
+                                <td>
+                                    <strong>A/c Number:</strong>
+                                    <span t-field="o.employee_id.bank_account_id.acc_number" />
+                                </td>
+                                <td>
+                                    <strong>Paid Days:</strong>
+                                    <span t-field="o.worked_days" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Name:</strong>
+                                    <span t-field="o.employee_id.name" />
+                                </td>
+                                <td>
+                                    <strong>TIN Number:</strong>
+                                    <span t-field="o.employee_id.tin_number" />
+                                </td>
+                                <td>
+                                    <strong>Absent Days:</strong>
+                                    <span t-field="o.absent_days" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Department:</strong>
+                                    <span t-field="o.employee_id.department_id.name" />
+                                </td>
+                                <td>
+                                    <strong>Pension Reg:</strong>
+                                    <span t-field="o.employee_id.ssnid" />
+                                </td>
+                                <td>
+                                    <strong>Days in Month:</strong>
+                                    <span t-field="o.working_days" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Designation:</strong>
+                                    <span t-field="o.employee_id.job_id.name" />
+                                </td>
+                                <td>
+                                    <strong>Branch:</strong>
+                                    <span t-field="o.contract_id.cost_center_id.name" />
+                                </td>
+                                <td>
+                                    <strong>Gender:</strong>
+                                    <span t-field="o.employee_id.gender" />
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!--CALCULATIONS: Separate Earnings and Deductions -->
+                        <t t-set="earnings"
+                            t-value="o.line_ids.filtered(lambda line: line.category_id.code in ['BASIC', 'ALW'])" />
+                        <t t-set="deductions"
+                            t-value="o.line_ids.filtered(lambda line: line.category_id.code in ['DED'])" />
+                        <t t-set="gross"
+                            t-value="o.line_ids.filtered(lambda line: line.code == 'GROSS')" />
+                        <t t-set="net"
+                            t-value="o.line_ids.filtered(lambda line: line.code == 'NET')" />
+                        <t t-set="total_ded"
+                            t-value="gross.total - net.total if gross and net else 0.0" />
+
+                        <!-- MAIN TABLE -->
+                        <table class="table table-sm table-bordered mt-4">
+                            <thead>
+                                <tr style="background-color: #f0f0f0;">
+                                    <th width="50%">Earnings</th>
+                                    <th width="15%" class="text-end">Amount</th>
+                                    <th width="5%"></th> <!-- Spacer -->
+                                    <th width="30%">Deductions</th>
+                                    <th width="15%" class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- We loop up to the max length of either list to keep columns aligned -->
+                                <t t-set="max_rows" t-value="max(len(earnings), len(deductions))" />
+                                <t t-foreach="range(max_rows)" t-as="i">
+                                    <tr>
+                                        <!-- EARNINGS COLUMN -->
+                                        <td>
+                                            <t t-if="i &lt; len(earnings)">
+                                                <span t-esc="earnings[i].name" />
+                                            </t>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-if="i &lt; len(earnings)">
+                                                <span t-esc="earnings[i].total"
+                                                    t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}' />
+                                            </t>
+                                        </td>
+
+                                        <td style="border-top: none; border-bottom: none;"></td>
+
+                                        <!-- DEDUCTIONS COLUMN -->
+                                        <td>
+                                            <t t-if="i &lt; len(deductions)">
+                                                <span t-esc="deductions[i].name" />
+                                            </t>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-if="i &lt; len(deductions)">
+                                                <span t-esc="deductions[i].total"
+                                                    t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}' />
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+
+                                <!-- TOTALS ROW -->
+                                <tr style="font-weight: bold; background-color: #f8f9fa;">
+                                    <td>Gross Salary</td>
+                                    <td class="text-end">
+                                        <span t-if="gross" t-esc="gross.total"
+                                            t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}' />
+                                    </td>
+                                    <td></td>
+                                    <td>Total Deduction</td>
+                                    <td class="text-end">
+                                        <span t-esc="total_ded"
+                                            t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}' />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- NET PAY BOX -->
+                        <div class="row mt-4">
+                            <div class="col-6 offset-6">
+                                <table class="table table-bordered">
+                                    <tr style="background-color: #e9ecef;">
+                                        <td>
+                                            <strong>NET PAY</strong>
+                                        </td>
+                                        <td class="text-end" style="font-size: 1.2em;">
+                                            <strong>
+                                                <span t-if="net" t-esc="net.total"
+                                                    t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}' />
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- SIGNATURES -->
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p><strong>Prepared By:</strong> ___________________</p>
+                            </div>
+                            <div class="col-6 text-end">
+                                <p><strong>Approved By:</strong> ___________________</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

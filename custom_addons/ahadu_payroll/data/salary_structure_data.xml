@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Categories -->
+        <record id="ahadu_category_basic" model="hr.salary.rule.category">
+            <field name="name">Basic</field>
+            <field name="code">BASIC</field>
+        </record>
+        <record id="ahadu_category_alw" model="hr.salary.rule.category">
+            <field name="name">Allowance</field>
+            <field name="code">ALW</field>
+        </record>
+        <record id="ahadu_category_gross" model="hr.salary.rule.category">
+            <field name="name">Gross</field>
+            <field name="code">GROSS</field>
+        </record>
+        <record id="ahadu_category_ded" model="hr.salary.rule.category">
+            <field name="name">Deduction</field>
+            <field name="code">DED</field>
+        </record>
+        <record id="ahadu_category_net" model="hr.salary.rule.category">
+            <field name="name">Net</field>
+            <field name="code">NET</field>
+        </record>
+        <record id="ahadu_category_comp" model="hr.salary.rule.category">
+            <field name="name">Company Contribution</field>
+            <field name="code">COMP</field>
+        </record>
+        <record id="ahadu_category_info" model="hr.salary.rule.category">
+            <field name="name">Information</field>
+            <field name="code">INFO</field>
+        </record>
+
+        <!-- RULES -->
+
+        <!-- Basic Salary -->
+        <record id="hr_rule_basic" model="hr.salary.rule">
+            <field name="name">Basic Salary</field>
+            <field name="sequence" eval="1" />
+            <field name="code">BASIC</field>
+            <field name="category_id" ref="ahadu_category_basic" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_basic_salary()</field>
+            <field name="ahadu_debit_account_id" ref="account_5030101" />
+        </record>
+
+        <!-- Transport -->
+        <record id="hr_rule_transport" model="hr.salary.rule">
+            <field name="name">Transport Allowance</field>
+            <field name="sequence" eval="10" />
+            <field name="code">TRANS</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_transport()</field>
+            <field name="ahadu_debit_account_id" ref="account_5030204" />
+        </record>
+
+        <!-- Housing -->
+        <record id="hr_rule_housing" model="hr.salary.rule">
+            <field name="name">Housing Allowance</field>
+            <field name="sequence" eval="20" />
+            <field name="code">HOUSE</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_housing()</field>
+            <field name="ahadu_debit_account_id" ref="account_5030205" />
+        </record>
+
+        <!-- Hardship -->
+        <record id="hr_rule_hardship" model="hr.salary.rule">
+            <field name="name">Hardship Allowance</field>
+            <field name="sequence" eval="27" />
+            <field name="code">HARDSHIP</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_hardship()</field>
+            <field name="ahadu_debit_account_id" ref="account_5030203" />
+        </record>
+
+        <!-- Representation -->
+        <record id="hr_rule_representation" model="hr.salary.rule">
+            <field name="name">Representation Allowance</field>
+            <field name="sequence" eval="30" />
+            <field name="code">REP</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_representation()</field>
+            <field name="ahadu_debit_account_id" ref="account_5030206" />
+        </record>
+
+        <!-- Cash Indemnity -->
+        <record id="hr_rule_cash_indemnity" model="hr.salary.rule">
+            <field name="name">Cash Indemnity Allowance</field>
+            <field name="sequence" eval="35" />
+            <field name="code">CASH_IND</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.cash_indemnity_allowance</field>
+            <field name="ahadu_debit_account_id" ref="account_5030201" />
+        </record>
+
+        <!-- Mobile -->
+        <record id="hr_rule_mobile" model="hr.salary.rule">
+            <field name="name">Mobile Allowance</field>
+            <field name="sequence" eval="40" />
+            <field name="code">MOBILE</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_benefit_amount('MOBILE')</field>
+            <field name="ahadu_debit_account_id" ref="account_5030221" />
+        </record>
+
+        <!-- Other Benefits -->
+        <record id="hr_rule_other_benefits" model="hr.salary.rule">
+            <field name="name">Other Benefits</field>
+            <field name="sequence" eval="45" />
+            <field name="code">OTHER_BEN</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_benefit_amount('OTHER_BEN')</field>
+            <field name="ahadu_debit_account_id" ref="account_5030220" />
+        </record>
+
+        <!-- Overtime -->
+        <record id="hr_rule_ot" model="hr.salary.rule">
+            <field name="name">Overtime</field>
+            <field name="sequence" eval="50" />
+            <field name="code">OT</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.overtime_amount > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.overtime_amount</field>
+            <field name="ahadu_debit_account_id" ref="account_5030222" />
+        </record>
+
+        <!-- LOP Adjustment (Credit Back) -->
+        <record id="hr_rule_lop_adjustment" model="hr.salary.rule">
+            <field name="name">LOP Adjustment (Credit)</field>
+            <field name="sequence" eval="95" />
+            <field name="code">LOP_ADJ</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.lop_adjustment > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_lop_adjustment()</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="ahadu_debit_account_id" ref="account_5030101" />
+        </record>
+
+        <!-- Gross -->
+        <record id="hr_rule_gross" model="hr.salary.rule">
+            <field name="name">Gross Salary</field>
+            <field name="sequence" eval="100" />
+            <field name="code">GROSS</field>
+            <field name="category_id" ref="ahadu_category_gross" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.BASIC + categories.ALW</field>
+        </record>
+
+        <!-- Leave Deduction -->
+        <record id="hr_rule_leave_deduction" model="hr.salary.rule">
+            <field name="name">Leave Deduction</field>
+            <field name="sequence" eval="190" />
+            <field name="code">LOP_LEAVE</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_leave_deduction()</field>
+            <field name="ahadu_credit_account_id" ref="account_5030101" />
+        </record>
+
+        <!-- Income Tax -->
+        <record id="hr_rule_income_tax" model="hr.salary.rule">
+            <field name="name">Income Tax</field>
+            <field name="sequence" eval="200" />
+            <field name="code">TAX</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_income_tax(payslip._get_ahadu_taxable_gross())</field>
+            <field name="ahadu_credit_account_id" ref="account_2020301" />
+        </record>
+
+        <!-- Cash Indemnity Tax (CI_TAX) -->
+        <record id="hr_rule_ci_tax" model="hr.salary.rule">
+            <field name="name">Cash Indemnity Tax (35%)</field>
+            <field name="sequence" eval="205" />
+            <field name="code">CI_TAX</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.cash_indemnity_tax > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.cash_indemnity_tax</field>
+            <field name="ahadu_credit_account_id" ref="account_2020301" />
+        </record>
+
+        <!-- Pension Emp -->
+        <record id="hr_rule_pension_emp" model="hr.salary.rule">
+            <field name="name">Pension (Employee 7%)</field>
+            <field name="sequence" eval="210" />
+            <field name="code">PENSION_EMP</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = contract.pay_group_id.code != 'CONTEMPWOP'</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (categories.BASIC - payslip._get_ahadu_leave_deduction()) * 0.07</field>
+            <field name="ahadu_credit_account_id" ref="account_2020308" />
+        </record>
+
+        <!-- Pension Comp -->
+        <record id="hr_rule_pension_comp" model="hr.salary.rule">
+            <field name="name">Pension (Company 11%)</field>
+            <field name="sequence" eval="215" />
+            <field name="code">PENSION_COMP</field>
+            <field name="category_id" ref="ahadu_category_comp" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = contract.pay_group_id.code != 'CONTEMPWOP'</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (categories.BASIC - payslip._get_ahadu_leave_deduction()) * 0.11</field>
+            <field name="ahadu_debit_account_id" ref="account_5030211" />
+            <field name="ahadu_credit_account_id" ref="account_2020308" />
+        </record>
+
+        <!-- Advance Loan Repayment -->
+        <record id="hr_rule_adv_loan" model="hr.salary.rule">
+            <field name="name">Adv. Loan Repayment</field>
+            <field name="sequence" eval="220" />
+            <field name="code">ADV_LOAN</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip._get_ahadu_advance_loan_deduction() > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_advance_loan_deduction()</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_1010202" />
+        </record>
+
+        <!-- Personal Loan Repayment -->
+        <record id="hr_rule_pers_loan" model="hr.salary.rule">
+            <field name="name">Pers. Loan Repayment</field>
+            <field name="sequence" eval="221" />
+            <field name="code">PERS_LOAN</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip._get_ahadu_personal_loan_deduction() > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_personal_loan_deduction()</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_1010203" />
+        </record>
+
+        <!-- Other Loan Repayment -->
+        <record id="hr_rule_loan" model="hr.salary.rule">
+            <field name="name">Other Loan Repayment</field>
+            <field name="sequence" eval="222" />
+            <field name="code">OTHER_LOAN</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip._get_ahadu_other_loan_deduction() > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_other_loan_deduction()</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_1010202" />
+        </record>
+
+        <!-- Savings Deduction -->
+        <record id="hr_rule_savings" model="hr.salary.rule">
+            <field name="name">Savings</field>
+            <field name="sequence" eval="225" />
+            <field name="code">SAVINGS</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip._get_ahadu_savings_deduction() > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_savings_deduction()</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_2020310" />
+        </record>
+
+        <!-- Credit Association Deduction -->
+        <record id="hr_rule_credit_assoc" model="hr.salary.rule">
+            <field name="name">Credit Association</field>
+            <field name="sequence" eval="230" />
+            <field name="code">CREDIT_ASSOC</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip._get_ahadu_credit_association_deduction() > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_credit_association_deduction()</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_2020311" />
+        </record>
+
+        <!-- Cost Sharing Deduction -->
+        <record id="hr_rule_cost_sharing" model="hr.salary.rule">
+            <field name="name">Cost Sharing</field>
+            <field name="sequence" eval="232" />
+            <field name="code">COST_SHARING</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip._get_ahadu_cost_sharing_deduction() > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_cost_sharing_deduction()</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_2020309" />
+        </record>
+
+        <!-- Other Deductions -->
+        <record id="hr_rule_other_deductions" model="hr.salary.rule">
+            <field name="name">Other Deductions</field>
+            <field name="sequence" eval="235" />
+            <field name="code">OTHER_DED</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip._get_ahadu_other_deduction() > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_other_deduction()</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_2020312" />
+        </record>
+
+        <!-- Net Pay -->
+        <record id="hr_rule_net" model="hr.salary.rule">
+            <field name="name">Net Pay</field>
+            <field name="sequence" eval="300" />
+            <field name="code">NET</field>
+            <field name="category_id" ref="ahadu_category_net" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.GROSS - categories.DED</field>
+            <field name="ahadu_credit_account_id" ref="account_2020300" />
+        </record>
+
+        <!-- Penalty Deduction (negative rule in BASIC category to reduce GROSS) -->
+        <record id="hr_rule_penalty" model="hr.salary.rule">
+            <field name="name">Penalty Deduction</field>
+            <field name="sequence" eval="5" />
+            <field name="code">PENALTY</field>
+            <field name="category_id" ref="ahadu_category_basic" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip._get_ahadu_penalty_deduction() > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = -payslip._get_ahadu_penalty_deduction()</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_5030101" />
+        </record>
+
+        <!-- Salary Structure -->
+        <record id="structure_ahadu_monthly" model="hr.payroll.structure">
+            <field name="name">Ahadu Bank Monthly Salary</field>
+            <field name="code">AHADU-MONTHLY</field>
+            <field name="rule_ids"
+                eval="[
+                (4, ref('hr_rule_basic')),
+                (4, ref('hr_rule_penalty')),
+                (4, ref('hr_rule_transport')),
+                (4, ref('hr_rule_housing')),
+                (4, ref('hr_rule_hardship')),
+                (4, ref('hr_rule_representation')),
+                (4, ref('hr_rule_cash_indemnity')),
+                (4, ref('hr_rule_mobile')),
+                (4, ref('hr_rule_other_benefits')),
+                (4, ref('hr_rule_ot')),
+                (4, ref('hr_rule_lop_adjustment')),
+                (4, ref('hr_rule_gross')),
+                (4, ref('hr_rule_leave_deduction')),
+                (4, ref('hr_rule_income_tax')),
+                (4, ref('hr_rule_ci_tax')),
+                (4, ref('hr_rule_pension_emp')),
+                (4, ref('hr_rule_pension_comp')),
+                (4, ref('hr_rule_adv_loan')),
+                (4, ref('hr_rule_pers_loan')),
+                (4, ref('hr_rule_loan')),
+                (4, ref('hr_rule_savings')),
+                (4, ref('hr_rule_credit_assoc')),
+                (4, ref('hr_rule_cost_sharing')),
+                (4, ref('hr_rule_other_deductions')),
+                (4, ref('hr_rule_net')),
+            ]" />
+        </record>
+
+    </data>
+</odoo>

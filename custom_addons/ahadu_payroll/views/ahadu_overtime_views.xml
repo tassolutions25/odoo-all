@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================== -->
+    <!-- 1. OVERTIME TRACKING VIEWS     -->
+    <!-- ============================== -->
+    <record id="view_ahadu_overtime_tracking_form" model="ir.ui.view">
+        <field name="name">ahadu.overtime.tracking.form</field>
+        <field name="model">ahadu.overtime.tracking</field>
+        <field name="arch" type="xml">
+            <form string="Overtime Tracking">
+                <header>
+                    <button name="action_verify" string="Verify" type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                    <button name="action_approve" string="Approve" type="object" invisible="state != 'verified'" class="oe_highlight"/>
+                    <button name="action_done" string="Mark as Done" type="object" invisible="state != 'approved'" class="oe_highlight"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state in ['draft', 'done']"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state == 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,verified,approved,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group col="3">
+                        <field name="employee_id"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="company_id" invisible="1"/>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Time Entries">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <!-- Start Time Fields Details -->
+                                    <field name="start_hour" nolabel="0" style="width: 50px;"/>
+                                    <field name="start_minute" nolabel="1" style="width: 50px;"/>
+                                    <field name="start_am_pm" nolabel="1" style="width: 50px;"/>
+                                    
+                                    <!-- Separator/Label could be handled via styles or string empty -->
+                                    
+                                    <!-- End Time Fields Details -->
+                                    <field name="end_hour" nolabel="0"/>
+                                    <field name="end_minute" nolabel="1"/>
+                                    <field name="end_am_pm" nolabel="1"/>
+
+                                    <field name="total_hours" sum="Total" readonly="1" force_save="1"/>
+                                    <field name="normal_hours" sum="Normal" optional="show" readonly="1" force_save="1"/>
+                                    <field name="night_hours" sum="Night" optional="show" readonly="1" force_save="1"/>
+                                    <field name="weekend_hours" sum="Weekend" optional="show" readonly="1" force_save="1"/>
+                                    <field name="holiday_hours" sum="Holiday" optional="show" readonly="1" force_save="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <group string="Signatures &amp; Accountability">
+                        <group>
+                            <field name="prepared_by_id"/>
+                            <field name="create_date" string="Prepared On" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="verified_by_id"/>
+                            <field name="approved_by_id"/>
+                        </group>
+                    </group>
+                </sheet>
+
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ahadu_overtime_tracking_kanban" model="ir.ui.view">
+        <field name="name">ahadu.overtime.tracking.kanban</field>
+        <field name="model">ahadu.overtime.tracking</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" quick_create="false">
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_card_content">
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title"><field name="employee_id"/></strong>
+                                </div>
+                                <field name="state" widget="label_selection" options="{'classes': {'draft': 'default', 'verified': 'info', 'approved': 'success', 'done': 'success'}}"/>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div><field name="name"/></div>
+                                <div>
+                                    <i class="fa fa-calendar" title="Dates"/> 
+                                    <field name="date_from"/> - <field name="date_to"/>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="activity_ids" widget="kanban_activity"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="prepared_by_id" widget="many2one_avatar_user"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_ahadu_overtime_tracking_tree" model="ir.ui.view">
+        <field name="name">ahadu.overtime.tracking.list</field>
+        <field name="model">ahadu.overtime.tracking</field>
+        <field name="arch" type="xml">
+            <list string="Overtime Tracking">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'verified'" decoration-success="state == 'approved'"/>
+                <field name="prepared_by_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_ahadu_overtime_tracking" model="ir.actions.act_window">
+        <field name="name">Overtime Tracking</field>
+        <field name="res_model">ahadu.overtime.tracking</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- 2. OVERTIME CALCULATION VIEWS  -->
+    <!-- ============================== -->
+    <record id="view_ahadu_overtime_form" model="ir.ui.view">
+        <field name="name">ahadu.overtime.form</field>
+        <field name="model">ahadu.overtime</field>
+        <field name="arch" type="xml">
+            <form string="Overtime Calculation">
+                <header>
+                    <button name="action_approve" string="Approve" type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                    <button name="action_done" string="Mark as Done" type="object" invisible="state != 'approved'" class="oe_highlight"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                         <button name="action_fetch_tracking_data" 
+                                string="Fetch From Tracking" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-refresh"
+                                invisible="state != 'draft'"
+                                help="Fetch lines from Approved Tracking records matching the employee and dates."/>
+                    </div>
+                
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group col="2">
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="tracking_id" domain="[('state', 'in', ['approved', 'done'])]"/>
+                            <field name="contract_id" readonly="1" force_save="1"/>
+                            <field name="wage" readonly="1"/>
+                        </group>
+                        <group name="dates">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <field name="company_id" invisible="1"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    
+                    <separator string="Working Hours Calculation"/>
+                    <group>
+                        <group string="Days">
+                            <field name="total_calendar_days"/>
+                            <field name="saturdays"/>
+                            <field name="sundays"/>
+                            <field name="holidays"/>
+                        </group>
+                        <group string="Hours">
+                            <field name="gross_possible_hours"/>
+                            <field name="off_hours_saturday" string="Sat Off Hrs"/>
+                            <field name="off_hours_sunday" string="Sun Off Hrs"/>
+                            <field name="off_hours_holiday" string="Hol Off Hrs"/>
+                            <field name="total_off_hours" class="fw-bold"/>
+                            <field name="total_working_hours" class="fw-bold"/>
+                            <field name="hourly_rate" class="fw-bold"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Calculated Details">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="type"/>
+                                    <field name="hours" sum="Total Hours"/>
+                                    <field name="rate"/>
+                                    <field name="amount" sum="Total Amount"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_overtime_amount" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ahadu_overtime_kanban" model="ir.ui.view">
+        <field name="name">ahadu.overtime.kanban</field>
+        <field name="model">ahadu.overtime</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" quick_create="false">
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_card_content">
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title"><field name="employee_id"/></strong>
+                                </div>
+                                <field name="state" widget="label_selection"/>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div><field name="name"/></div>
+                                <div>
+                                    <i class="fa fa-calendar" title="Dates"/> 
+                                    <field name="date_from"/> - <field name="date_to"/>
+                                </div>
+                                <div class="fw-bold mt-1">
+                                    Total: <field name="total_overtime_amount"/>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom mt-2">
+                                <div class="oe_kanban_bottom_left text-muted font-italic">
+                                    <field name="total_working_hours"/> Hrs Calculated
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_ahadu_overtime_tree" model="ir.ui.view">
+        <field name="name">ahadu.overtime.tree</field>
+        <field name="model">ahadu.overtime</field>
+        <field name="arch" type="xml">
+            <list string="Overtime Calculations">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="total_working_hours"/>
+                <field name="total_overtime_amount"/>
+                <field name="state"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_ahadu_overtime" model="ir.actions.act_window">
+        <field name="name">Overtime Calculations</field>
+        <field name="res_model">ahadu.overtime</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- 3. OVERTIME RULES              -->
+    <!-- ============================== -->
+    <record id="view_ahadu_overtime_rule_tree" model="ir.ui.view">
+        <field name="name">ahadu.overtime.rule.tree</field>
+        <field name="model">ahadu.overtime.rule</field>
+        <field name="arch" type="xml">
+            <list string="Overtime Rules" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="dayofweek"/>
+                <field name="time_start" widget="float_time"/>
+                <field name="time_end" widget="float_time"/>
+                <field name="type"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_ahadu_overtime_rule" model="ir.actions.act_window">
+        <field name="name">Overtime Rules</field>
+        <field name="res_model">ahadu.overtime.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- 4. MENUS                       -->
+    <!-- ============================== -->
+    <!-- Root Menu inside Payroll -->
+    <record id="menu_ahadu_overtime_root" model="ir.ui.menu">
+        <field name="name">Overtime</field>
+        <field name="parent_id" ref="menu_ahadu_root"/>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Sub Menu: Overtime Tracking -->
+    <record id="menu_ahadu_overtime_tracking" model="ir.ui.menu">
+        <field name="name">Overtime Tracking</field>
+        <field name="parent_id" ref="menu_ahadu_overtime_root"/>
+        <field name="action" ref="action_ahadu_overtime_tracking"/>
+        <field name="sequence">10</field>
+    </record>
+
+    <!-- Sub Menu: Calculation & Print -->
+    <record id="menu_ahadu_overtime_print" model="ir.ui.menu">
+        <field name="name">Overtime Calculation</field>
+        <field name="parent_id" ref="menu_ahadu_overtime_root"/>
+        <field name="action" ref="action_ahadu_overtime"/>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Sub Menu: Configuration (Rules) -->
+    <record id="menu_ahadu_overtime_rule_config" model="ir.ui.menu">
+        <field name="name">Overtime Rules</field>
+        <field name="parent_id" ref="menu_ahadu_overtime_root"/>
+        <field name="action" ref="action_ahadu_overtime_rule"/>
+        <field name="sequence">30</field>
+    </record>
+</odoo>

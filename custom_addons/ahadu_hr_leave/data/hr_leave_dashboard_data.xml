@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!--
+        This 'function' record will call the python method
+        _create_dashboard_record on the 'ahadu.hr.leave.dashboard' model.
+        This ensures our single dashboard record is created on install/upgrade.
+    -->
+    <function model="ahadu.hr.leave.dashboard" name="_create_dashboard_record" />
+</odoo>

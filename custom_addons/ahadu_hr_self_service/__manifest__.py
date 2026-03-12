@@ -1,0 +1,34 @@
+{
+    "name": "Ahadu HR Self Service",
+    "version": "18.0.1.0.0",
+    "category": "Human Resources",
+    "summary": "Employee self-service portal for onboarding and dashboard access.",
+    "author": "Your Company",
+    "website": "",
+    "depends": [
+        "ahadu_hr",
+        "website",
+        "portal",
+        "hr_holidays",
+        "project",
+        "mail",
+        "mass_mailing",
+    ],
+    "data": [
+        "security/ir.model.access.csv",
+        "security/onboarding_security.xml",
+        "security/document_request_security.xml",
+        "data/hr_document_request_approval_policy_data.xml",
+        "views/self_service_templates.xml",
+        "views/hr_employee_onboarding_views.xml",
+        "views/hr_document_request_views.xml",
+        "data/hr_onboarding_approval_policy_data.xml",
+    ],
+    "assets": {
+        "web.assets_frontend": [
+            "ahadu_hr_self_service/static/src/css/self_service.css",
+        ],
+    },
+    "installable": True,
+    "application": True,
+}

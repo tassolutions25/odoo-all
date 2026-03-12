@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_employee_transfer_tree" model="ir.ui.view">
+            <field name="name">hr.employee.transfer.tree</field>
+            <field name="model">hr.employee.transfer</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="employee_id"/>
+                    <field name="transfer_date"/>
+                    <field name="current_branch_id"/>
+                    <field name="new_branch_id"/>
+                    <field name="current_department_id" optional="hide"/>
+                    <field name="current_cost_center_id" optional="hide"/>
+                    <field name="current_job_id" optional="hide"/>
+                    <field name="new_department_id" optional="show"/>
+                    <field name="new_cost_center_id" optional="show"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_employee_transfer_form" model="ir.ui.view">
+            <field name="name">hr.employee.transfer.form</field>
+            <field name="model">hr.employee.transfer</field>
+            <field name="arch" type="xml">
+                 <form string="Employee Transfer">
+                     <header>
+                        <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <button name="action_approve_step" string="Approve" type="object" class="btn-success" invisible="can_approve == False"/>
+                        <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="can_approve == False"/>
+                        <button name="action_draft" string="Reset to Draft" type="object" class="oe_link" invisible="state not in ('submitted', 'rejected')" groups="hr.group_hr_user"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>Employee Transfer</h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="employee_id"/>
+                                <field name="transfer_date"/>
+                            </group>
+                            <group>
+                                <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                                <field name="can_approve" invisible="1"/>
+                            </group>
+                        </group>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <group string="Current Information">
+                                    <field name="current_branch_id"/>
+                                    <field name="current_department_id"/>
+                                    <field name="current_division_id"/>
+                                    <field name="current_cost_center_id"/>
+                                    <field name="current_job_id"/>
+                                    <field name="current_manager_id"/>
+                                </group>
+                            </div>
+                            <div class="col-md-6">
+                                <group string="New Information">
+                                    <field name="new_branch_id"/>
+                                    <field name="new_department_id"/>
+                                    <field name="new_division_id"/>
+                                    <field name="new_cost_center_id"/>
+                                    <field name="new_job_id"/>
+                                    <field name="new_manager_id"/>
+                                </group>
+                            </div>
+                        </div>
+                        
+                        <group>
+                            <field name="reason" placeholder="Enter reason for transfer..."/>
+                        </group>
+                        <notebook>
+                            <page string="Approval History">
+                                <field name="approval_line_ids">
+                                    <list>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="approver_id"/>
+                                        <field name="status"/>
+                                        <field name="approval_date"/>
+                                        <field name="comments"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_ahadu_payroll" model="ir.ui.view">
+        <field name="name">res.users.form.ahadu.payroll</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[@name='access_rights']/group[1]" position="before">
+                <group string="Ahadu Payroll Configuration">
+                    <field name="ahadu_payroll_role"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

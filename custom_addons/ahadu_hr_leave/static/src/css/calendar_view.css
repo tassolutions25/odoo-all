@@ -1,0 +1,81 @@
+/* Main page layout */
+.o_ahadu_calendar_page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #f8f9fa;
+}
+.calendar_header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+    background-color: white;
+    flex-shrink: 0;
+}
+.calendar_main_content {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden; /* Important for positioning the legend */
+}
+
+/* Scrollable container for the grids */
+.calendar_scroll_container {
+    flex-grow: 1;
+    overflow-y: auto; /* Enable VERTICAL scrolling */
+    padding: 1.5rem;
+}
+
+/* New section titles */
+.calendar_section {
+    margin-bottom: 2.5rem;
+}
+.section_title {
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #0d6efd;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+
+/* Grid for the months */
+.calendar_grid_vertical {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Styling for a single "Month Block" */
+.month_block {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    padding: 1rem;
+}
+.month_title {
+    text-align: center;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 1.1em;
+}
+.day_number {
+    font-weight: 500;
+}
+
+/* Fixed right-hand legend panel */
+.calendar_legend_pane {
+    width: 220px;
+    flex-shrink: 0;
+    padding: 1.5rem;
+    border-left: 1px solid #dee2e6;
+    background-color: white;
+}
+.legend_item { display: flex; align-items: center; margin-bottom: 0.75rem; }
+.legend_color_box { width: 20px; height: 20px; border-radius: 4px; margin-right: 0.75rem; border: 1px solid rgba(0,0,0,0.1); }
+
+/* Day cell and color styling (unchanged) */
+.day_cell { padding: 0.5rem 0.2rem !important; border-radius: 4px; }
+.day_cell.is_today { background-color: #0d6efd; color: white; }
+.day_cell.leave_validate, .legend_color_box.color_validated { background-color: #d1c4e9; }
+.day_cell.leave_refuse, .legend_color_box.color_refused { background-color: #f5c6cb; text-decoration: line-through; opacity: 0.7; }
+.day_cell.leave_confirm, .legend_color_box.color_confirm { background-image: repeating-linear-gradient(-45deg, #e1dced, #e1dced 5px, #d1c4e9 5px, #d1c4e9 10px); }
+.day_cell.is_holiday, .legend_color_box.color_holiday { background-color: #fff3cd; }

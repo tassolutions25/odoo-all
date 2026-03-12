@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1"> <!-- Use noupdate to prevent user assignments from being wiped on upgrade -->
+
+        <!--
+        ====================================================
+        Part 1: Define the User Groups (Roles) FIRST
+        ====================================================
+        -->
+        <record id="group_leave_approver_hcm" model="res.groups">
+            <field name="name">Leave Approver - HCM Department</field>
+            <field name="category_id" ref="base.module_category_human_resources_time_off" />
+            <field name="implied_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_user'))]" />
+        </record>
+
+        <record id="group_leave_approver_ceo" model="res.groups">
+            <field name="name">Leave Approver - CEO</field>
+            <field name="category_id" ref="base.module_category_human_resources_time_off" />
+            <field name="implied_ids" eval="[(4, ref('ahadu_hr_leave.group_leave_approver_hcm'))]" />
+        </record>
+
+        <!--
+        ====================================================
+        Part 2: Define the Record Rules that USE the groups
+        ====================================================
+        -->
+
+        <!-- Standard rule for employees to see only their own requests -->
+        <record id="hr_leave_rule_employee_ahadu" model="ir.rule">
+            <field name="name">Employee sees own Leave (Ahadu)</field>
+            <field name="model_id" ref="hr_holidays.model_hr_leave" />
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]" />
+        </record>
+
+        <!-- Standard rule for managers to see their subordinates' requests -->
+        <record id="hr_leave_rule_manager_ahadu" model="ir.rule">
+            <field name="name">Manager sees subordinates Leave (Ahadu)</field>
+            <field name="model_id" ref="hr_holidays.model_hr_leave" />
+            <field name="domain_force">['|', ('employee_id.user_id', '=', user.id),
+                ('employee_id.parent_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_holidays.group_hr_holidays_user'))]" />
+        </record>
+
+        <!-- Rule for HCM Department: Can see LWOP requests routed to them -->
+        <record id="hr_leave_rule_hcm_approver" model="ir.rule">
+            <field name="name">HCM Approver for Leave Without Pay</field>
+            <field name="model_id" ref="hr_holidays.model_hr_leave" />
+            <field name="domain_force">[('next_approver_id.id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('ahadu_hr_leave.group_leave_approver_hcm'))]" />
+        </record>
+
+        <!-- Rule for CEO: Can see all LWOP requests routed to them -->
+        <record id="hr_leave_rule_ceo_approver" model="ir.rule">
+            <field name="name">CEO Approver for Leave Without Pay</field>
+            <field name="model_id" ref="hr_holidays.model_hr_leave" />
+            <field name="domain_force">[('next_approver_id.id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('ahadu_hr_leave.group_leave_approver_ceo'))]" />
+        </record>
+
+        <record id="group_leave_officer" model="res.groups">
+            <field name="name">Leave Officer</field>
+            <field name="category_id" ref="base.module_category_human_resources_time_off" />
+            <field name="implied_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_user'))]" />
+        </record>
+
+    </data>
+</odoo>

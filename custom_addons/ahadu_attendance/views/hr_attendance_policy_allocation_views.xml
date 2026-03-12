@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Policy Allocation Tree View -->
+    <record id="view_hr_attendance_policy_allocation_tree" model="ir.ui.view">
+        <field name="name">hr.attendance.policy.allocation.tree</field>
+        <field name="model">hr.attendance.policy.allocation</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="policy_id"/>
+                <field name="allocation_type"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Policy Allocation Form View -->
+    <record id="view_hr_attendance_policy_allocation_form" model="ir.ui.view">
+        <field name="name">hr.attendance.policy.allocation.form</field>
+        <field name="model">hr.attendance.policy.allocation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_apply_allocation" string="Apply Allocation" type="object" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="policy_id"/>
+                        </group>
+                        <group>
+                            <field name="allocation_type" widget="radio"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="department_ids" widget="many2many_tags" invisible="allocation_type != 'department'"/>
+                        <field name="employee_ids" widget="many2many_tags" invisible="allocation_type != 'employee'"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for Policy Allocations -->
+    <record id="action_hr_attendance_policy_allocation" model="ir.actions.act_window">
+        <field name="name">Policy Allocations</field>
+        <field name="res_model">hr.attendance.policy.allocation</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

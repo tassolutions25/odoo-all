@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem
+        id="menu_ahadu_recruitment_root"
+        name="Ahadu Recruitment"
+        sequence="10"/>
+
+    <record id="action_recruitment_dashboard" model="ir.actions.client">
+        <field name="name">Recruitment Dashboard</field>
+        <field name="tag">ahadu_recruitment.dashboard</field>
+    </record>
+
+    <!-- Menu Item to make the dashboard accessible -->
+    <!-- <menuitem
+        id="menu_ahadu_recruitment_dashboard"
+        name="Dashboard"
+        parent="menu_ahadu_recruitment_root"
+        action="ahadu_recruitment.action_recruitment_dashboard"
+        sequence="20" />  -->
+
+    <menuitem
+        id="menu_ahadu_applications"
+        name="Applications"
+        parent="menu_ahadu_recruitment_root"
+        sequence="30" />
+
+    <menuitem
+        id="menu_ahadu_by_job_positions"
+        name="By Job Positions"
+        parent="menu_ahadu_applications"
+        action="hr_recruitment.action_hr_job"
+        sequence="10"/>  
+
+    
+     <menuitem
+        id="menu_ahadu_all_applications"
+        name="All Applications"
+        parent="menu_ahadu_applications"
+        action="hr_recruitment.crm_case_categ0_act_job"
+        sequence="20"/> 
+
+    <menuitem
+        id="menu_ahadu_candidates"
+        name="Candidates"
+        parent="menu_ahadu_applications"
+        action="hr_recruitment.action_hr_candidate"
+        sequence="30"/>          
+      
+
+    <!--
+    =====================================================
+    Reporting Menu
+    =====================================================
+    This creates a placeholder for Reporting and we parent the existing
+    recruitment report under it.
+    -->
+    <menuitem
+        id="menu_ahadu_reporting"
+        name="Reporting"
+        parent="menu_ahadu_recruitment_root"
+        sequence="40" />
+
+    <menuitem
+        id="menu_ahadu_recruitment_analysis"
+        name="Recruitment Analysis"
+        parent="menu_ahadu_reporting"
+        action="hr_recruitment.hr_applicant_action_analysis"
+        sequence="10"/>f
+
+<menuitem
+    id="menu_ahadu_configuration"
+    name="Configuration"
+    parent="menu_ahadu_recruitment_root"
+    sequence="50"
+    groups="hr_recruitment.group_hr_recruitment_manager"/>
+
+<!-- ==================== Settings ==================== -->
+<menuitem
+    id="menu_ahadu_recruitment_settings"
+    name="Settings"
+    parent="menu_ahadu_configuration"
+    action="hr_recruitment.action_hr_recruitment_configuration"
+    sequence="10"/>
+
+<!-- ==================== Recruitment Group ==================== -->
+<!-- This parent menuitem creates the visual separator -->
+<menuitem
+    id="menu_ahadu_group_recruitment"
+    parent="menu_ahadu_configuration"
+    name="Recruitment"
+    sequence="20"/>
+
+<menuitem
+    id="menu_ahadu_job_positions_config"
+    name="Job Positions"
+    parent="menu_ahadu_group_recruitment"
+    action="hr.action_hr_job"
+    sequence="10"/>
+
+<menuitem
+    id="menu_ahadu_recruitment_stages"
+    name="Stages"
+    parent="menu_ahadu_group_recruitment"
+    action="hr_recruitment.hr_recruitment_stage_act"
+    sequence="20"/>
+
+<menuitem
+    id="menu_ahadu_employment_types"
+    name="Employment Types"
+    parent="menu_ahadu_group_recruitment"
+    action="hr.hr_contract_type_action"
+    sequence="30"/>
+
+<!-- ==================== UTMs Group ==================== -->
+<menuitem
+    id="menu_ahadu_group_utm"
+    parent="menu_ahadu_configuration"
+    name="UTMs"
+    sequence="30"/>
+
+<menuitem
+    id="menu_ahadu_sources"
+    name="Sources"
+    parent="menu_ahadu_group_utm"
+    action="utm.utm_source_action"
+    sequence="10"/>
+
+<menuitem
+    id="menu_ahadu_mediums"
+    name="Mediums"
+    parent="menu_ahadu_group_utm"
+    action="utm.utm_medium_action"
+    sequence="20"/>
+
+<!-- ==================== Applications Group ==================== -->
+<menuitem
+    id="menu_ahadu_group_applications_config"
+    parent="menu_ahadu_configuration"
+    name="Applications"
+    sequence="40"/>
+
+<menuitem
+    id="menu_ahadu_degrees"
+    name="Degrees"
+    parent="menu_ahadu_group_applications_config"
+    action="hr_recruitment.hr_recruitment_degree_action"
+    sequence="10"/>
+
+<menuitem
+    id="menu_ahadu_refuse_reasons"
+    name="Refuse Reasons"
+    parent="menu_ahadu_group_applications_config"
+    action="hr_recruitment.hr_applicant_refuse_reason_action"
+    sequence="20"/>
+
+<menuitem
+    id="menu_ahadu_tags"
+    name="Tags"
+    parent="menu_ahadu_group_applications_config"
+    action="hr_recruitment.hr_applicant_category_action"
+    sequence="30"/>
+
+<!-- ==================== Employees Group ==================== -->
+<menuitem
+    id="menu_ahadu_group_employees"
+    parent="menu_ahadu_configuration"
+    name="Employees"
+    sequence="50"/>
+
+<menuitem
+    id="menu_ahadu_recruitment_departments"
+    name="Departments"
+    parent="menu_ahadu_group_employees"
+    action="hr_recruitment.action_hr_department"
+    sequence="10"/>
+
+<menuitem
+    id="menu_ahadu_recruitment_skill_types"
+    name="Skill Types"
+    parent="menu_ahadu_group_employees"
+    action="hr_skills.hr_skill_type_action"
+    sequence="20"/>
+
+<!-- ==================== Activities Group ==================== -->
+<menuitem
+    id="menu_ahadu_group_activities"
+    parent="menu_ahadu_configuration"
+    name="Activities"
+    sequence="60"/>
+
+<menuitem
+    id="menu_ahadu_activity_types"
+    name="Activity Types"
+    parent="menu_ahadu_group_activities"
+    action="mail.mail_activity_type_action"
+    sequence="10"/>
+
+<menuitem
+    id="menu_ahadu_activity_plans"
+    name="Activity Plans"
+    parent="menu_ahadu_group_activities"
+    action="hr_recruitment.mail_activity_plan_action_config_hr_applicant"
+    sequence="20"/>
+
+<!-- ==================== Job Boards Group ==================== -->
+<menuitem
+    id="menu_ahadu_group_job_boards"
+    parent="menu_ahadu_configuration"
+    name="Job Boards"
+    sequence="70"/>
+
+<menuitem
+    id="menu_ahadu_recruitment_recruitment_emails"
+    name="Emails"
+    parent="menu_ahadu_group_job_boards"
+    action="hr_recruitment.action_hr_job_platforms"
+    sequence="10"/>
+
+</odoo>    

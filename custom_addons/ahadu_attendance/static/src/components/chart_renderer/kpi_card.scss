@@ -1,0 +1,12 @@
+.o_kpi_card {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.12) !important;
+    }
+}
+
+.o_chart_container {
+    height: 150px;
+}

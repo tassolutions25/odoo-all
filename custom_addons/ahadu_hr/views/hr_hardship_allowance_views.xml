@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_hardship_allowance_level_tree" model="ir.ui.view">
+        <field name="name">hr.hardship.allowance.level.tree</field>
+        <field name="model">hr.hardship.allowance.level</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="value_percentage" widget="percentage"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_hardship_allowance_level_form" model="ir.ui.view">
+        <field name="name">hr.hardship.allowance.level.form</field>
+        <field name="model">hr.hardship.allowance.level</field>
+        <field name="arch" type="xml">
+            <form string="Hardship Allowance Level">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g., High Risk Area"/></h1>
+                    </div>
+                    <group>
+                        <field name="value_percentage" widget="percentage"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_hardship_allowance_level" model="ir.actions.act_window">
+        <field name="name">Hardship Allowance Levels</field>
+        <field name="res_model">hr.hardship.allowance.level</field>
+        <field name="view_mode">list,form</field>
+    </record>    
+</odoo>

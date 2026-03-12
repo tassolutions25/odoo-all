@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Category for our custom security groups -->
+        <record model="ir.module.category" id="module_category_ahadu_hr">
+            <field name="name">Ahadu Bank HR</field>
+            <field name="description">User access levels for Ahadu Bank HR features.</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Employee Group (can see own records) -->
+        <record id="group_ahadu_attendance_employee" model="res.groups">
+            <field name="name">Ahadu / Employee</field>
+            <field name="category_id" ref="module_category_ahadu_hr"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Manager Group (can see and manage their team) -->
+        <record id="group_ahadu_attendance_manager" model="res.groups">
+            <field name="name">Ahadu / Manager</field>
+            <field name="category_id" ref="module_category_ahadu_hr"/>
+            <field name="implied_ids" eval="[(4, ref('group_ahadu_attendance_employee'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+             <!-- Also give them basic HR Manager rights for approvals -->
+            <field name="implied_ids" eval="[(4, ref('hr.group_hr_manager'))]"/>
+        </record>
+
+        <!-- HR Admin Group (full access) -->
+        <record id="group_ahadu_attendance_hr_admin" model="res.groups">
+            <field name="name">HR Administrator</field>
+            <field name="category_id" ref="module_category_ahadu_hr"/>
+            <field name="implied_ids" eval="[(4, ref('group_ahadu_attendance_manager'))]"/>
+        </record>
+    </data>
+</odoo>

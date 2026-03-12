@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Lateness Reason Tree View -->
+    <record id="view_ab_hr_attendance_lateness_reason_tree" model="ir.ui.view">
+        <field name="name">ab.hr.attendance.lateness.reason.tree</field>
+        <field name="model">ab.hr.attendance.lateness.reason</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action for Lateness Reasons -->
+    <record id="action_ab_hr_attendance_lateness_reason" model="ir.actions.act_window">
+        <field name="name">Lateness Reasons</field>
+        <field name="res_model">ab.hr.attendance.lateness.reason</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- Menu Item under Configuration -->
+    <!-- <menuitem
+        id="menu_hr_attendance_lateness_reason"
+        name="Lateness Reasons"
+        parent="menu_ahadu_attendance_configuration"
+        action="action_ab_hr_attendance_lateness_reason"
+        sequence="10"/> -->
+</odoo>

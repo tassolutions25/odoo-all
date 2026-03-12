@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_payroll_sheet_ahadu">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        
+                        <!-- Header Information -->
+                        <div class="text-center mb-4">
+                            <h2>Ahadu Bank S.C - Employee Payroll Sheet</h2>
+                            <h4>For the Month of <span t-field="o.date_start" t-options='{"format": "MMMM yyyy"}' /></h4>
+                            <p>
+                                <strong>Branch:</strong> 
+                                <t t-if="o.branch_ids">
+                                    <t t-if="len(o.branch_ids) == 1">
+                                        <span t-field="o.branch_ids[0].name"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span>Multiple Branches (<t t-esc="len(o.branch_ids)"/>)</span>
+                                    </t>
+                                </t>
+                                <t t-elif="o.branch_id">
+                                    <span t-field="o.branch_id.name"/>
+                                </t>
+                                <t t-else="">
+                                    <span>Head Office</span>
+                                </t>
+                                | <strong>Batch:</strong> <span t-field="o.name" />
+                            </p>
+                        </div>
+
+                                <!-- Initialize Grand Totals -->
+                                <t t-set="sum_full_basic" t-value="0"/>
+                                <t t-set="sum_basic" t-value="0"/>
+                                <t t-set="sum_transport" t-value="0"/>
+                                <t t-set="sum_taxable_trans" t-value="0"/>
+                                <t t-set="sum_representation" t-value="0"/>
+                                <t t-set="sum_housing" t-value="0"/>
+                                <t t-set="sum_hardship" t-value="0"/>
+                                <t t-set="sum_cash_ind_gross" t-value="0"/>
+                                <t t-set="sum_cash_ind_to_bal" t-value="0"/>
+                                <t t-set="sum_cash_ind_to_sal" t-value="0"/>
+                                <t t-set="sum_mobile" t-value="0"/>
+                                <t t-set="sum_other_ben" t-value="0"/>
+                                <t t-set="sum_ot" t-value="0"/>
+                                <t t-set="sum_lop_adj" t-value="0"/>
+                                <t t-set="sum_gross" t-value="0"/>
+                                <t t-set="sum_taxable_gross" t-value="0"/>
+                                <t t-set="sum_pension_comp" t-value="0"/>
+                                <t t-set="sum_tax" t-value="0"/>
+                                <t t-set="sum_pension_emp" t-value="0"/>
+                                <t t-set="sum_adv_loan" t-value="0"/>
+                                <t t-set="sum_pers_loan" t-value="0"/>
+                                <t t-set="sum_penalty" t-value="0"/>
+                                <t t-set="sum_lop_leave" t-value="0"/>
+                                <t t-set="sum_other_ded" t-value="0"/>
+                                <t t-set="sum_cost_sharing" t-value="0"/>
+                                <t t-set="sum_total_ded" t-value="0"/>
+                                <t t-set="sum_net" t-value="0"/>
+                                <t t-set="sum_cash_ind" t-value="0"/>
+                                <t t-set="sum_savings" t-value="0"/>
+                                <t t-set="sum_credit_assoc" t-value="0"/>
+                                <t t-set="seq" t-value="1"/>
+
+                                <t t-set="sections" t-value="[('CL_STAFF', 'PAYMENT OF SALARY FOR CLERICAL STAFFS'), ('NON_CL', 'PAYMENT OF SALARY FOR NON CLERICAL STAFFS'), ('OTHER', 'PAYMENT OF SALARY FOR OTHER STAFFS')]"/>
+
+                                <t t-foreach="sections" t-as="sec">
+                                    <t t-set="slips" t-value="o.slip_ids.filtered(lambda s: s.employee_id.ahadu_employee_type_id.code == sec[0] if sec[0] != 'OTHER' else s.employee_id.ahadu_employee_type_id.code not in ['CL_STAFF', 'NON_CL'])"/>
+                                    
+                                    <t t-if="slips">
+                                        <!-- Centered Title Outside Table -->
+                                        <div class="text-center mt-4 mb-2">
+                                            <h5 style="color: #840036; font-weight: bold; text-decoration: underline;"><t t-esc="sec[1]"/></h5>
+                                        </div>
+
+                                        <table class="table table-sm table-striped table-bordered" style="font-size: 8px; width: 100%;">
+                                            <thead>
+                                                <tr style="background-color: rgba(132, 0, 54, 0.8); color: #ffffff;">
+                                                    <th class="align-middle text-white">SN</th>
+                                                    <th class="align-middle text-white">Employee Name</th>
+                                                    <th class="align-middle text-white">Dept / Branch</th>
+                                                    <th class="align-middle text-white">Emp ID</th>
+                                                    <th class="align-middle text-white">Joining Date</th>
+                                                    <th class="align-middle text-white">TIN</th>
+                                                    <th class="align-middle text-end text-white">Basic Salary</th>
+                                                    <th class="align-middle text-end text-white">Liter</th>
+                                                    <th class="align-middle text-end text-white">Fuel Rate</th>
+                                                    <th class="align-middle text-end text-white">Trans. Allow.</th>
+                                                    <th class="align-middle text-end text-white">Taxable Trans.</th>
+                                                    <th class="align-middle text-end text-white">Representation</th>
+                                                    <th class="align-middle text-end text-white">Hardship</th>
+                                                    <th class="align-middle text-end text-white">Housing</th>
+                                                    <th class="align-middle text-end text-white">Mobile</th>
+                                                    <th class="align-middle text-end text-white">Cash Indemnity</th>
+                                                    <th class="align-middle text-end text-white">CI to Cash Ind A/C</th>
+                                                    <th class="align-middle text-end text-white">CI to S/A</th>
+                                                    <th class="align-middle text-end text-white">OT</th>
+                                                    <th class="align-middle text-end fw-bold text-white">Gross Salary &amp; Ben.</th>
+                                                    <th class="align-middle text-end text-white">Taxable Income</th>
+                                                    <th class="align-middle text-end text-white">Pension (11%)</th>
+                                                    <th class="align-middle text-end text-white">Income Tax</th>
+                                                    <th class="align-middle text-end text-white">Pension (7%)</th>
+                                                    <th class="align-middle text-end text-white">Adv. Loan</th>
+                                                    <th class="align-middle text-end text-white">Pers. Loan</th>
+                                                    <th class="align-middle text-end text-white">Other Ded.</th>
+                                                    <th class="align-middle text-end text-white">Cost Sharing</th>
+                                                    <th class="align-middle text-end text-white">Penalty</th>
+                                                    <th class="align-middle text-end text-white">Loss of Pay</th>
+                                                    <th class="align-middle text-end fw-bold text-white">Total Ded.</th>
+                                                    <th class="align-middle text-end fw-bold text-white">Net Income</th>
+                                                    <th class="align-middle text-white">Bank Account</th>
+                                                    <th class="align-middle text-white">Adv. Loan Acc</th>
+                                                    <th class="align-middle text-white">Pers. Loan Acc</th>
+                                                    <th class="align-middle text-white">Cash Ind Acc</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Initialize Section Totals -->
+                                                <t t-set="sec_basic" t-value="0"/>
+                                                <t t-set="sec_trans" t-value="0"/>
+                                                <t t-set="sec_tax_trans" t-value="0"/>
+                                                <t t-set="sec_rep" t-value="0"/>
+                                                <t t-set="sec_hardship" t-value="0"/>
+                                                <t t-set="sec_house" t-value="0"/>
+                                                <t t-set="sec_mobile" t-value="0"/>
+                                                <t t-set="sec_ci_gross" t-value="0"/>
+                                                <t t-set="sec_ci_bal" t-value="0"/>
+                                                <t t-set="sec_ci_sal" t-value="0"/>
+                                                <t t-set="sec_ot" t-value="0"/>
+                                                <t t-set="sec_gross" t-value="0"/>
+                                                <t t-set="sec_tax_inc" t-value="0"/>
+                                                <t t-set="sec_p_comp" t-value="0"/>
+                                                <t t-set="sec_tax" t-value="0"/>
+                                                <t t-set="sec_p_emp" t-value="0"/>
+                                                <t t-set="sec_adv_loan" t-value="0"/>
+                                                <t t-set="sec_pers_loan" t-value="0"/>
+                                                <t t-set="sec_other_ded" t-value="0"/>
+                                                <t t-set="sec_c_sharing" t-value="0"/>
+                                                <t t-set="sec_penalty" t-value="0"/>
+                                                <t t-set="sec_lop" t-value="0"/>
+                                                <t t-set="sec_total_ded" t-value="0"/>
+                                                <t t-set="sec_net" t-value="0"/>
+
+                                                <!-- Section Rows -->
+                                                <t t-foreach="slips" t-as="line">
+                                                    <!-- Extract Values -->
+                                                    <t t-set="full_basic" t-value="line.employee_id.emp_wage" />
+                                                    <t t-set="basic" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'BASIC').mapped('total'))" />
+                                                    <t t-set="trans" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'TRANS').mapped('total'))" />
+                                                    <t t-set="taxable_trans" t-value="line._get_ahadu_taxable_transport()" />
+                                                    
+                                                    <t t-set="rep" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'REP').mapped('total'))" />
+                                                    <t t-set="house" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'HOUSE').mapped('total'))" />
+                                                    <t t-set="hardship" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'HARDSHIP').mapped('total'))" />
+                                                    
+                                                    <t t-set="cash_ind_gross" t-value="line.cash_indemnity_allowance" />
+                                                    <t t-set="cash_ind_to_bal" t-value="line.ci_to_balance" />
+                                                    <t t-set="cash_ind_to_sal" t-value="line.ci_to_salary" />
+                                                    
+                                                    <t t-set="mobile" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'MOBILE').mapped('total'))" />
+                                                    <t t-set="other_ben" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'OTHER_BEN').mapped('total'))" />
+                                                    <t t-set="ot" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'OT').mapped('total'))" /> 
+                                                    <t t-set="lop_adj" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'LOP_ADJ').mapped('total'))" />
+                                                    
+                                                    <t t-set="gross" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'GROSS').mapped('total'))" />
+                                                    <t t-set="taxable_gross" t-value="line._get_ahadu_taxable_gross()" />
+                                                    
+                                                    <t t-set="pension_comp" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'PENSION_COMP').mapped('total'))" />
+                                                    <t t-set="tax" t-value="sum(line.line_ids.filtered(lambda r: r.code in ['TAX', 'CI_TAX']).mapped('total'))" />
+                                                    <t t-set="pension_emp" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'PENSION_EMP').mapped('total'))" />
+                                                    
+                                                    <t t-set="adv_loan" t-value="line._get_ahadu_advance_loan_deduction()" />
+                                                    <t t-set="pers_loan" t-value="line._get_ahadu_personal_loan_deduction()" />
+                                                    <t t-set="savings" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'SAVINGS').mapped('total'))" />
+                                                    <t t-set="credit_assoc" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'CREDIT_ASSOC').mapped('total'))" />
+                                                    <t t-set="penalty" t-value="abs(sum(line.line_ids.filtered(lambda r: r.code == 'PENALTY').mapped('total')))" />
+                                                    <t t-set="lop_leave" t-value="full_basic - basic" />
+                                                    
+                                                    <t t-set="other_ded" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'OTHER_DED').mapped('total'))" />
+                                                    <t t-set="cost_sharing" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'COST_SHARING').mapped('total'))" />
+                                                    
+                                                    <t t-set="total_ded" t-value="sum(line.line_ids.filtered(lambda r: r.category_id.code == 'DED').mapped('total'))" />
+                                                    <t t-set="net" t-value="sum(line.line_ids.filtered(lambda r: r.code == 'NET').mapped('total'))" />
+                                                    
+                                                    <!-- Loan Accounts -->
+                                                    <t t-set="active_loans_adv" t-value="o.env['hr.loan'].sudo().search([('employee_id', '=', line.employee_id.id), ('state', '=', 'approved'), ('date_start', '&lt;=', line.date_to), ('loan_type_id.name', '=', 'Emergency/Salary Advance Loan')], limit=1)"/>
+                                                    <t t-set="active_loans_pers" t-value="o.env['hr.loan'].sudo().search([('employee_id', '=', line.employee_id.id), ('state', '=', 'approved'), ('date_start', '&lt;=', line.date_to), ('loan_type_id.name', '=', 'Personal Staff Loan')], limit=1)"/>
+                                                    <t t-set="adv_loan_acc" t-value="active_loans_adv.bank_account_id.account_number if active_loans_adv and active_loans_adv.bank_account_id else ''"/>
+                                                    <t t-set="pers_loan_acc" t-value="active_loans_pers.bank_account_id.account_number if active_loans_pers and active_loans_pers.bank_account_id else ''"/>
+                                                    
+                                                    <!-- Fuel Logic -->
+                                                    <t t-set="fuel_price_global" t-value="float(request.env['ir.config_parameter'].sudo().get_param('ahadu_hr.fuel_price_per_liter', 0.0))" />
+                                                    <t t-set="fuel_liters" t-value="line.employee_id.transport_allowance_liters" />
+                                                    <!-- Accumulate Grand Totals -->
+                                                    <t t-set="sum_full_basic" t-value="sum_full_basic + full_basic"/>
+                                                    <t t-set="sum_basic" t-value="sum_basic + basic"/>
+                                                    <t t-set="sum_transport" t-value="sum_transport + trans"/>
+                                                    <t t-set="sum_taxable_trans" t-value="sum_taxable_trans + taxable_trans"/>
+                                                    <t t-set="sum_representation" t-value="sum_representation + rep"/>
+                                                    <t t-set="sum_housing" t-value="sum_housing + house"/>
+                                                    <t t-set="sum_hardship" t-value="sum_hardship + hardship"/>
+                                                    <t t-set="sum_cash_ind" t-value="sum_cash_ind + cash_ind_gross"/>
+                                                    <t t-set="sum_cash_ind_gross" t-value="sum_cash_ind_gross + cash_ind_gross"/>
+                                                    <t t-set="sum_cash_ind_to_bal" t-value="sum_cash_ind_to_bal + cash_ind_to_bal"/>
+                                                    <t t-set="sum_cash_ind_to_sal" t-value="sum_cash_ind_to_sal + cash_ind_to_sal"/>
+                                                    <t t-set="sum_mobile" t-value="sum_mobile + mobile"/>
+                                                    <t t-set="sum_other_ben" t-value="sum_other_ben + other_ben"/>
+                                                    <t t-set="sum_ot" t-value="sum_ot + ot"/>
+                                                    <t t-set="sum_lop_adj" t-value="sum_lop_adj + lop_adj"/>
+                                                    <t t-set="sum_gross" t-value="sum_gross + gross"/>
+                                                    <t t-set="sum_taxable_gross" t-value="sum_taxable_gross + taxable_gross"/>
+                                                    <t t-set="sum_pension_comp" t-value="sum_pension_comp + pension_comp"/>
+                                                    <t t-set="sum_tax" t-value="sum_tax + tax"/>
+                                                    <t t-set="sum_pension_emp" t-value="sum_pension_emp + pension_emp"/>
+                                                    <t t-set="sum_adv_loan" t-value="sum_adv_loan + adv_loan"/>
+                                                    <t t-set="sum_pers_loan" t-value="sum_pers_loan + pers_loan"/>
+                                                    <t t-set="sum_savings" t-value="sum_savings + savings"/>
+                                                    <t t-set="sum_credit_assoc" t-value="sum_credit_assoc + credit_assoc"/>
+                                                    <t t-set="sum_penalty" t-value="sum_penalty + penalty"/>
+                                                    <t t-set="sum_lop_leave" t-value="sum_lop_leave + lop_leave"/>
+                                                    <t t-set="sum_other_ded" t-value="sum_other_ded + other_ded"/>
+                                                    <t t-set="sum_cost_sharing" t-value="sum_cost_sharing + cost_sharing"/>
+                                                    <t t-set="sum_total_ded" t-value="sum_total_ded + total_ded"/>
+                                                    <t t-set="sum_net" t-value="sum_net + net"/>
+
+                                                    <!-- Accumulate Section Totals -->
+                                                    <t t-set="sec_basic" t-value="sec_basic + basic"/>
+                                                    <t t-set="sec_trans" t-value="sec_trans + trans"/>
+                                                    <t t-set="sec_tax_trans" t-value="sec_tax_trans + taxable_trans"/>
+                                                    <t t-set="sec_rep" t-value="sec_rep + rep"/>
+                                                    <t t-set="sec_hardship" t-value="sec_hardship + hardship"/>
+                                                    <t t-set="sec_house" t-value="sec_house + house"/>
+                                                    <t t-set="sec_mobile" t-value="sec_mobile + mobile"/>
+                                                    <t t-set="sec_ci_gross" t-value="sec_ci_gross + cash_ind_gross"/>
+                                                    <t t-set="sec_ci_bal" t-value="sec_ci_bal + cash_ind_to_bal"/>
+                                                    <t t-set="sec_ci_sal" t-value="sec_ci_sal + cash_ind_to_sal"/>
+                                                    <t t-set="sec_ot" t-value="sec_ot + ot"/>
+                                                    <t t-set="sec_gross" t-value="sec_gross + gross"/>
+                                                    <t t-set="sec_tax_inc" t-value="sec_tax_inc + taxable_gross"/>
+                                                    <t t-set="sec_p_comp" t-value="sec_p_comp + pension_comp"/>
+                                                    <t t-set="sec_tax" t-value="sec_tax + tax"/>
+                                                    <t t-set="sec_p_emp" t-value="sec_p_emp + pension_emp"/>
+                                                    <t t-set="sec_adv_loan" t-value="sec_adv_loan + adv_loan"/>
+                                                    <t t-set="sec_pers_loan" t-value="sec_pers_loan + pers_loan"/>
+                                                    <t t-set="sec_other_ded" t-value="sec_other_ded + other_ded"/>
+                                                    <t t-set="sec_c_sharing" t-value="sec_c_sharing + cost_sharing"/>
+                                                    <t t-set="sec_penalty" t-value="sec_penalty + penalty"/>
+                                                    <t t-set="sec_lop" t-value="sec_lop + lop_leave"/>
+                                                    <t t-set="sec_total_ded" t-value="sec_total_ded + total_ded"/>
+                                                    <t t-set="sec_net" t-value="sec_net + net"/>
+
+                                                    <tr>
+                                                        <td><t t-esc="seq"/></td>
+                                                        <td><span t-field="line.employee_id.name"/></td>
+                                                        <td>
+                                                            <!-- Dept / Branch Logic: Show Branch if not Head Office, else Department -->
+                                                            <t t-if="line.employee_id.branch_id and line.employee_id.branch_id.name != 'Head Office'">
+                                                                <span t-field="line.employee_id.branch_id.name"/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <span t-field="line.employee_id.department_id.name"/>
+                                                            </t>
+                                                        </td>
+                                                        <td><span t-field="line.employee_id.employee_id"/></td>
+                                                        <td><span t-field="line.contract_id.date_start"/></td>
+                                                        <td><span t-esc="line.employee_id.tin_number or ''"/></td>
+                                                        <td class="text-end"><span t-esc="basic" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="fuel_liters" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="fuel_price_global" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        
+                                                        <td class="text-end"><span t-esc="trans" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="taxable_trans" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="rep" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="hardship" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="house" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="mobile" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        
+                                                        <!-- Cash Indemnity columns (16-18) -->
+                                                        <td class="text-end"><span t-esc="cash_ind_gross" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="cash_ind_to_bal" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="cash_ind_to_sal" t-options='{"widget": "float", "precision": 2}'/></td>
+
+                                                        <td class="text-end"><span t-esc="ot" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        
+                                                        <td class="text-end fw-bold"><span t-esc="gross" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="taxable_gross" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        
+                                                        <td class="text-end"><span t-esc="pension_comp" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="tax" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="pension_emp" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        
+                                                        <td class="text-end"><span t-esc="adv_loan" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="pers_loan" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="other_ded" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="cost_sharing" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end"><span t-esc="penalty" t-options='{"widget": "float", "precision": 2}' style="color: red;"/></td>
+                                                        <td class="text-end"><span t-esc="lop_leave" t-options='{"widget": "float", "precision": 2}' style="color: red;"/></td>
+                                                        
+                                                        <td class="text-end fw-bold"><span t-esc="total_ded" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        <td class="text-end fw-bold"><span t-esc="net" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                        
+                                                        <td><span t-field="line.employee_id.bank_account_id.acc_number"/></td>
+                                                        <td><t t-esc="adv_loan_acc"/></td>
+                                                        <td><t t-esc="pers_loan_acc"/></td>
+                                                        <td><t t-esc="o.env['hr.employee.bank.account'].sudo().search([('employee_id', '=', line.employee_id.id), ('account_type', '=', 'cash_indemnity')], limit=1).account_number or ''"/></td>
+                                                    </tr>
+                                                </t>
+
+                                                <!-- Section Totals Row -->
+                                                <tr style="background-color: #f2f2f2; font-weight: bold;">
+                                                    <td colspan="6" class="text-end">SECTION TOTALS:</td>
+                                                    <td class="text-end"><span t-esc="sec_basic" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td colspan="2"></td>
+                                                    <td class="text-end"><span t-esc="sec_trans" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_tax_trans" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_rep" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_hardship" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_house" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_mobile" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_ci_gross" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_ci_bal" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_ci_sal" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_ot" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end fw-bold"><span t-esc="sec_gross" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_tax_inc" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_p_comp" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_tax" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_p_emp" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_adv_loan" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_pers_loan" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_other_ded" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_c_sharing" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end"><span t-esc="sec_penalty" t-options='{"widget": "float", "precision": 2}' style="color: red;"/></td>
+                                                    <td class="text-end"><span t-esc="sec_lop" t-options='{"widget": "float", "precision": 2}' style="color: red;"/></td>
+                                                    <td class="text-end fw-bold"><span t-esc="sec_total_ded" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td class="text-end fw-bold"><span t-esc="sec_net" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                    <td colspan="4"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <!-- Spacing between tables -->
+                                        <div style="height: 30px;"></div>
+                                    </t>
+                                </t>
+
+                                <!-- Grand Total Section -->
+                                <div class="text-center mt-4">
+                                    <h6 style="color: #840036; font-weight: bold;">GRAND TOTALS ALL STAFF</h6>
+                                </div>
+                                <table class="table table-sm table-bordered" style="font-size: 8px; width: 100%;">
+                                    <tbody>
+                                        <tr style="background-color: #850037; color: white; font-weight: bold;">
+                                            <td colspan="6" class="text-end">TOTALS:</td>
+                                            <td class="text-end"><span t-esc="sum_basic" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td colspan="2"></td>
+                                            <td class="text-end"><span t-esc="sum_transport" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_taxable_trans" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_representation" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_hardship" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_housing" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_mobile" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            
+                                            <td class="text-end"><span t-esc="sum_cash_ind_gross" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_cash_ind_to_bal" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_cash_ind_to_sal" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            
+                                            <td class="text-end"><span t-esc="sum_ot" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_gross" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_taxable_gross" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_pension_comp" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_tax" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_pension_emp" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_adv_loan" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_pers_loan" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_other_ded" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_cost_sharing" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_penalty" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_lop_leave" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_total_ded" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-end"><span t-esc="sum_net" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td colspan="4"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <!-- SUMMARY TABLES -->
+                                <div class="row mt-4">
+                                    <!-- Debit Side Summary -->
+                                    <div class="col-5 border rounded p-2">
+                                        <h6 class="text-center fw-bold">Debit Side Analysis</h6>
+                                        <table class="table table-sm table-bordered" style="font-size: 9px;">
+                                            <thead>
+                                                <tr style="background-color: #f2f2f2;">
+                                                    <th>Description</th>
+                                                    <th>GL Code</th>
+                                                    <th class="text-end">Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Dynamic GL Lookups -->
+                                                <t t-set="rules" t-value="o.env['hr.salary.rule'].sudo()"/>
+                                                <t t-set="gl_basic" t-value="rules.search([('code', '=', 'BASIC')], limit=1).ahadu_debit_account_id.code"/>
+                                                <t t-set="gl_trans" t-value="rules.search([('code', '=', 'TRANS')], limit=1).ahadu_debit_account_id.code"/>
+                                                <t t-set="gl_rep" t-value="rules.search([('code', '=', 'REP')], limit=1).ahadu_debit_account_id.code"/>
+                                                <t t-set="gl_house" t-value="rules.search([('code', '=', 'HOUSE')], limit=1).ahadu_debit_account_id.code"/>
+                                                <t t-set="gl_hardship" t-value="rules.search([('code', '=', 'HARDSHIP')], limit=1).ahadu_debit_account_id.code"/>
+                                                <t t-set="gl_cash" t-value="rules.search([('code', '=', 'CASH_IND')], limit=1).ahadu_debit_account_id.code"/>
+                                                <t t-set="gl_mobile" t-value="rules.search([('code', '=', 'MOBILE')], limit=1).ahadu_debit_account_id.code"/>
+                                                <t t-set="gl_other_ben" t-value="rules.search([('code', '=', 'OTHER_BEN')], limit=1).ahadu_debit_account_id.code"/>
+                                                <t t-set="gl_lop_adj" t-value="rules.search([('code', '=', 'LOP_ADJ')], limit=1).ahadu_debit_account_id.code"/>
+                                                <t t-set="gl_pension_comp_d" t-value="rules.search([('code', '=', 'PENSION_COMP')], limit=1).ahadu_debit_account_id.code"/>
+                                                <t t-set="gl_ot" t-value="rules.search([('code', '=', 'OT')], limit=1).ahadu_debit_account_id.code"/>
+
+                                                <tr t-if="sum_full_basic != 0">
+                                                    <td>Basic Salary (Full)</td>
+                                                    <td><t t-esc="gl_basic"/></td>
+                                                    <td class="text-end"><span t-esc="sum_full_basic" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr t-if="sum_transport != 0">
+                                                    <td>Transportation Allowance</td>
+                                                    <td><t t-esc="gl_trans"/></td>
+                                                    <td class="text-end"><span t-esc="sum_transport" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr t-if="sum_representation != 0">
+                                                    <td>Representation Allowance</td>
+                                                    <td><t t-esc="gl_rep"/></td>
+                                                    <td class="text-end"><span t-esc="sum_representation" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr t-if="sum_housing != 0">
+                                                    <td>Housing Allowance</td>
+                                                    <td><t t-esc="gl_house"/></td>
+                                                    <td class="text-end"><span t-esc="sum_housing" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr t-if="sum_hardship != 0">
+                                                    <td>Hardship Allowance</td>
+                                                    <td><t t-esc="gl_hardship"/></td>
+                                                    <td class="text-end"><span t-esc="sum_hardship" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr t-if="sum_cash_ind_to_bal + sum_cash_ind_to_sal != 0">
+                                                    <td>Cash Indemnity Allowance (Net)</td>
+                                                    <td><t t-esc="gl_cash"/></td>
+                                                    <td class="text-end"><span t-esc="sum_cash_ind_to_bal + sum_cash_ind_to_sal" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr t-if="sum_mobile != 0">
+                                                    <td>Mobile Allowance</td>
+                                                    <td><t t-esc="gl_mobile"/></td>
+                                                    <td class="text-end"><span t-esc="sum_mobile" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr t-if="sum_other_ben != 0">
+                                                    <td>Other Benefits</td>
+                                                    <td><t t-esc="gl_other_ben"/></td>
+                                                    <td class="text-end"><span t-esc="sum_other_ben" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr t-if="sum_lop_adj != 0">
+                                                    <td>LOP Correction (Credit)</td>
+                                                    <td><t t-esc="gl_lop_adj"/></td>
+                                                    <td class="text-end"><span t-esc="sum_lop_adj" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr t-if="sum_pension_comp != 0">
+                                                    <td>Pension Payable (Company)</td>
+                                                    <td><t t-esc="gl_pension_comp_d"/></td>
+                                                    <td class="text-end"><span t-esc="sum_pension_comp" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr t-if="sum_ot != 0">
+                                                    <td>Overtime</td>
+                                                    <td><t t-esc="gl_ot"/></td>
+                                                    <td class="text-end"><span t-esc="sum_ot" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                </tr>
+                                                <tr class="fw-bold" style="background-color: #e9ecef;">
+                                                    <td colspan="2">TOTAL</td>
+                                                    <td class="text-end">
+                                                        <span t-esc="sum_full_basic + sum_transport + sum_representation + sum_housing + sum_hardship + (sum_cash_ind_to_bal + sum_cash_ind_to_sal) + sum_mobile + sum_other_ben + sum_lop_adj + sum_pension_comp + sum_ot" 
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <!-- Spacer Col -->
+                                    <div class="col-1"></div>
+
+                                    <!-- Credit Side Summary -->
+                                    <div class="col-5 border rounded p-2">
+                                <h6 class="text-center fw-bold">Credit Side Analysis</h6>
+                                <table class="table table-sm table-bordered" style="font-size: 9px;">
+                                    <thead>
+                                        <tr style="background-color: #f2f2f2;">
+                                            <th>Description</th>
+                                            <th>GL Code</th>
+                                            <th class="text-end">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamic GL Lookups -->
+                                        <t t-set="rules" t-value="o.env['hr.salary.rule'].sudo()"/>
+                                        <t t-set="gl_tax" t-value="rules.search([('code', '=', 'TAX')], limit=1).ahadu_credit_account_id.code"/>
+                                        <t t-set="gl_ci_tax" t-value="rules.search([('code', '=', 'CI_TAX')], limit=1).ahadu_credit_account_id.code"/>
+                                        <t t-set="gl_pension_18" t-value="rules.search([('code', '=', 'PENSION_EMP')], limit=1).ahadu_credit_account_id.code"/>
+                                        <t t-set="gl_cost_sharing" t-value="rules.search([('code', '=', 'COST_SHARING')], limit=1).ahadu_credit_account_id.code"/>
+                                        <t t-set="gl_net" t-value="rules.search([('code', '=', 'NET')], limit=1).ahadu_credit_account_id.code"/>
+                                        <t t-set="gl_loan" t-value="rules.search([('code', '=', 'LOAN')], limit=1).ahadu_credit_account_id.code"/>
+                                        <t t-set="gl_savings" t-value="rules.search([('code', '=', 'SAVINGS')], limit=1).ahadu_credit_account_id.code"/>
+                                        <t t-set="gl_credit_assoc" t-value="rules.search([('code', '=', 'CREDIT_ASSOC')], limit=1).ahadu_credit_account_id.code"/>
+                                        <t t-set="gl_penalty_c" t-value="rules.search([('code', '=', 'PENALTY')], limit=1).ahadu_credit_account_id.code"/>
+                                        <t t-set="gl_lop_leave_c" t-value="rules.search([('code', '=', 'LOP_LEAVE')], limit=1).ahadu_credit_account_id.code"/>
+                                        <t t-set="gl_other_ded_c" t-value="rules.search([('code', '=', 'OTHER_DED')], limit=1).ahadu_credit_account_id.code"/>
+
+                                        <tr t-if="sum_tax != 0">
+                                            <td>Income Tax</td>
+                                            <td><t t-esc="gl_tax"/><t t-if="gl_ci_tax"> / <t t-esc="gl_ci_tax"/></t></td>
+                                            <td class="text-end"><span t-esc="sum_tax" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_cash_ind_to_bal != 0">
+                                            <td>Cash Indemnity Staff Account</td>
+                                            <td><t t-esc="gl_cash"/></td>
+                                            <td class="text-end"><span t-esc="sum_cash_ind_to_bal" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_cash_ind_to_sal != 0">
+                                            <td>Cash Indemnity to Salary Account</td>
+                                            <td><t t-esc="gl_net"/></td>
+                                            <td class="text-end"><span t-esc="sum_cash_ind_to_sal" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_pension_emp + sum_pension_comp != 0">
+                                            <td>Pension Payable (18%)</td>
+                                            <td><t t-esc="gl_pension_18"/></td>
+                                            <td class="text-end"><span t-esc="sum_pension_emp + sum_pension_comp" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_cost_sharing != 0">
+                                            <td>Cost Sharing</td>
+                                            <td><t t-esc="gl_cost_sharing"/></td>
+                                            <td class="text-end"><span t-esc="sum_cost_sharing" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_net != 0">
+                                            <td>Net Salary Payable</td>
+                                            <td><t t-esc="gl_net"/></td>
+                                            <td class="text-end"><span t-esc="sum_net" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_adv_loan != 0">
+                                            <td>Advance Loan</td>
+                                            <td><t t-esc="gl_loan"/></td>
+                                            <td class="text-end"><span t-esc="sum_adv_loan" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_pers_loan != 0">
+                                            <td>Personal Loan</td>
+                                            <td><t t-esc="gl_loan"/></td>
+                                            <td class="text-end"><span t-esc="sum_pers_loan" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_savings != 0">
+                                            <td>Savings</td>
+                                            <td><t t-esc="gl_savings"/></td>
+                                            <td class="text-end"><span t-esc="sum_savings" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_credit_assoc != 0">
+                                            <td>Credit Association</td>
+                                            <td><t t-esc="gl_credit_assoc"/></td>
+                                            <td class="text-end"><span t-esc="sum_credit_assoc" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_penalty != 0">
+                                            <td>Penalty</td>
+                                            <td><t t-esc="gl_penalty_c"/></td>
+                                            <td class="text-end"><span t-esc="sum_penalty" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr t-if="sum_lop_leave != 0">
+                                            <td>Loss of Pay (LOP)</td>
+                                            <td><t t-esc="gl_lop_leave_c"/></td>
+                                            <td class="text-end"><span t-esc="sum_lop_leave" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                         <tr t-if="sum_other_ded != 0">
+                                            <td>Other Deductions</td>
+                                            <td><t t-esc="gl_other_ded_c"/></td>
+                                            <td class="text-end"><span t-esc="sum_other_ded" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                        <tr class="fw-bold" style="background-color: #e9ecef;">
+                                            <td colspan="2">TOTAL</td>
+                                            <td class="text-end">
+                                                <span t-esc="sum_tax + sum_pension_emp + sum_pension_comp + sum_cost_sharing + sum_net + sum_adv_loan + sum_pers_loan + sum_savings + sum_credit_assoc + sum_penalty + sum_lop_leave + sum_other_ded + sum_cash_ind_to_bal + sum_cash_ind_to_sal" 
+                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

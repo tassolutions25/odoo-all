@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sequence for Loan Reference -->
+        <record id="sequence_hr_loan" model="ir.sequence">
+            <field name="name">Employee Loan</field>
+            <field name="code">hr.loan</field>
+            <field name="prefix">LOAN/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Default Loan Types -->
+        <record id="loan_type_emergency" model="hr.loan.type">
+            <field name="name">Emergency/Salary Advance Loan</field>
+            <field name="interest_rate">0.0</field>
+            <field name="eligibility_months_doj">6</field>
+            <field name="salary_multiple_limit">6</field>
+            <field name="max_installment_months">36</field>
+            <field name="is_credit_committee_required" eval="False"/>
+            <field name="bank_account_type">salary_advance</field>
+        </record>
+
+        <record id="loan_type_personal" model="hr.loan.type">
+            <field name="name">Personal Staff Loan</field>
+            <field name="interest_rate">8.0</field>
+            <field name="eligibility_months_doj">6</field>
+            <field name="salary_multiple_limit">6</field>
+            <field name="max_installment_months">36</field>
+            <field name="is_credit_committee_required" eval="True"/>
+            <field name="bank_account_type">loan_settlement</field>
+        </record>
+
+        <record id="loan_type_housing" model="hr.loan.type">
+            <field name="name">Housing Loan</field>
+            <field name="interest_rate">8.0</field>
+            <field name="eligibility_months_doj">12</field>
+            <field name="salary_multiple_limit">6</field>
+            <field name="max_installment_months">300</field>
+            <field name="is_credit_committee_required" eval="True"/>
+            <field name="bank_account_type">loan_settlement</field>
+        </record>
+
+        <record id="loan_type_vehicle" model="hr.loan.type">
+            <field name="name">Vehicle Loan</field>
+            <field name="interest_rate">8.0</field>
+            <field name="eligibility_months_doj">12</field>
+            <field name="salary_multiple_limit">120</field>
+            <field name="max_installment_months">300</field>
+            <field name="is_credit_committee_required" eval="True"/>
+            <field name="bank_account_type">loan_settlement</field>
+        </record>
+    </data>
+</odoo>

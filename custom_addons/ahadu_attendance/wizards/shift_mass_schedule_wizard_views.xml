@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_shift_mass_schedule_wizard_form" model="ir.ui.view">
+        <field name="name">shift.mass.schedule.wizard.form</field>
+        <field name="model">shift.mass.schedule.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <p>
+                    Select a shift and a date range, then choose the employees to schedule.
+                    You can filter employees by Department or Tag. Shifts will only be generated for the working days defined in the selected Shift Type.
+                </p>
+                <group>
+                    <group>
+                        <field name="shift_type_id"/>
+                        <field name="date_from"/>
+                    </group>
+                    <group>
+                        <separator string="Target Employees (Filter By)"/>
+                        <field name="department_ids" widget="many2many_tags"/>
+                        <field name="employee_tag_id"/>
+                    </group>
+                </group>
+                <field name="employee_ids">
+                    <list>
+                        <field name="name"/>
+                        <field name="department_id"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_generate_shifts" string="Generate Shifts" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_launch_shift_mass_schedule_wizard" model="ir.actions.act_window">
+        <field name="name">Mass Schedule Shifts</field>
+        <field name="res_model">shift.mass.schedule.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Add a button to the Shift Roster view to open the wizard -->
+    <!-- <record id="view_ab_hr_shift_schedule_tree_inherit_mass" model="ir.ui.view">
+        <field name="name">ab.hr.shift.schedule.tree.inherit.mass</field>
+        <field name="model">ab.hr.shift.schedule</field>
+        <field name="inherit_id" ref="ahadu_attendance.view_ab_hr_shift_schedule_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="before">
+                <header>
+                    <button name="%(action_launch_shift_mass_schedule_wizard)d" 
+                            string="Mass Schedule" 
+                            type="action" 
+                            class="btn-primary"/>
+                </header>
+            </xpath>
+        </field>
+    </record> -->
+</odoo>

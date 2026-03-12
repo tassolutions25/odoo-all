@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="ahadu_attendance.KpiCard" owl="1">
+        <div class="o_kpi_card card shadow-sm" t-on-click="props.onClick">
+            <div class="card-body">
+                <div class="kpi_value fw-bold fs-3 text-primary"><t t-esc="props.value"/></div>
+                <div class="kpi_name text-muted"><t t-esc="props.name"/></div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Default Ethiopian Tax Brackets -->
+        
+        <!-- 0 - 600 (Tax Free by Law) -->
+        <!-- Note: The code currently says 0-2000 is 0%, but let's stick to the user's current logic which mirrors the provided table -->
+        <!-- Logic in memory was: 
+            0-2000: 0%
+            2001-4000: 15% - 300
+            4001-7000: 20% - 500
+            7001-10000: 25% - 850
+            10001-14000: 30% - 1350
+            14001+: 35% - 2050
+        -->
+
+        <record id="tax_bracket_1" model="ahadu.payroll.tax.bracket">
+            <field name="lower_bound">0.0</field>
+            <field name="upper_bound">2000.0</field>
+            <field name="rate">0.0</field>
+            <field name="deduction">0.0</field>
+        </record>
+
+        <record id="tax_bracket_2" model="ahadu.payroll.tax.bracket">
+            <field name="lower_bound">2001.0</field>
+            <field name="upper_bound">4000.0</field>
+            <field name="rate">15.0</field>
+            <field name="deduction">300.0</field>
+        </record>
+
+        <record id="tax_bracket_3" model="ahadu.payroll.tax.bracket">
+            <field name="lower_bound">4001.0</field>
+            <field name="upper_bound">7000.0</field>
+            <field name="rate">20.0</field>
+            <field name="deduction">500.0</field>
+        </record>
+
+        <record id="tax_bracket_4" model="ahadu.payroll.tax.bracket">
+            <field name="lower_bound">7001.0</field>
+            <field name="upper_bound">10000.0</field>
+            <field name="rate">25.0</field>
+            <field name="deduction">850.0</field>
+        </record>
+
+        <record id="tax_bracket_5" model="ahadu.payroll.tax.bracket">
+            <field name="lower_bound">10001.0</field>
+            <field name="upper_bound">14000.0</field>
+            <field name="rate">30.0</field>
+            <field name="deduction">1350.0</field>
+        </record>
+
+        <record id="tax_bracket_6" model="ahadu.payroll.tax.bracket">
+            <field name="lower_bound">14001.0</field>
+            <field name="upper_bound">0.0</field> <!-- 0 means Infinity -->
+            <field name="rate">35.0</field>
+            <field name="deduction">2050.0</field>
+        </record>
+
+    </data>
+</odoo>

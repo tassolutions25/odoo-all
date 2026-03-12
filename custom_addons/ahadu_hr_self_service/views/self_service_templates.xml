@@ -1,0 +1,638 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. DASHBOARD -->
+    <template id="self_service_dashboard" name="Self Service Dashboard">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container py-5">
+                    <div class="text-center mb-5">
+                        <h1>Welcome <t t-esc="request.env.user.name"/></h1>
+                        <h3 style="color: #860037;">All in One Employee Portal</h3>
+                    </div>
+
+                    <t t-if="not is_onboarded">
+                        <div class="alert alert-warning text-center" role="alert">
+                            <h4 class="alert-heading">Complete Your Profile</h4>
+                            <p>To access all portal features, please complete and submit your employee profile for approval.</p>
+                            <a href="/my/onboarding" class="btn btn-primary">Go to My Profile</a>
+                        </div>
+                    </t>
+
+                    <div class="row justify-content-center">
+                        <div class="col-6 col-md-4 col-lg-3 mb-4">
+                            <a href="/my/onboarding" class="card h-100 text-center text-decoration-none dashboard-card">
+                                <div class="card-body d-flex flex-column justify-content-center">
+                                    <i class="fa fa-id-card dashboard-card-icon mb-3"/>
+                                    <h5 class="card-title">My Profile</h5>
+                                </div>
+                            </a>
+                        </div>
+                        <t t-if="is_onboarded">
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <a href="/my/document_request" class="card h-100 text-center text-decoration-none dashboard-card">
+                                    <div class="card-body d-flex flex-column justify-content-center">
+                                        <i class="fa fa-file-alt dashboard-card-icon mb-3"/>
+                                        <h5 class="card-title">Document Request</h5>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <a href="/web#action=hr_holidays.hr_leave_action_my" class="card h-100 text-center text-decoration-none dashboard-card">
+                                    <div class="card-body d-flex flex-column justify-content-center">
+                                        <i class="fa fa-calendar-times dashboard-card-icon mb-3"/>
+                                        <h5 class="card-title">Leave</h5>
+                                    </div>
+                                </a>
+                            </div>
+                            <!-- Attendance -->
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <a href="/web#action=hr_attendance.hr_attendance_action" class="card h-100 text-center text-decoration-none dashboard-card">
+                                    <div class="card-body d-flex flex-column justify-content-center">
+                                        <i class="fa fa-fingerprint dashboard-card-icon mb-3"/>
+                                        <h5 class="card-title">Attendance</h5>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <a href="/web#action=payroll.hr_payslip_action_employee" class="card h-100 text-center text-decoration-none dashboard-card">
+                                    <div class="card-body d-flex flex-column justify-content-center">
+                                        <i class="fa fa-tasks dashboard-card-icon mb-3"/>
+                                        <h5 class="card-title">Payroll</h5>
+                                    </div>
+                                </a>
+                            </div>
+                            <!-- To-Do -->
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                 <a href="/web#action=project_todo.project_task_action_todo" class="card h-100 text-center text-decoration-none dashboard-card">
+                                    <div class="card-body d-flex flex-column justify-content-center">
+                                        <i class="fa fa-check-square dashboard-card-icon mb-3"/>
+                                        <h5 class="card-title">To-Do</h5>
+                                    </div>
+                                </a>
+                            </div>
+                            <!-- Discuss -->
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <a href="/web#action=mail.action_discuss" class="card h-100 text-center text-decoration-none dashboard-card">
+                                    <div class="card-body d-flex flex-column justify-content-center">
+                                        <i class="fa fa-comments dashboard-card-icon mb-3"/>
+                                        <h5 class="card-title">Discuss</h5>
+                                    </div>
+                                </a>
+                            </div>
+                            <!-- E-Learning -->
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <a href="/slides" class="card h-100 text-center text-decoration-none dashboard-card">
+                                    <div class="card-body d-flex flex-column justify-content-center">
+                                        <i class="fa fa-graduation-cap dashboard-card-icon mb-3"/>
+                                        <h5 class="card-title">E-Learning</h5>
+                                    </div>
+                                </a>
+                            </div>
+                            <!-- Projects -->
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <a href="/web#action=project.open_view_project_all" class="card h-100 text-center text-decoration-none dashboard-card">
+                                    <div class="card-body d-flex flex-column justify-content-center">
+                                        <i class="fa fa-project-diagram dashboard-card-icon mb-3"/>
+                                        <h5 class="card-title">Projects</h5>
+                                    </div>
+                                </a>
+                            </div>
+                             <!-- Security -->
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <a href="/my/security" class="card h-100 text-center text-decoration-none dashboard-card">
+                                    <div class="card-body d-flex flex-column justify-content-center">
+                                        <i class="fa fa-user-shield dashboard-card-icon mb-3"/>
+                                        <h5 class="card-title">Security</h5>
+                                    </div>
+                                </a>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    
+    <!-- 2. DOCUMENT REQUEST -->
+    <template id="document_request_form" name="Document Request Form">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container py-5">
+                    <t t-if="pending_request">
+                         <div class="alert alert-info text-center" role="alert">
+                            <h4 class="alert-heading">Request Already Submitted!</h4>
+                            <p>You have a pending document request. You can submit a new one after the current one is processed.</p>
+                            <p>Current Status: <strong t-esc="dict(pending_request._fields['state'].selection).get(pending_request.state)"/>.</p>
+                            <a href="/my/dashboard" class="btn btn-primary">Back to Dashboard</a>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="text-center mb-5">
+                            <h2>Employee Document Request</h2>
+                            <p class="lead">Please select the type of document you need and provide a reason.</p>
+                        </div>
+
+                        <form action="/my/document_request/submit" method="post" enctype="multipart/form-data" class="col-md-8 mx-auto">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <div class="mb-3">
+                                <label for="document_type" class="form-label">Type of Document *</label>
+                                <select name="document_type" class="form-select" required="1">
+                                    <option value="">Select a document...</option>
+                                    <option value="experience">Experience Letter</option>
+                                    <option value="guarantee">Guarantee Letter</option>
+                                    <option value="permanency">Permanency Letter</option>
+                                    <option value="id">ID Card Request/Renewal</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reason" class="form-label">Reason for Request *</label>
+                                <textarea name="reason" class="form-control" rows="4" required="1" placeholder="Please explain why you need this document..."/>
+                            </div>
+                            <div class="mb-3">
+                                <label for="document_file" class="form-label">Attach Letter (Optional)</label>
+                                <input type="file" name="document_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/>
+                                <div class="form-text">Upload a supporting document or request letter if required.</div>
+                            </div>
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">Submit Request</button>
+                            </div>
+                        </form>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+    
+    <template id="document_request_submit_success" name="Document Request Submitted">
+         <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container py-5">
+                    <div class="alert alert-success text-center" role="alert">
+                        <h4 class="alert-heading">Request Submitted!</h4>
+                        <p>Your document request has been submitted for approval by the HR department.</p>
+                        <p class="mb-0">You will be notified once it has been processed.</p>
+                        <hr/>
+                        <a href="/my/dashboard" class="btn btn-success">Return to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- 3. ONBOARDING FORM -->
+    <template id="employee_onboarding_form" name="Employee Onboarding Form">
+        <t t-call="website.layout">
+            <div id="wrap" class="o_onboarding_form">
+                <div class="container py-5">
+                    <t t-if="pending_request">
+                         <div class="alert alert-info text-center" role="alert">
+                            <h4 class="alert-heading">Request Submitted!</h4>
+                            <p>You have a pending profile update request. You can submit a new one after the current one is processed.</p>
+                            <p>Current Status: <strong t-esc="dict(pending_request._fields['state'].selection).get(pending_request.state)"/>.</p>
+                            <a href="/my/dashboard" class="btn btn-primary">Back to Dashboard</a>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="text-center mb-5">
+                            <h2>Employee Profile Update Form</h2>
+                            <p class="lead">Please fill out or verify the information below and submit it for approval.</p>
+                            <div id="draft_alert" class="alert alert-info d-none">
+                                <i class="fa fa-info-circle"/> Restored saved draft data.
+                            </div>
+                        </div>
+
+                        <form id="ahadu_onboarding_form" action="/my/onboarding/submit" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            
+                            <ul class="nav nav-tabs" id="onboardingTab" role="tablist">
+                                <li class="nav-item" role="presentation"><button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">Personal Information</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab">Contact Details</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" id="emergency-tab" data-bs-toggle="tab" data-bs-target="#emergency" type="button" role="tab">Emergency Contact</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank" type="button" role="tab">Bank Details</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" id="family-tab" data-bs-toggle="tab" data-bs-target="#family" type="button" role="tab">Family Details</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" id="education-tab" data-bs-toggle="tab" data-bs-target="#education" type="button" role="tab">Education Details</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" id="passport-tab" data-bs-toggle="tab" data-bs-target="#passport" type="button" role="tab">Passport Details</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" id="cost-sharing-tab" data-bs-toggle="tab" data-bs-target="#cost-sharing" type="button" role="tab">Cost-Sharing</button></li>
+                            </ul>
+
+                            <div class="tab-content border border-top-0 p-4 mb-4" id="onboardingTabContent">
+                                
+                                <!-- Personal Info -->
+                                <div class="tab-pane fade show active" id="personal" role="tabpanel">
+                                    <div class="row">
+                                        <div class="mb-3 col-md-2"><label for="salutation" class="form-label">Salutation *</label><select name="salutation" class="form-select" required="1"><option value="">...</option><option value="mr" t-att-selected="employee.salutation == 'mr'">Mr.</option><option value="mrs" t-att-selected="employee.salutation == 'mrs'">Mrs.</option><option value="ms" t-att-selected="employee.salutation == 'ms'">Ms.</option><option value="dr" t-att-selected="employee.salutation == 'dr'">Dr.</option><option value="prof" t-att-selected="employee.salutation == 'prof'">Prof.</option></select></div>
+                                        <div class="mb-3 col-md-4"><label for="first_name" class="form-label">First Name *</label><input type="text" class="form-control" name="first_name" t-att-value="employee.first_name" readonly="1"/></div>
+                                        <div class="mb-3 col-md-3"><label for="middle_name" class="form-label">Middle Name *</label><input type="text" class="form-control" name="middle_name" t-att-value="employee.middle_name" readonly="1"/></div>
+                                        <div class="mb-3 col-md-3"><label for="last_name" class="form-label">Last Name *</label><input type="text" class="form-control" name="last_name" t-att-value="employee.last_name" readonly="1"/></div>
+                                        <div class="mb-3 col-md-4"><label for="gender" class="form-label">Gender *</label><select name="gender" class="form-select" required="1"><option value="">...</option><option value="male" t-att-selected="employee.gender_updated == 'male'">Male</option><option value="female" t-att-selected="employee.gender_updated == 'female'">Female</option></select></div>
+                                        <div class="mb-3 col-md-4"><label for="birthday" class="form-label">Birthdate *</label><input type="date" name="birthday" class="form-control" t-att-value="employee.birthday" required="1"/></div>
+                                        <div class="mb-3 col-md-4"><label for="birth_place" class="form-label">Place of Birth</label><input type="text" class="form-control" name="birth_place" t-att-value="employee.birth_place"/></div>
+                                        <div class="mb-3 col-md-3"><label for="nationality_id" class="form-label">Nationality</label><select name="nationality_id" class="form-select"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.nationality_id.id or 68)" t-esc="c.name"/></t></select></div>
+                                        <div class="mb-3 col-md-3"><label for="country_id" class="form-label">Country of Residence *</label><select name="country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
+                                        <div class="mb-3 col-md-3"><label for="subcity" class="form-label">Sub City</label><input type="text" class="form-control" name="subcity" t-att-value="employee.subcity"/></div>
+                                        <div class="mb-3 col-md-3"><label for="marital" class="form-label">Marital Status</label><select name="marital" class="form-select"><option value="">...</option><option value="single" t-att-selected="employee.marital == 'single'">Single</option><option value="married" t-att-selected="employee.marital == 'married'">Married</option><option value="cohabitant" t-att-selected="employee.marital == 'cohabitant'">Legal Cohabitant</option><option value="widower" t-att-selected="employee.marital == 'widower'">Widower</option><option value="divorced" t-att-selected="employee.marital == 'divorced'">Divorced</option></select></div>
+                                        <div class="mb-3 col-md-4"><label for="wedding_date" class="form-label">Wedding Date</label><input type="date" class="form-control" name="wedding_date" t-att-value="employee.wedding_date"/></div>
+                                        <div class="mb-3 col-md-4"><label for="language_ids" class="form-label">Languages Spoken *</label><select name="language_ids" class="form-select" multiple="multiple" required="1"><t t-foreach="languages" t-as="language_rec"><option t-att-value="language_rec.id" t-att-selected="language_rec in employee.language_ids or language_rec.code == 'en_US'" t-esc="language_rec.name"/></t></select></div>
+                                        <div class="mb-3 col-md-4"><label for="blood_group" class="form-label">Blood Group</label><select name="blood_group" class="form-select"><option value="">...</option><option value="A+" t-att-selected="employee.blood_group == 'A+'">A+</option><option value="A-" t-att-selected="employee.blood_group == 'A-'">A-</option><option value="B+" t-att-selected="employee.blood_group == 'B+'">B+</option><option value="B-" t-att-selected="employee.blood_group == 'B-'">B-</option><option value="O+" t-att-selected="employee.blood_group == 'O+'">O+</option><option value="O-" t-att-selected="employee.blood_group == 'O-'">O-</option><option value="AB+" t-att-selected="employee.blood_group == 'AB+'">AB+</option><option value="AB-" t-att-selected="employee.blood_group == 'AB-'">AB-</option></select></div>
+                                        <div class="mb-3 col-md-4"><label for="physical_challenge" class="form-label">Physical Challenge</label><select name="physical_challenge" class="form-select" onchange="this.value == 'yes' ? document.getElementById('physical_challenge_detail_div').classList.remove('d-none') : document.getElementById('physical_challenge_detail_div').classList.add('d-none');"><option value="">...</option><option value="yes" t-att-selected="employee.physical_challenge == 'yes'">Yes</option><option value="no" t-att-selected="employee.physical_challenge == 'no'">No</option></select></div>
+                                        <div t-attf-class="mb-3 col-md-8 {{'d-none' if employee.physical_challenge != 'yes' else ''}}" id="physical_challenge_detail_div"><label for="physical_challenge_detail" class="form-label">Describe Challenge</label><textarea name="physical_challenge_detail" class="form-control" rows="2" t-esc="employee.physical_challenge_detail"/></div>
+                                        <div class="mb-3 col-md-6"><label for="national_id_number" class="form-label">National ID Number</label><input type="text" name="national_id_number" class="form-control" t-att-value="employee.identification_id"/></div>
+                                        <div class="mb-3 col-md-6"><label for="national_id_file" class="form-label">National ID (Photo)</label><input type="file" name="national_id_file" class="form-control"/></div>
+                                        <div class="mb-3 col-md-6"><label for="kebele_id_number" class="form-label">Kebele ID Number</label><input type="text" name="kebele_id_number" class="form-control" t-att-value="employee.kebele_id"/></div>
+                                        <div class="mb-3 col-md-6"><label for="kebele_id_file" class="form-label">Kebele ID (Photo)</label><input type="file" name="kebele_id_file" class="form-control"/></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Contact -->
+                                <div class="tab-pane fade" id="contact" role="tabpanel">
+                                    <div class="row">
+                                        <div class="mb-3 col-md-6"><label for="work_phone" class="form-label">Work Phone</label><input type="tel" name="work_phone" class="form-control" t-att-value="employee.work_phone" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
+                                        <div class="mb-3 col-md-6"><label for="private_phone" class="form-label">Private Phone *</label><input type="tel" name="private_phone" class="form-control" t-att-value="employee.mobile_phone" required="1" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
+                                        <div class="mb-3 col-md-6"><label for="work_email" class="form-label">Work Email</label><input type="email" name="work_email" class="form-control" t-att-value="employee.work_email"/></div>
+                                        <div class="mb-3 col-md-6"><label for="private_email" class="form-label">Private Email</label><input type="email" name="private_email" class="form-control" t-att-value="employee.private_email"/></div>
+                                        <h5 class="mt-3">Current Address *</h5>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Subcity</label><input type="text" name="current_address_subcity" class="form-control" t-att-value="employee.subcity" required="1"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Woreda</label><input type="text" name="current_address_woreda" class="form-control" t-att-value="employee.woreda" required="1"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">House No.</label><input type="text" name="current_address_house_number" class="form-control" t-att-value="employee.house_number" required="1"/></div>
+                                        <h5 class="mt-3">Permanent Address *</h5>
+                                        <div class="mb-3 col-md-6"><label class="form-label">City</label><input type="text" name="permanent_address_city" class="form-control" t-att-value="employee.permanent_address_city" required="1"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Country</label><select name="permanent_address_country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.permanent_address_country_id.id or 68)" t-esc="c.name"/></t></select></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Emergency -->
+                                <div class="tab-pane fade" id="emergency" role="tabpanel">
+                                    <div class="row">
+                                        <div class="mb-3 col-md-6"><label class="form-label">Full Name *</label><input type="text" name="emergency_name" class="form-control" t-att-value="employee.emergency_contact_name" required="1"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Relationship *</label><select name="emergency_relationship" class="form-select" required="1"><option value="">...</option><option value="mother" t-att-selected="employee.emergency_contact_relationship == 'mother'">Mother</option><option value="father" t-att-selected="employee.emergency_contact_relationship == 'father'">Father</option><option value="sister" t-att-selected="employee.emergency_contact_relationship == 'sister'">Sister</option><option value="brother" t-att-selected="employee.emergency_contact_relationship == 'brother'">Brother</option><option value="spouse" t-att-selected="employee.emergency_contact_relationship == 'spouse'">Spouse</option><option value="aunt" t-att-selected="employee.emergency_contact_relationship == 'aunt'">Aunt</option><option value="uncle" t-att-selected="employee.emergency_contact_relationship == 'uncle'">Uncle</option><option value="son" t-att-selected="employee.emergency_contact_relationship == 'son'">Son</option><option value="daughter" t-att-selected="employee.emergency_contact_relationship == 'daughter'">Daughter</option><option value="other" t-att-selected="employee.emergency_contact_relationship == 'other'">Other</option></select></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">City *</label><input type="text" name="emergency_address_city" class="form-control" t-att-value="employee.emergency_contact_address_city" required="1"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Country *</label><select name="emergency_address_country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.emergency_contact_address_country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
+                                        <div class="mb-3 col-md-12"><label class="form-label">Phone Number *</label><input type="tel" name="emergency_phone" class="form-control" t-att-value="employee.emergency_contact_phone" required="1" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bank Details -->
+                                <div class="tab-pane fade" id="bank" role="tabpanel">
+                                    <div id="bank_lines_container">
+                                        <t t-foreach="employee.bank_account_ids" t-as="acc">
+                                            <div class="bank-row border p-3 mb-3 rounded">
+                                                <div class="row">
+                                                    <div class="col-11"><h5>Bank Account <t t-esc="acc_index + 1"/></h5></div>
+                                                    <div class="col-1 text-end"><button type="button" class="btn-close" onclick="this.closest('.bank-row').remove();"/></div>
+                                                </div>
+                                                <hr/>
+                                                <div class="row">
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Bank Name *</label><select t-attf-name="bank_name_#{acc_index}" class="form-select" required="1"><t t-foreach="banks" t-as="b"><option t-att-value="b.id" t-att-selected="b.id == acc.bank_id.id" t-esc="b.name"/></t></select></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Bank Country *</label><select t-attf-name="bank_country_id_#{acc_index}" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == acc.bank_country_id.id" t-esc="c.name"/></t></select></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Account Number *</label><input type="text" t-attf-name="bank_account_number_#{acc_index}" class="form-control" t-att-value="acc.account_number" required="1"/></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Currency *</label><select t-attf-name="bank_currency_id_#{acc_index}" class="form-select" required="1"><t t-foreach="currencies" t-as="curr"><option t-att-value="curr.id" t-att-selected="curr.id == acc.currency_id.id" t-esc="curr.name"/></t></select></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Account Holder</label><input type="text" t-attf-name="bank_account_holder_#{acc_index}" class="form-control" t-att-value="acc.account_holder_name or employee.name"/></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Account Type *</label><select t-attf-name="bank_account_type_#{acc_index}" class="form-select" required="1">
+                                                        <option value="salary" t-att-selected="acc.account_type == 'salary'">Salary Account</option>
+                                                        <option value="saving" t-att-selected="acc.account_type == 'saving'">Saving Account</option>
+                                                        <option value="cash_indemnity" t-att-selected="acc.account_type == 'cash_indemnity'">Cash Indemnity</option>
+                                                        <option value="salary_advance" t-att-selected="acc.account_type == 'salary_advance'">Salary Advance</option>
+                                                        <option value="loan_settlement" t-att-selected="acc.account_type == 'loan_settlement'">Loan Settlement</option>
+                                                        <option value="other" t-att-selected="acc.account_type == 'other'">Other</option>
+                                                    </select></div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <button type="button" class="btn btn-secondary mt-2" onclick="addBankRow(false)">
+                                        <i class="fa fa-plus"/> Add Bank Account
+                                    </button>
+                                </div>
+                                        
+                                <!-- Family Details -->
+                                <div class="tab-pane fade" id="family" role="tabpanel">
+                                    <div id="family_lines_container">
+                                        <t t-foreach="employee.family_ids" t-as="fam">
+                                            <div class="family-row border p-3 mb-3 rounded">
+                                                <div class="row">
+                                                    <div class="col-11"><h5>Family Member <t t-esc="fam_index + 1"/></h5></div>
+                                                    <div class="col-1 text-end">
+                                                        <button type="button" class="btn-close" onclick="this.closest('.family-row').remove();"/>
+                                                    </div>
+                                                </div>
+                                                <hr/>
+                                                <div class="row">
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Full Name *</label><input type="text" t-attf-name="family_full_name_#{fam_index}" class="form-control" t-att-value="fam.full_name" required="1"/></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Relationship *</label><select t-attf-name="family_relationship_#{fam_index}" class="form-select" required="1"><option value="mother" t-att-selected="fam.relationship == 'mother'">Mother</option><option value="father" t-att-selected="fam.relationship == 'father'">Father</option><option value="sister" t-att-selected="fam.relationship == 'sister'">Sister</option><option value="brother" t-att-selected="fam.relationship == 'brother'">Brother</option><option value="spouse" t-att-selected="fam.relationship == 'spouse'">Spouse</option><option value="aunt" t-att-selected="fam.relationship == 'aunt'">Aunt</option><option value="uncle" t-att-selected="fam.relationship == 'uncle'">Uncle</option><option value="son" t-att-selected="fam.relationship == 'son'">Son</option><option value="daughter" t-att-selected="fam.relationship == 'daughter'">Daughter</option><option value="other" t-att-selected="fam.relationship == 'other'">Other</option></select></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Contact Number</label><input type="tel" t-attf-name="family_contact_#{fam_index}" class="form-control" t-att-value="fam.contact_number"/></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Gender *</label><select t-attf-name="family_gender_#{fam_index}" class="form-select" required="1"><option value="male" t-att-selected="fam.gender == 'male'">Male</option><option value="female" t-att-selected="fam.gender == 'female'">Female</option></select></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Nationality *</label><select t-attf-name="family_nationality_#{fam_index}" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == fam.nationality_id.id" t-esc="c.name"/></t></select></div>
+                                                    <div class="mb-3 col-md-2"><label class="form-label">Dependent?</label><select t-attf-name="family_dependent_#{fam_index}" class="form-select"><option value="no" t-att-selected="not fam.dependent">No</option><option value="yes" t-att-selected="fam.dependent">Yes</option></select></div>
+                                                    <div class="mb-3 col-md-2"><label class="form-label">Insured?</label><select t-attf-name="family_insured_#{fam_index}" class="form-select"><option value="no" t-att-selected="not fam.insured">No</option><option value="yes" t-att-selected="fam.insured">Yes</option></select></div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <button type="button" class="btn btn-secondary mt-2" onclick="addFamilyRow(false)">
+                                        <i class="fa fa-plus"/> Add Family Member
+                                    </button>
+                                </div>
+
+                                <!-- Education Details -->
+                                <div class="tab-pane fade" id="education" role="tabpanel">
+                                    <div id="education_lines_container">
+                                        <t t-foreach="employee.education_ids" t-as="edu">
+                                            <div class="education-row border p-3 mb-3 rounded">
+                                                <div class="row">
+                                                    <div class="col-11"><h5>Education Record <t t-esc="edu_index + 1"/></h5></div>
+                                                    <div class="col-1 text-end"><button type="button" class="btn-close" onclick="this.closest('.education-row').remove();"/></div>
+                                                </div>
+                                                <hr/>
+                                                <div class="row">
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Type of Institution *</label><select t-attf-name="edu_institution_type_#{edu_index}" class="form-select" required="1"><option value="high_school" t-att-selected="edu.type_of_institution == 'high_school'">High School</option><option value="tvet" t-att-selected="edu.type_of_institution == 'tvet'">TVET</option><option value="college" t-att-selected="edu.type_of_institution == 'college'">College</option><option value="university" t-att-selected="edu.type_of_institution == 'university'">University</option></select></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">School/University *</label><input type="text" t-attf-name="edu_school_#{edu_index}" class="form-control" t-att-value="edu.school" required="1"/></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Level of Education *</label><select t-attf-name="edu_level_#{edu_index}" class="form-select" required="1"><option value="high_school" t-att-selected="edu.certificate_level == 'high_school'">High School</option><option value="diploma" t-att-selected="edu.certificate_level == 'diploma'">Diploma</option><option value="bachelor" t-att-selected="edu.certificate_level == 'bachelor'">Bachelor's Degree</option><option value="master" t-att-selected="edu.certificate_level == 'master'">Master's Degree</option><option value="phd" t-att-selected="edu.certificate_level == 'phd'">PhD</option><option value="other" t-att-selected="edu.certificate_level == 'other'">Other</option></select></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Field of Study *</label><input type="text" t-attf-name="edu_field_#{edu_index}" class="form-control" t-att-value="edu.field_of_study" required="1"/></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Start Date *</label><input type="date" t-attf-name="edu_start_date_#{edu_index}" class="form-control" t-att-value="edu.start_date" required="1"/></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Graduation Date *</label><input type="date" t-attf-name="edu_end_date_#{edu_index}" class="form-control" t-att-value="edu.end_date" required="1"/></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">CGPA *</label><input type="number" step="0.01" t-attf-name="edu_cgpa_#{edu_index}" class="form-control" t-att-value="edu.cgpa" required="1"/></div>
+                                                    <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG)</label><input type="file" t-attf-name="edu_certificate_#{edu_index}" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/><t t-if="edu.certification_filename"><small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="edu.certification_filename"/></small><input type="hidden" t-attf-name="edu_keep_file_#{edu_index}" value="1"/></t></div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <button type="button" class="btn btn-secondary mt-2" onclick="addEducationRow(false)">
+                                        <i class="fa fa-plus"/> Add Education
+                                    </button>
+                                </div>
+
+                                <!-- Passport Details -->
+                                <div class="tab-pane fade" id="passport" role="tabpanel">
+                                    <div class="row">
+                                        <div class="mb-3 col-md-6"><label class="form-label">Name as on Passport</label><input type="text" name="passport_name" class="form-control" t-att-value="employee.passport_name"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Passport Number</label><input type="text" name="passport_number" class="form-control" t-att-value="employee.passport_id"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Place Issued</label><input type="text" name="passport_issue_place" class="form-control" t-att-value="employee.passport_issue_place"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Issued Date</label><input type="date" name="passport_issue_date" class="form-control" t-att-value="employee.passport_issue_date"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Expiry Date</label><input type="date" name="passport_expiry_date" class="form-control" t-att-value="employee.passport_expiry_date"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">ENCR Required?</label><select name="encr_required" class="form-select"><option value="">...</option><option value="yes" t-att-selected="employee.encr_required == 'yes'">Yes</option><option value="no" t-att-selected="employee.encr_required == 'no'">No</option></select></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Upload Passport</label><input type="file" name="passport_file" class="form-control"/></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Cost-Sharing Tab -->
+                                <div class="tab-pane fade" id="cost-sharing" role="tabpanel">
+                                    <div class="row">
+                                        <div class="mb-3 col-md-4"><label class="form-label">Institution</label><select name="cost_sharing_institution" class="form-select"><option value="">...</option><option value="government" t-att-selected="employee.cost_sharing_institution == 'government'">Government</option><option value="private" t-att-selected="employee.cost_sharing_institution == 'private'">Private</option></select></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Status</label><select name="cost_sharing_status" class="form-select"><option value="">...</option><option value="paid" t-att-selected="employee.cost_sharing_status == 'paid'">Paid</option><option value="unpaid" t-att-selected="employee.cost_sharing_status == 'unpaid'">Unpaid</option><option value="na" t-att-selected="employee.cost_sharing_status == 'na'">N/A</option></select></div>
+                                        
+                                        <div class="mb-3 col-md-4">
+                                            <label class="form-label">Commitment Amount</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" name="cost_sharing_amount" class="form-control" t-att-value="employee.cost_sharing_amount"/>
+                                                <span class="input-group-text"><t t-esc="employee.currency_id.symbol if employee.currency_id else 'ETB'"/></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3 col-md-4"><label class="form-label">Upload Document</label><input type="file" name="cost_sharing_document" class="form-control"/></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                <button type="submit" id="btn_submit_onboarding" class="btn btn-primary btn-lg">Submit for Approval</button>
+                            </div>
+                        </form>
+                    </t>
+                </div>
+            </div>
+
+            <!-- Templates for Dynamic Rows (Hidden) -->
+            <div id="bank_row_template" class="d-none">
+                <div class="bank-row border p-3 mb-3 rounded">
+                    <div class="row">
+                        <div class="col-11"><h5>New Bank Account</h5></div>
+                        <div class="col-1 text-end"><button type="button" class="btn-close" onclick="this.closest('.bank-row').remove();"/></div>
+                    </div>
+                    <hr/>
+                    <div class="row">
+                        <div class="mb-3 col-md-6"><label class="form-label">Bank Name *</label><select name="bank_name_" class="form-select" required="1"><t t-foreach="banks" t-as="b"><option t-att-value="b.id" t-esc="b.name"/></t></select></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Bank Country *</label><select name="bank_country_id_" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == default_country_id" t-esc="c.name"/></t></select></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Account Number *</label><input type="text" name="bank_account_number_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Currency *</label><select name="bank_currency_id_" class="form-select" required="1"><t t-foreach="currencies" t-as="curr"><option t-att-value="curr.id" t-esc="curr.name"/></t></select></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Account Holder</label><input type="text" name="bank_account_holder_" class="form-control" t-att-value="employee.name"/></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Account Type *</label><select name="bank_account_type_" class="form-select" required="1">
+                            <option value="salary">Salary Account</option>
+                            <option value="saving">Saving Account</option>
+                            <option value="cash_indemnity">Cash Indemnity Account</option>
+                            <option value="salary_advance">Salary Advance Account</option>
+                            <option value="loan_settlement">Loan Settlement Account</option>
+                            <option value="other">Other</option>
+                        </select></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="family_row_template" class="d-none">
+                 <div class="family-row border p-3 mb-3 rounded">
+                    <div class="row">
+                        <div class="col-11"><h5>New Family Member</h5></div>
+                        <div class="col-1 text-end"><button type="button" class="btn-close" aria-label="Close" onclick="this.closest('.family-row').remove();"/></div>
+                    </div>
+                    <hr/>
+                    <div class="row">
+                        <div class="mb-3 col-md-4"><label class="form-label">Full Name *</label><input type="text" name="family_full_name_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Relationship *</label><select name="family_relationship_" class="form-select" required="1"><option value="">...</option><option value="mother">Mother</option><option value="father">Father</option><option value="sister">Sister</option><option value="brother">Brother</option><option value="spouse">Spouse</option><option value="aunt">Aunt</option><option value="uncle">Uncle</option><option value="son">Son</option><option value="daughter">Daughter</option><option value="other">Other</option></select></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Contact Number</label><input type="tel" name="family_contact_" class="form-control"/></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Gender *</label><select name="family_gender_" class="form-select" required="1"><option value="">...</option><option value="male">Male</option><option value="female">Female</option></select></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Nationality *</label><select name="family_nationality_" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == default_country_id" t-esc="c.name"/></t></select></div>
+                        <div class="mb-3 col-md-2"><label class="form-label">Dependent?</label><select name="family_dependent_" class="form-select"><option value="no">No</option><option value="yes">Yes</option></select></div>
+                        <div class="mb-3 col-md-2"><label class="form-label">Insured?</label><select name="family_insured_" class="form-select"><option value="no">No</option><option value="yes">Yes</option></select></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="education_row_template" class="d-none">
+                 <div class="education-row border p-3 mb-3 rounded">
+                    <div class="row">
+                        <div class="col-11"><h5>New Education Record</h5></div>
+                        <div class="col-1 text-end"><button type="button" class="btn-close" aria-label="Close" onclick="this.closest('.education-row').remove();"/></div>
+                    </div>
+                    <hr/>
+                    <div class="row">
+                        <div class="mb-3 col-md-6"><label class="form-label">Type of Institution *</label><select name="edu_institution_type_" class="form-select" required="1"><option value="">...</option><option value="high_school">High School</option><option value="tvet">TVET</option><option value="college">College</option><option value="university">University</option></select></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">School/University *</label><input type="text" name="edu_school_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Level of Education *</label><select name="edu_level_" class="form-select" required="1"><option value="">...</option><option value="high_school">High School</option><option value="diploma">Diploma</option><option value="bachelor">Bachelor's Degree</option><option value="master">Master's Degree</option><option value="phd">PhD</option><option value="other">Other</option></select></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Field of Study *</label><input type="text" name="edu_field_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Start Date *</label><input type="date" name="edu_start_date_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Graduation Date *</label><input type="date" name="edu_end_date_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">CGPA *</label><input type="number" step="0.01" name="edu_cgpa_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG) *</label><input type="file" name="edu_certificate_" class="form-control" accept=".pdf,.png,.jpg,.jpeg" required="1"/></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JAVASCRIPT: DRAFT PERSISTENCE & DYNAMIC ROWS -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    // 1. Initial Counters from Server
+                    let bankCounter = <t t-esc="len(employee.bank_account_ids)"/>;
+                    let familyCounter = <t t-esc="len(employee.family_ids)"/>;
+                    let educationCounter = <t t-esc="len(employee.education_ids)"/>;
+
+                    const prefix = 'ahadu_onboarding_';
+                    const form = document.getElementById('ahadu_onboarding_form');
+
+                    // --- Dynamic Add Functions ---
+                    window.addBankRow = function(isUserAction = true) {
+                        const template = document.getElementById('bank_row_template').innerHTML;
+                        const container = document.getElementById('bank_lines_container');
+                        const newRow = document.createElement('div');
+                        newRow.innerHTML = template.replace(/name="([a-z_]+)_"/g, 'name="$1_' + bankCounter + '"');
+                        container.appendChild(newRow.firstElementChild);
+                        bankCounter++;
+                        if(isUserAction) {
+                            localStorage.setItem(prefix + 'added_bank_count', (parseInt(localStorage.getItem(prefix + 'added_bank_count') || 0) + 1));
+                            bindInputListeners(newRow); // Bind listeners to new inputs
+                        }
+                    }
+
+                    window.addFamilyRow = function(isUserAction = true) {
+                        const template = document.getElementById('family_row_template').innerHTML;
+                        const container = document.getElementById('family_lines_container');
+                        const newRow = document.createElement('div');
+                        newRow.innerHTML = template.replace(/name="([a-z_]+)_"/g, 'name="$1_' + familyCounter + '"');
+                        container.appendChild(newRow.firstElementChild);
+                        familyCounter++;
+                        if(isUserAction) {
+                            localStorage.setItem(prefix + 'added_family_count', (parseInt(localStorage.getItem(prefix + 'added_family_count') || 0) + 1));
+                            bindInputListeners(newRow);
+                        }
+                    }
+
+                    window.addEducationRow = function(isUserAction = true) {
+                        const template = document.getElementById('education_row_template').innerHTML;
+                        const container = document.getElementById('education_lines_container');
+                        const newRow = document.createElement('div');
+                        newRow.innerHTML = template.replace(/name="([a-z_]+)_"/g, 'name="$1_' + educationCounter + '"');
+                        container.appendChild(newRow.firstElementChild);
+                        educationCounter++;
+                        if(isUserAction) {
+                            localStorage.setItem(prefix + 'added_edu_count', (parseInt(localStorage.getItem(prefix + 'added_edu_count') || 0) + 1));
+                            bindInputListeners(newRow);
+                        }
+                    }
+
+                    if (form) {
+                        // --- 2. Restore Dynamic Rows ---
+                        const savedBankCount = parseInt(localStorage.getItem(prefix + 'added_bank_count') || 0);
+                        for(let i=0; i &lt; savedBankCount; i++) addBankRow(false); // false = don't increment storage again
+
+                        const savedFamilyCount = parseInt(localStorage.getItem(prefix + 'added_family_count') || 0);
+                        for(let i=0; i &lt; savedFamilyCount; i++) addFamilyRow(false);
+
+                        const savedEduCount = parseInt(localStorage.getItem(prefix + 'added_edu_count') || 0);
+                        for(let i=0; i &lt; savedEduCount; i++) addEducationRow(false);
+
+                        // --- 3. Restore Input Values ---
+                        const allInputs = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
+                        let restoredCount = 0;
+                        allInputs.forEach(input => {
+                            const savedVal = localStorage.getItem(prefix + input.name);
+                            if (savedVal !== null) {
+                                input.value = savedVal;
+                                restoredCount++;
+                            }
+                        });
+
+                        // Show alert if data was restored
+                        if (restoredCount > 0) {
+                            document.getElementById('draft_alert').classList.remove('d-none');
+                        }
+
+                        // --- 4. Bind Save Listeners ---
+                        function bindInputListeners(scope) {
+                            const inputs = scope.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
+                            inputs.forEach(input => {
+                                input.addEventListener('input', function() {
+                                    localStorage.setItem(prefix + this.name, this.value);
+                                });
+                                input.addEventListener('change', function() {
+                                    localStorage.setItem(prefix + this.name, this.value);
+                                });
+                            });
+                        }
+                        
+                        // Initial bind for all inputs currently on page
+                        bindInputListeners(form);
+
+                        // --- 5. Save/Restore Active Tab ---
+                        const tabLinks = document.querySelectorAll('button[data-bs-toggle="tab"]');
+                        tabLinks.forEach(tab => {
+                            tab.addEventListener('shown.bs.tab', function (e) {
+                                localStorage.setItem(prefix + 'active_tab', e.target.id);
+                            });
+                        });
+                        const activeTabId = localStorage.getItem(prefix + 'active_tab');
+                        if (activeTabId) {
+                            const tabTriggerEl = document.getElementById(activeTabId);
+                            if (tabTriggerEl) {
+                                const tab = new bootstrap.Tab(tabTriggerEl);
+                                tab.show();
+                            }
+                        }
+
+                        // --- 6. Clear Storage on Submit ---
+                        form.addEventListener('submit', function() {
+                            Object.keys(localStorage).forEach(key => {
+                                if (key.startsWith(prefix)) {
+                                    localStorage.removeItem(key);
+                                }
+                            });
+                        });
+                    }
+                });
+            </script>
+        </t>
+    </template>
+
+    <template id="onboarding_no_employee" name="No Employee Record">
+        <t t-call="website.layout">
+             <div id="wrap">
+                <div class="container py-5">
+                     <div class="alert alert-danger text-center" role="alert">
+                        <h4 class="alert-heading">Access Denied</h4>
+                        <p>Your user account is not linked to an employee record in the system. Please contact HR.</p>
+                        <a href="/my/dashboard" class="btn btn-primary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="onboarding_submit_success" name="Onboarding Submitted">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container py-5">
+                    <div class="alert alert-success text-center" role="alert">
+                        <h4 class="alert-heading">Thank You!</h4>
+                        <p>Your profile update request has been submitted for approval by the HR department.</p>
+                        <p class="mb-0">You will be notified once it has been processed.</p>
+                        <hr/>
+                        <a href="/my/dashboard" class="btn btn-success">Return to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <template id="submission_error" name="Submission Error">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container py-5">
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading">Submission Failed</h4>
+                        <p>An error occurred while processing your request:</p>
+                        <p class="font-monospace bg-light p-2 border"><t t-esc="error_message"/></p>
+                        <hr/>
+                        <a href="javascript:history.back()" class="btn btn-secondary">Go Back and Fix</a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

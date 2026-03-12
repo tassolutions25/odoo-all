@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_salary_rule_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">hr.salary.rule.form.inherit.ahadu</field>
+        <field name="model">hr.salary.rule</field>
+        <field name="inherit_id" ref="payroll.hr_salary_rule_view_form" />
+        <field name="arch" type="xml">
+            <!-- Safer approach: Add a new tab to the existing notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Ahadu Accounting" name="ahadu_accounting">
+                    <group>
+                        <group string="General Ledger">
+                            <field name="ahadu_debit_account_id" />
+                            <field name="ahadu_credit_account_id" />
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Define Custom Landscape Paper Format -->
+    <record id="paperformat_ahadu_landscape" model="report.paperformat">
+        <field name="name">Ahadu Landscape A4</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">45</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">35</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- 2. Individual Payslip Action -->
+    <record id="action_report_ahadu_payslip" model="ir.actions.report">
+        <field name="name">Ahadu Payslip</field>
+        <field name="model">hr.payslip</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_payroll.report_payslip_ahadu</field>
+        <field name="report_file">ahadu_payroll.report_payslip_ahadu</field>
+        <field name="print_report_name">'Payslip - %s' % (object.employee_id.name)</field>
+        <field name="binding_model_id" ref="payroll.model_hr_payslip" />
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- 3. Master Payroll Sheet Action -->
+    <record id="action_report_ahadu_payroll_sheet" model="ir.actions.report">
+        <field name="name">Payroll Sheet</field>
+        <field name="model">hr.payslip.run</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_payroll.report_payroll_sheet_ahadu</field>
+        <field name="report_file">ahadu_payroll.report_payroll_sheet_ahadu</field>
+        <field name="binding_model_id" ref="payroll.model_hr_payslip_run" />
+        <field name="binding_type">report</field>
+        <!-- Reference our new custom format -->
+        <field name="paperformat_id" ref="paperformat_ahadu_landscape" />
+    </record>
+
+    <!-- 4. Journal Entry Action -->
+    <record id="action_report_journal_entry_ahadu" model="ir.actions.report">
+        <field name="name">Journal Entry Report</field>
+        <field name="model">ahadu.journal.entry</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_payroll.report_journal_entry_ahadu</field>
+        <field name="report_file">ahadu_payroll.report_journal_entry_ahadu</field>
+        <field name="print_report_name">'Journal Entry - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="ahadu_payroll.model_ahadu_journal_entry" />
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

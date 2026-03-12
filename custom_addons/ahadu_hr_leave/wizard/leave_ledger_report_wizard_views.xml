@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ahadu_leave_ledger_report_wizard_form" model="ir.ui.view">
+        <field name="name">ahadu.leave.ledger.report.wizard.form</field>
+        <field name="model">ahadu.leave.ledger.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="employee_id" />
+                    <field name="date_from" />
+                    <field name="date_to" />
+                </group>
+                <footer>
+                    <button name="action_print_report" string="Print Ledger" type="object"
+                        class="btn-primary" />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ahadu_hr_leave_ledger_report" model="ir.actions.act_window">
+        <field name="name">Annual Leave Ledger</field>
+        <field name="res_model">ahadu.leave.ledger.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="menu_ahadu_hr_leave_ledger_report"
+        name="Annual Leave Ledger"
+        parent="menu_hr_holidays_report"
+        action="action_ahadu_hr_leave_ledger_report"
+        sequence="5" />
+</odoo>

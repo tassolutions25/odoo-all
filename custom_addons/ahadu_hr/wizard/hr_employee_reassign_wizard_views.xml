@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_reassign_wizard_form" model="ir.ui.view">
+        <field name="name">hr.employee.reassign.wizard.form</field>
+        <field name="model">hr.employee.reassign.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reassign Subordinates">
+                <p class="oe_grey">
+                    The departing manager, <field name="departing_manager_id" readonly="1" class="oe_inline"/>,
+                    has subordinates that must be reassigned before the termination can be finalized.
+                </p>
+                <group>
+                    <field name="new_manager_id" options="{'no_create': True}"/>
+                    <field name="termination_id" invisible="1"/>
+                </group>
+                <group string="Employees to be Reassigned">
+                    <field name="subordinate_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="job_id"/>
+                        </list>
+                    </field>
+                </group>
+                <footer>
+                    <button name="action_reassign_and_terminate" string="Reassign and Finalize Termination" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

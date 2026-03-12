@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--
+            Record Rule for Employees (Default User Group)
+            Restricts non-manager users to only see their own leave requests.
+        -->
+        <record id="hr_leave_rule_employee" model="ir.rule">
+            <field name="name">Employee sees own Leave</field>
+            <field name="model_id" ref="hr_holidays.model_hr_leave"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_holidays.group_hr_holidays_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!--
+            Record Rule for Managers
+            Allows managers to see their own requests AND the requests of their direct subordinates.
+            This rule is applied on top of the employee rule for users in the Manager group.
+        -->
+        <record id="hr_leave_rule_manager" model="ir.rule">
+            <field name="name">Manager sees subordinates' Leave</field>
+            <field name="model_id" ref="hr_holidays.model_hr_leave"/>
+            <field name="domain_force">['|', ('employee_id.user_id', '=', user.id), ('employee_id.parent_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_holidays.group_hr_holidays_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!--
+            The Leave Officer (group_hr_holidays_responsible) does not need a rule,
+            as the absence of a rule grants them access to all records.
+        -->
+    </data>
+</odoo>

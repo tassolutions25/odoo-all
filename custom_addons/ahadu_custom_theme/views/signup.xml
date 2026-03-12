@@ -1,0 +1,7 @@
+<odoo>
+    <!--
+    <template id="login_inherit_remove_signup" inherit_id="web.login" name="Remove Signup Link">
+        <xpath expr="//a[contains(@href, '/web/signup')]" position="replace"/>
+    </template>
+    -->
+</odoo>

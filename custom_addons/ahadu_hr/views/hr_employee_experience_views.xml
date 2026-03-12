@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_employee_form_experience_tab" model="ir.ui.view">
+            <field name="name">hr.employee.form.experience.tab</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Previous Experience" name="previous_experience">
+                        <field name="experience_ids">
+                            <list editable="bottom">
+                                <field name="company_name"/>
+                                <field name="job_title"/>
+                                <field name="start_date"/>
+                                <field name="end_date"/>
+                                <field name="duration_years" sum="Total Years"/>
+                                <field name="previous_salary" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="location" optional="hide"/>
+                                <field name="attachment" widget="binary" filename="attachment_filename" optional="show"/>
+                                <field name="attachment_filename" invisible="1"/>
+                            </list>
+                            <form>
+                                <group>
+                                    <group>
+                                        <field name="company_name"/>
+                                        <field name="job_title"/>
+                                        <field name="location"/>
+                                        <field name="previous_salary"/>
+                                    </group>
+                                    <group>
+                                        <field name="start_date"/>
+                                        <field name="end_date"/>
+                                        <field name="duration_years"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <field name="reason_for_leaving"/>
+                                    <field name="job_description"/>
+                                    <field name="attachment" widget="binary" filename="attachment_filename"/>
+                                    <field name="attachment_filename" invisible="1"/>
+                                </group>
+                            </form>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

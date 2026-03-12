@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ahadu_payroll_tax_config_1" model="ahadu.payroll.tax.config">
+        <field name="name">Payroll Parameters</field>
+    </record>
+    
+    <!-- Link the action to this specific record if it exists -->
+    <record id="action_ahadu_payroll_tax_config" model="ir.actions.act_window">
+        <field name="res_id" ref="ahadu_payroll_tax_config_1"/>
+    </record>
+</odoo>

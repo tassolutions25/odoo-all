@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- ============================================= -->
+        <!-- == 1. DEFINE ALL JOB POSITIONS FOR THE CHART == -->
+        <!-- ============================================= -->
+
+        <!-- Board & CEO Level -->
+        <record id="job_ceo" model="hr.job"><field name="name">Chief Executive Officer</field></record>
+        <record id="job_company_secretary" model="hr.job"><field name="name">Company Secretary</field></record>
+        <record id="job_internal_audit_director" model="hr.job"><field name="name">Director, Internal Audit</field></record>
+        <record id="job_risk_compliance_director" model="hr.job"><field name="name">Director, Risk and Compliance</field></record>
+        <record id="job_executive_assistant_ceo" model="hr.job"><field name="name">Executive Assistant to the CEO</field></record>
+        <record id="job_legal_services_director" model="hr.job"><field name="name">Director, Legal Services</field></record>
+        <record id="job_project_office_director" model="hr.job"><field name="name">Director, Project Office</field></record>
+
+        <!-- C-Level Executives -->
+        <record id="job_exec_director_digital" model="hr.job"><field name="name">Executive Director, Digital Banking</field></record>
+        <record id="job_exec_director_retail" model="hr.job"><field name="name">Executive Director, Retail Banking</field></record>
+        <record id="job_chief_marketing_strategy" model="hr.job"><field name="name">Chief, Marketing &amp; Enterprise Strategy</field></record>
+        <record id="job_chief_corp_services" model="hr.job"><field name="name">Chief Corporate Services Officer</field></record>
+        <record id="job_chief_operations" model="hr.job"><field name="name">Chief Operations Officer</field></record>
+        <record id="job_chief_information" model="hr.job"><field name="name">Chief Information Officer</field></record>
+
+        <!-- Directors & Managers under C-Levels -->
+        <!-- Digital Banking -->
+        <record id="job_mgr_digital_biz" model="hr.job"><field name="name">Manager, Digital Banking Business</field></record>
+        <record id="job_mgr_agency_merchant" model="hr.job"><field name="name">Manager, Agency &amp; Merchant Banking Operation</field></record>
+        <record id="job_mgr_digital_innovation" model="hr.job"><field name="name">Manager, Digital Banking Innovation</field></record>
+        <!-- Retail Banking -->
+        <record id="job_director_district_north" model="hr.job"><field name="name">District Director-North</field></record>
+        <record id="job_director_district_south" model="hr.job"><field name="name">District Director-South</field></record>
+        <!-- Marketing & Strategy -->
+        <record id="job_director_marketing_comm" model="hr.job"><field name="name">Director, Marketing and Communication</field></record>
+        <record id="job_director_enterprise_strategy" model="hr.job"><field name="name">Director, Enterprise Strategy &amp; Research Department</field></record>
+        <record id="job_mgr_financial_strategy" model="hr.job"><field name="name">Manager, Financial Strategy</field></record>
+        <!-- Corporate Services -->
+        <record id="job_director_finance_treasury" model="hr.job"><field name="name">Director, Finance &amp; Treasury</field></record>
+        <record id="job_director_procurement_facilities" model="hr.job"><field name="name">Director, Procurements &amp; Facilities</field></record>
+        <record id="job_mgr_engineering" model="hr.job"><field name="name">Manager, Engineering</field></record>
+        <record id="job_director_human_capital" model="hr.job"><field name="name">Director, Human Capital Management</field></record>
+        <!-- Operations -->
+        <record id="job_director_msme_rural" model="hr.job"><field name="name">Director, MSME &amp; Rural Banking</field></record>
+        <record id="job_director_institutional_rel" model="hr.job"><field name="name">Director, Institutional Relationship Management</field></record>
+        <record id="job_director_credit_appraisal" model="hr.job"><field name="name">Director, Credit Appraisal &amp; Portfolio</field></record>
+        <record id="job_director_corporate_rel" model="hr.job"><field name="name">Director, Corporate Relationship Management</field></record>
+        <record id="job_director_international_banking" model="hr.job"><field name="name">Director, International Banking</field></record>
+        <!-- Information Technology -->
+        <record id="job_director_it_app" model="hr.job"><field name="name">Director, IT Application</field></record>
+        <record id="job_director_it_infra" model="hr.job"><field name="name">Director, IT Infrastructure &amp; Database</field></record>
+        <record id="job_mgr_tech_arch" model="hr.job"><field name="name">Manager, Technology Architecture &amp; IT Projects</field></record>
+        <record id="job_mgr_it_support" model="hr.job"><field name="name">Manager, IT Support Services</field></record>
+        <record id="job_mgr_it_security" model="hr.job"><field name="name">Manager, IT Security</field></record>
+        <record id="job_mgr_mis_team" model="hr.job"><field name="name">MIS Team</field></record>
+
+        <!-- Division-Level Managers -->
+        <!-- Finance & Treasury Divisions -->
+        <record id="job_mgr_treasury_fund" model="hr.job"><field name="name">Manager, Treasury and Fund Management</field></record>
+        <record id="job_mgr_gen_accounts" model="hr.job"><field name="name">Manager, General Accounts and Reconciliation</field></record>
+        <!-- Human Capital Divisions -->
+        <record id="job_mgr_talent_acq" model="hr.job"><field name="name">Manager, Talent Acquisition &amp; Operation</field></record>
+        <record id="job_mgr_talent_dev" model="hr.job"><field name="name">Manager, Talent Development</field></record>
+        <record id="job_mgr_talent_prog" model="hr.job"><field name="name">Manager, Talent Programs and Business Partnership</field></record>
+        <!-- Procurement & Facilities Divisions -->
+        <record id="job_mgr_facilities_prop" model="hr.job"><field name="name">Manager, Facilities and Property Administration</field></record>
+        <record id="job_mgr_procurement_contract" model="hr.job"><field name="name">Manager, Procurement and Contract Administration</field></record>
+        <record id="job_head_gen_service" model="hr.job"><field name="name">Head, General Service</field></record>
+        <!-- IT Application Divisions -->
+        <record id="job_mgr_cbs_aux" model="hr.job"><field name="name">Manager, CBS &amp; Auxiliary Applications</field></record>
+        <record id="job_mgr_digital_apps" model="hr.job"><field name="name">Manager, Digital Banking Applications</field></record>
+        <!-- IT Infrastructure Divisions -->
+        <record id="job_mgr_network_admin" model="hr.job"><field name="name">Manager, Network Administration</field></record>
+        <record id="job_mgr_sys_db_admin" model="hr.job"><field name="name">Manager, System &amp; Database Administration</field></record>
+        <record id="job_mgr_digital_channel" model="hr.job"><field name="name">Manager, Digital Channel and Platforms</field></record>
+        <!-- Marketing & Comm Divisions -->
+        <record id="job_mgr_cust_exp" model="hr.job"><field name="name">Manager, Customer Experience and Quality Assurance</field></record>
+        <record id="job_mgr_corp_comm" model="hr.job"><field name="name">Manager, Corporate Communications</field></record>
+        <record id="job_mgr_marketing_branding" model="hr.job"><field name="name">Manager, Marketing and Branding</field></record>
+        <!-- Enterprise Strategy Divisions -->
+        <record id="job_mgr_enterprise_strategy" model="hr.job"><field name="name">Manager, Enterprise Strategy</field></record>
+        <record id="job_mgr_research_market" model="hr.job"><field name="name">Manager, Research &amp; Market Intelligence</field></record>
+        <!-- MSME & Rural Banking Divisions -->
+        <record id="job_mgr_partnership_msme" model="hr.job"><field name="name">Manager, Partnership &amp; MSME Support</field></record>
+        <!-- Institutional Relationship Divisions -->
+        <record id="job_mgr_institutional_rel" model="hr.job"><field name="name">Manager, Institutional Relationship Management</field></record>
+        <!-- Corporate Relationship Divisions -->
+        <record id="job_mgr_corporate_rel" model="hr.job"><field name="name">Manager, Corporate Relationship Management</field></record>
+        <!-- Credit Appraisal Divisions -->
+        <record id="job_mgr_credit_analysis" model="hr.job"><field name="name">Manager, Credit analysis and appraisal</field></record>
+        <record id="job_mgr_credit_portfolio" model="hr.job"><field name="name">Manager, Credit Portfolio &amp; Recovery</field></record>
+        <!-- International Banking Divisions -->
+        <record id="job_mgr_trade_services" model="hr.job"><field name="name">Manager, Trade Services</field></record>
+        <record id="job_mgr_intl_remittance" model="hr.job"><field name="name">Manager, International Remittance &amp; Fund Management</field></record>
+
+        <!-- ============================================== -->
+        <!-- == 2. DEFINE THE ORGANOGRAM HIERARCHY NODES == -->
+        <!-- ============================================== -->
+
+        <!-- Root Node -->
+        <record id="org_node_board" model="hr.organogram.node">
+            <field name="name">Board of Directors</field>
+            <field name="node_type">board</field>
+        </record>
+
+        <!-- Level 1: Reporting to Board -->
+        <record id="org_node_ceo" model="hr.organogram.node">
+            <field name="name">Chief Executive Officer</field>
+            <field name="parent_id" ref="org_node_board"/>
+            <field name="job_id" ref="job_ceo"/>
+            <field name="node_type">ceo</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="org_node_company_secretary" model="hr.organogram.node">
+            <field name="name">Company Secretary</field>
+            <field name="parent_id" ref="org_node_board"/>
+            <field name="job_id" ref="job_company_secretary"/>
+            <field name="node_type">director</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="org_node_internal_audit" model="hr.organogram.node">
+            <field name="name">Director, Internal Audit</field>
+            <field name="parent_id" ref="org_node_board"/>
+            <field name="job_id" ref="job_internal_audit_director"/>
+            <field name="node_type">director</field>
+            <field name="sequence">30</field>
+        </record>
+        <record id="org_node_risk_compliance" model="hr.organogram.node">
+            <field name="name">Director, Risk and Compliance</field>
+            <field name="parent_id" ref="org_node_board"/>
+            <field name="job_id" ref="job_risk_compliance_director"/>
+            <field name="node_type">director</field>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- Level 2: Reporting to CEO -->
+        <record id="org_node_exec_assistant" model="hr.organogram.node">
+            <field name="name">Executive Assistant to the CEO</field>
+            <field name="parent_id" ref="org_node_ceo"/>
+            <field name="job_id" ref="job_executive_assistant_ceo"/>
+            <field name="node_type">manager</field>
+            <field name="sequence">5</field>
+        </record>
+        <record id="org_node_legal_services" model="hr.organogram.node">
+            <field name="name">Director, Legal Services</field>
+            <field name="parent_id" ref="org_node_ceo"/>
+            <field name="job_id" ref="job_legal_services_director"/>
+            <field name="node_type">director</field>
+            <field name="sequence">8</field>
+        </record>
+        <record id="org_node_project_office" model="hr.organogram.node">
+            <field name="name">Director, Project Office</field>
+            <field name="parent_id" ref="org_node_ceo"/>
+            <field name="job_id" ref="job_project_office_director"/>
+            <field name="node_type">director</field>
+            <field name="sequence">9</field>
+        </record>
+        
+        <!-- C-Level Executives -->
+        <record id="org_node_exec_dir_digital" model="hr.organogram.node">
+            <field name="name">Executive Director, Digital Banking</field>
+            <field name="parent_id" ref="org_node_ceo"/>
+            <field name="job_id" ref="job_exec_director_digital"/>
+            <field name="node_type">c_level</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="org_node_exec_dir_retail" model="hr.organogram.node">
+            <field name="name">Executive Director, Retail Banking</field>
+            <field name="parent_id" ref="org_node_ceo"/>
+            <field name="job_id" ref="job_exec_director_retail"/>
+            <field name="node_type">c_level</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="org_node_chief_marketing" model="hr.organogram.node">
+            <field name="name">Chief, Marketing &amp; Enterprise Strategy</field>
+            <field name="parent_id" ref="org_node_ceo"/>
+            <field name="job_id" ref="job_chief_marketing_strategy"/>
+            <field name="node_type">c_level</field>
+            <field name="sequence">30</field>
+        </record>
+        <record id="org_node_chief_corp_services" model="hr.organogram.node">
+            <field name="name">Chief Corporate Services Officer</field>
+            <field name="parent_id" ref="org_node_ceo"/>
+            <field name="job_id" ref="job_chief_corp_services"/>
+            <field name="node_type">c_level</field>
+            <field name="sequence">40</field>
+        </record>
+        <record id="org_node_chief_operations" model="hr.organogram.node">
+            <field name="name">Chief Operations Officer</field>
+            <field name="parent_id" ref="org_node_ceo"/>
+            <field name="job_id" ref="job_chief_operations"/>
+            <field name="node_type">c_level</field>
+            <field name="sequence">50</field>
+        </record>
+        <record id="org_node_chief_information" model="hr.organogram.node">
+            <field name="name">Chief Information Officer</field>
+            <field name="parent_id" ref="org_node_ceo"/>
+            <field name="job_id" ref="job_chief_information"/>
+            <field name="node_type">c_level</field>
+            <field name="sequence">60</field>
+        </record>
+
+        <!-- Level 3: Departments/Units Reporting to C-Levels -->
+
+        <!-- Under Digital Banking -->
+        <record id="org_node_digital_biz" model="hr.organogram.node">
+            <field name="name">Manager, Digital Banking Business</field>
+            <field name="parent_id" ref="org_node_exec_dir_digital"/>
+            <field name="job_id" ref="job_mgr_digital_biz"/>
+        </record>
+        <record id="org_node_agency_merchant" model="hr.organogram.node">
+            <field name="name">Manager, Agency &amp; Merchant Banking Operation</field>
+            <field name="parent_id" ref="org_node_exec_dir_digital"/>
+            <field name="job_id" ref="job_mgr_agency_merchant"/>
+        </record>
+        <record id="org_node_digital_innovation" model="hr.organogram.node">
+            <field name="name">Manager, Digital Banking Innovation</field>
+            <field name="parent_id" ref="org_node_exec_dir_digital"/>
+            <field name="job_id" ref="job_mgr_digital_innovation"/>
+        </record>
+
+        <!-- Under Retail Banking (Districts) -->
+        <record id="org_node_district_north" model="hr.organogram.node">
+            <field name="name">District Director-North</field>
+            <field name="parent_id" ref="org_node_exec_dir_retail"/>
+            <field name="job_id" ref="job_director_district_north"/>
+            <field name="node_type">district</field>
+            <field name="is_district_head">True</field>
+            <field name="district_id" eval="False"/>
+        </record>
+        <record id="org_node_district_south" model="hr.organogram.node">
+            <field name="name">District Director-South</field>
+            <field name="parent_id" ref="org_node_exec_dir_retail"/>
+            <field name="job_id" ref="job_director_district_south"/>
+            <field name="node_type">district</field>
+            <field name="is_district_head">True</field>
+            <field name="district_id" eval="False"/>
+        </record>
+        
+        <!-- Under Marketing & Strategy -->
+        <record id="org_node_marketing_comm" model="hr.organogram.node">
+            <field name="name">Director, Marketing and Communication</field>
+            <field name="parent_id" ref="org_node_chief_marketing"/>
+            <field name="job_id" ref="job_director_marketing_comm"/>
+        </record>
+        <record id="org_node_enterprise_strategy" model="hr.organogram.node">
+            <field name="name">Director, Enterprise Strategy &amp; Research</field>
+            <field name="parent_id" ref="org_node_chief_marketing"/>
+            <field name="job_id" ref="job_director_enterprise_strategy"/>
+        </record>
+        <record id="org_node_financial_strategy" model="hr.organogram.node">
+            <field name="name">Manager, Financial Strategy</field>
+            <field name="parent_id" ref="org_node_chief_marketing"/>
+            <field name="job_id" ref="job_mgr_financial_strategy"/>
+        </record>
+
+        <!-- Under Corporate Services -->
+        <record id="org_node_finance_treasury" model="hr.organogram.node">
+            <field name="name">Director, Finance &amp; Treasury</field>
+            <field name="parent_id" ref="org_node_chief_corp_services"/>
+            <field name="job_id" ref="job_director_finance_treasury"/>
+        </record>
+        <record id="org_node_procurement_facilities" model="hr.organogram.node">
+            <field name="name">Director, Procurements &amp; Facilities</field>
+            <field name="parent_id" ref="org_node_chief_corp_services"/>
+            <field name="job_id" ref="job_director_procurement_facilities"/>
+        </record>
+        <record id="org_node_engineering" model="hr.organogram.node">
+            <field name="name">Manager, Engineering</field>
+            <field name="parent_id" ref="org_node_chief_corp_services"/>
+            <field name="job_id" ref="job_mgr_engineering"/>
+        </record>
+        <record id="org_node_human_capital" model="hr.organogram.node">
+            <field name="name">Director, Human Capital Management</field>
+            <field name="parent_id" ref="org_node_chief_corp_services"/>
+            <field name="job_id" ref="job_director_human_capital"/>
+        </record>
+
+        <!-- Under Operations -->
+        <record id="org_node_msme_rural" model="hr.organogram.node">
+            <field name="name">Director, MSME &amp; Rural Banking</field>
+            <field name="parent_id" ref="org_node_chief_operations"/>
+            <field name="job_id" ref="job_director_msme_rural"/>
+        </record>
+        <record id="org_node_institutional_rel" model="hr.organogram.node">
+            <field name="name">Director, Institutional Relationship</field>
+            <field name="parent_id" ref="org_node_chief_operations"/>
+            <field name="job_id" ref="job_director_institutional_rel"/>
+        </record>
+        <record id="org_node_credit_appraisal" model="hr.organogram.node">
+            <field name="name">Director, Credit Appraisal &amp; Portfolio</field>
+            <field name="parent_id" ref="org_node_chief_operations"/>
+            <field name="job_id" ref="job_director_credit_appraisal"/>
+        </record>
+        <record id="org_node_corporate_rel" model="hr.organogram.node">
+            <field name="name">Director, Corporate Relationship</field>
+            <field name="parent_id" ref="org_node_chief_operations"/>
+            <field name="job_id" ref="job_director_corporate_rel"/>
+        </record>
+        <record id="org_node_international_banking" model="hr.organogram.node">
+            <field name="name">Director, International Banking</field>
+            <field name="parent_id" ref="org_node_chief_operations"/>
+            <field name="job_id" ref="job_director_international_banking"/>
+        </record>
+
+        <!-- Under IT -->
+        <record id="org_node_it_app" model="hr.organogram.node">
+            <field name="name">Director, IT Application</field>
+            <field name="parent_id" ref="org_node_chief_information"/>
+            <field name="job_id" ref="job_director_it_app"/>
+        </record>
+        <record id="org_node_it_infra" model="hr.organogram.node">
+            <field name="name">Director, IT Infrastructure &amp; Database</field>
+            <field name="parent_id" ref="org_node_chief_information"/>
+            <field name="job_id" ref="job_director_it_infra"/>
+        </record>
+        <record id="org_node_tech_arch" model="hr.organogram.node">
+            <field name="name">Manager, Technology Architecture &amp; IT Projects</field>
+            <field name="parent_id" ref="org_node_chief_information"/>
+            <field name="job_id" ref="job_mgr_tech_arch"/>
+        </record>
+        <record id="org_node_it_support" model="hr.organogram.node">
+            <field name="name">Manager, IT Support Services</field>
+            <field name="parent_id" ref="org_node_chief_information"/>
+            <field name="job_id" ref="job_mgr_it_support"/>
+        </record>
+        <record id="org_node_it_security" model="hr.organogram.node">
+            <field name="name">Manager, IT Security</field>
+            <field name="parent_id" ref="org_node_chief_information"/>
+            <field name="job_id" ref="job_mgr_it_security"/>
+        </record>
+        <record id="org_node_mis_team" model="hr.organogram.node">
+            <field name="name">MIS Team</field>
+            <field name="parent_id" ref="org_node_chief_information"/>
+            <field name="job_id" ref="job_mgr_mis_team"/>
+        </record>
+
+        <!-- Level 4: Divisions under Directors -->
+        <!-- Finance Divisions -->
+        <record id="org_node_treasury_fund" model="hr.organogram.node">
+            <field name="name">Manager, Treasury and Fund Management</field>
+            <field name="parent_id" ref="org_node_finance_treasury"/>
+            <field name="job_id" ref="job_mgr_treasury_fund"/>
+        </record>
+        <record id="org_node_gen_accounts" model="hr.organogram.node">
+            <field name="name">Manager, General Accounts and Reconciliation</field>
+            <field name="parent_id" ref="org_node_finance_treasury"/>
+            <field name="job_id" ref="job_mgr_gen_accounts"/>
+        </record>
+        <!-- Human Capital Divisions -->
+        <record id="org_node_talent_acq" model="hr.organogram.node">
+            <field name="name">Manager, Talent Acquisition &amp; Operation</field>
+            <field name="parent_id" ref="org_node_human_capital"/>
+            <field name="job_id" ref="job_mgr_talent_acq"/>
+        </record>
+        <record id="org_node_talent_dev" model="hr.organogram.node">
+            <field name="name">Manager, Talent Development</field>
+            <field name="parent_id" ref="org_node_human_capital"/>
+            <field name="job_id" ref="job_mgr_talent_dev"/>
+        </record>
+        <record id="org_node_talent_prog" model="hr.organogram.node">
+            <field name="name">Manager, Talent Programs and Business Partnership</field>
+            <field name="parent_id" ref="org_node_human_capital"/>
+            <field name="job_id" ref="job_mgr_talent_prog"/>
+        </record>
+        <!-- Procurement Divisions -->
+        <record id="org_node_facilities_prop" model="hr.organogram.node">
+            <field name="name">Manager, Facilities and Property Administration</field>
+            <field name="parent_id" ref="org_node_procurement_facilities"/>
+            <field name="job_id" ref="job_mgr_facilities_prop"/>
+        </record>
+        <record id="org_node_procurement_contract" model="hr.organogram.node">
+            <field name="name">Manager, Procurement and Contract Administration</field>
+            <field name="parent_id" ref="org_node_procurement_facilities"/>
+            <field name="job_id" ref="job_mgr_procurement_contract"/>
+        </record>
+        <record id="org_node_gen_service" model="hr.organogram.node">
+            <field name="name">Head, General Service</field>
+            <field name="parent_id" ref="org_node_procurement_facilities"/>
+            <field name="job_id" ref="job_head_gen_service"/>
+        </record>
+        <!-- IT App Divisions -->
+        <record id="org_node_cbs_aux" model="hr.organogram.node">
+            <field name="name">Manager, CBS &amp; Auxiliary Applications</field>
+            <field name="parent_id" ref="org_node_it_app"/>
+            <field name="job_id" ref="job_mgr_cbs_aux"/>
+        </record>
+        <record id="org_node_digital_apps" model="hr.organogram.node">
+            <field name="name">Manager, Digital Banking Applications</field>
+            <field name="parent_id" ref="org_node_it_app"/>
+            <field name="job_id" ref="job_mgr_digital_apps"/>
+        </record>
+        <!-- IT Infra Divisions -->
+        <record id="org_node_network_admin" model="hr.organogram.node">
+            <field name="name">Manager, Network Administration</field>
+            <field name="parent_id" ref="org_node_it_infra"/>
+            <field name="job_id" ref="job_mgr_network_admin"/>
+        </record>
+        <record id="org_node_sys_db_admin" model="hr.organogram.node">
+            <field name="name">Manager, System &amp; Database Administration</field>
+            <field name="parent_id" ref="org_node_it_infra"/>
+            <field name="job_id" ref="job_mgr_sys_db_admin"/>
+        </record>
+        <record id="org_node_digital_channel" model="hr.organogram.node">
+            <field name="name">Manager, Digital Channel and Platforms</field>
+            <field name="parent_id" ref="org_node_it_infra"/>
+            <field name="job_id" ref="job_mgr_digital_channel"/>
+        </record>
+        <!-- Marketing Divisions -->
+        <record id="org_node_cust_exp" model="hr.organogram.node">
+            <field name="name">Manager, Customer Experience and Quality Assurance</field>
+            <field name="parent_id" ref="org_node_marketing_comm"/>
+            <field name="job_id" ref="job_mgr_cust_exp"/>
+        </record>
+        <record id="org_node_corp_comm" model="hr.organogram.node">
+            <field name="name">Manager, Corporate Communications</field>
+            <field name="parent_id" ref="org_node_marketing_comm"/>
+            <field name="job_id" ref="job_mgr_corp_comm"/>
+        </record>
+        <record id="org_node_marketing_branding" model="hr.organogram.node">
+            <field name="name">Manager, Marketing and Branding</field>
+            <field name="parent_id" ref="org_node_marketing_comm"/>
+            <field name="job_id" ref="job_mgr_marketing_branding"/>
+        </record>
+        <!-- Strategy Divisions -->
+        <record id="org_node_ent_strategy_mgr" model="hr.organogram.node">
+            <field name="name">Manager, Enterprise Strategy</field>
+            <field name="parent_id" ref="org_node_enterprise_strategy"/>
+            <field name="job_id" ref="job_mgr_enterprise_strategy"/>
+        </record>
+        <record id="org_node_research_market" model="hr.organogram.node">
+            <field name="name">Manager, Research &amp; Market Intelligence</field>
+            <field name="parent_id" ref="org_node_enterprise_strategy"/>
+            <field name="job_id" ref="job_mgr_research_market"/>
+        </record>
+        <!-- Operations Divisions -->
+        <record id="org_node_partnership_msme" model="hr.organogram.node">
+            <field name="name">Manager, Partnership &amp; MSME Support</field>
+            <field name="parent_id" ref="org_node_msme_rural"/>
+            <field name="job_id" ref="job_mgr_partnership_msme"/>
+        </record>
+        <record id="org_node_inst_rel_mgr" model="hr.organogram.node">
+            <field name="name">Manager, Institutional Relationship Management</field>
+            <field name="parent_id" ref="org_node_institutional_rel"/>
+            <field name="job_id" ref="job_mgr_institutional_rel"/>
+        </record>
+        <record id="org_node_corp_rel_mgr" model="hr.organogram.node">
+            <field name="name">Manager, Corporate Relationship Management</field>
+            <field name="parent_id" ref="org_node_corporate_rel"/>
+            <field name="job_id" ref="job_mgr_corporate_rel"/>
+        </record>
+        <record id="org_node_credit_analysis" model="hr.organogram.node">
+            <field name="name">Manager, Credit analysis and appraisal</field>
+            <field name="parent_id" ref="org_node_credit_appraisal"/>
+            <field name="job_id" ref="job_mgr_credit_analysis"/>
+        </record>
+        <record id="org_node_credit_portfolio" model="hr.organogram.node">
+            <field name="name">Manager, Credit Portfolio &amp; Recovery</field>
+            <field name="parent_id" ref="org_node_credit_appraisal"/>
+            <field name="job_id" ref="job_mgr_credit_portfolio"/>
+        </record>
+        <record id="org_node_trade_services" model="hr.organogram.node">
+            <field name="name">Manager, Trade Services</field>
+            <field name="parent_id" ref="org_node_international_banking"/>
+            <field name="job_id" ref="job_mgr_trade_services"/>
+        </record>
+        <record id="org_node_intl_remittance" model="hr.organogram.node">
+            <field name="name">Manager, International Remittance &amp; Fund Management</field>
+            <field name="parent_id" ref="org_node_international_banking"/>
+            <field name="job_id" ref="job_mgr_intl_remittance"/>
+        </record>
+        <record id="dep_human_capital" model="hr.department">
+    <field name="name">Human Principal Officer</field>
+</record>
+<record id="job_hr_officer" model="hr.job">
+    <field name="name">HR Principal Officer</field>
+    <field name="department_id" ref="dep_human_capital"/>
+    <field name="no_of_recruitment">1</field>
+</record>
+    </data>
+</odoo>

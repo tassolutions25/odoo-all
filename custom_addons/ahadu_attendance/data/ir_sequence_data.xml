@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        This data file defines the sequences used to generate unique identifiers
+        for the Shift Swap and Overtime Request records.
+        
+        The 'noupdate="1"' attribute means that Odoo will only load this data
+        during the initial installation of the module. It will not overwrite
+        any changes made to these sequences by the user later on.
+    -->
+    <data noupdate="1">
+
+        <!-- Sequence for Ahadu Bank Shift Swap Requests -->
+        <record id="seq_ab_hr_shift_swap_request" model="ir.sequence">
+            <!-- This is the user-facing name for the sequence -->
+            <field name="name">Ahadu Shift Swap Request Sequence</field>
+            
+            <!-- 
+                This code MUST EXACTLY MATCH the string used in the 
+                next_by_code() function in your ab_hr_shift_swap.py model.
+            -->
+            <field name="code">ab_hr.shift.swap.request</field>
+            
+            <!-- This prefix will appear before the number (e.g., SSR/00001) -->
+            <field name="prefix">SSR/</field>
+            
+            <!-- The number will be padded with zeros to this length (e.g., 1 -> 00001) -->
+            <field name="padding">5</field>
+            
+            <!-- How much the number increases by each time it's called -->
+            <field name="number_increment">1</field>
+            
+            <!-- 
+                company_id=False means this sequence is global and not tied
+                to a specific company in a multi-company environment.
+            -->
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequence for Ahadu Bank Overtime Requests -->
+        <record id="seq_ab_hr_overtime_request" model="ir.sequence">
+            <field name="name">Ahadu Overtime Request Sequence</field>
+            
+            <!--
+                This code MUST EXACTLY MATCH the string used in the 
+                next_by_code() function in your ab_hr_overtime_request.py model.
+            -->
+            <field name="code">ab_hr.overtime.request</field>
+            
+            <field name="prefix">OTR/</field>
+            <field name="padding">5</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        This is the QWeb Template that will be rendered by our Python code.
+        It contains all the dynamic parts (t-esc, t-foreach).
+    -->
+    <template id="ahadu_leave_dashboard_template" name="Ahadu Leave Dashboard Content">
+        <!-- Header Section -->
+        <div
+            class.bind="!widget.isMobile ? 'd-flex justify-content-between align-items-center mb-4' : 'mb-3'">
+            <div>
+                <h1 class="mb-0">Leave Dashboard</h1>
+                <span>Welcome back, <t t-esc="user.name" /></span>
+            </div>
+            <button name="action_apply_for_leave" type="object" class="btn btn-primary mt-2 mt-md-0">
+                <i class="fa fa-plus me-1" /> Apply for Leave </button>
+        </div>
+
+        <!-- Leave Balances Section -->
+        <h3 class="mt-4">My Leave Balances</h3>
+        <div class="row mb-4">
+            <t t-if="balances">
+                <t t-foreach="balances" t-as="balance" t-key="balance.name">
+                    <div class="col-lg-3 col-md-6 p-2">
+                        <div class="card shadow-sm h-100 p-3 text-center">
+                            <div class="card-body">
+                                <div class="text-muted">
+                                    <t t-esc="balance.name" />
+                                </div>
+                                <h2 class="display-4 fw-bold">
+                                    <t t-esc="balance.days" />
+                                    <small class="text-muted fs-4">days</small>
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+            <t t-else="">
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        You have no leave balances. Please contact HR to create your allocations.
+                    </div>
+                </div>
+            </t>
+        </div>
+    </template>
+
+    <!--
+        The Main Dashboard View (Form).
+        It is now very simple. It just displays our computed HTML and the list.
+    -->
+    <record id="hr_leave_dashboard_view_form" model="ir.ui.view">
+        <field name="name">hr.leave.dashboard.form.new</field>
+        <field name="model">ahadu.hr.leave.dashboard</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" class="o_form_nosheet">
+
+                <!-- This field will render the HTML from our QWeb template -->
+                <field name="dashboard_html" widget="html_readonly" />
+
+                <!-- Upcoming Leaves Section -->
+                <h3 class="mt-2">Upcoming Leaves</h3>
+                <field name="upcoming_leave_ids" nolabel="1">
+                    <tree editable="false" create="false" delete="false">
+                        <field name="leave_type_name" />
+                        <field name="start_date" />
+                        <field name="end_date" />
+                        <field name="state" widget="badge" decoration-success="state == 'validate'"
+                            decoration-info="state in ('confirm', 'validate1')"
+                            decoration-warning="state == 'draft'" />
+                    </tree>
+                </field>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action and Menus (No changes needed) -->
+    <record id="hr_leave_dashboard_server_action" model="ir.actions.server">
+        <field name="name">Leave Dashboard</field>
+        <field name="model_id" ref="model_ahadu_hr_leave_dashboard" />
+        <field name="state">code</field>
+        <field name="code">action = model._get_dashboard_action()</field>
+    </record>
+    <menuitem id="ahadu_hr_leave_menu_root" name="Ahadu Leave"
+        action="hr_leave_dashboard_server_action"
+        sequence="10" />
+    <menuitem id="ahadu_hr_leave_dashboard_submenu" name="Dashboard"
+        parent="ahadu_hr_leave_menu_root" action="hr_leave_dashboard_server_action" sequence="1" />
+
+</odoo>

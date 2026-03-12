@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Expenses -->
+        <record id="account_5030101" model="ahadu.account">
+            <field name="code">5030101</field>
+            <field name="name">Salaries Clerical Staffs</field>
+        </record>
+        <record id="account_5030102" model="ahadu.account">
+            <field name="code">5030102</field>
+            <field name="name">Salaries Non Clerical Staffs</field>
+        </record>
+        <record id="account_5030204" model="ahadu.account">
+            <field name="code">5030204</field>
+            <field name="name">Transport and Fuel Allowance</field>
+        </record>
+        <record id="account_5030205" model="ahadu.account">
+            <field name="code">5030205</field>
+            <field name="name">Housing Allowance</field>
+        </record>
+        <record id="account_5030203" model="ahadu.account">
+            <field name="code">5030203</field>
+            <field name="name">Hardship Allowance</field>
+        </record>
+        <record id="account_5030206" model="ahadu.account">
+            <field name="code">5030206</field>
+            <field name="name">Representation Allowance</field>
+        </record>
+        <record id="account_5030201" model="ahadu.account">
+            <field name="code">5030201</field>
+            <field name="name">Cash Indemnity Allowance</field>
+        </record>
+        <record id="account_5030221" model="ahadu.account">
+            <field name="code">5030221</field>
+            <field name="name">Telephone/Mobile Allowance</field>
+        </record>
+        <record id="account_5030220" model="ahadu.account">
+            <field name="code">5030220</field>
+            <field name="name">Other Benefits</field>
+        </record>
+        <record id="account_5030211" model="ahadu.account">
+            <field name="code">5030211</field>
+            <field name="name">Pension Company Expense (11%)</field>
+        </record>
+
+        <!-- Liabilities -->
+        <record id="account_2020301" model="ahadu.account">
+            <field name="code">2020301</field>
+            <field name="name">Income Tax Payable</field>
+        </record>
+        <record id="account_2020308" model="ahadu.account">
+            <field name="code">2020308</field>
+            <field name="name">Pension Payable</field>
+        </record>
+        <record id="account_2020309" model="ahadu.account">
+            <field name="code">2020309</field>
+            <field name="name">Cost Sharing Payable</field>
+        </record>
+
+        <!-- Salaries Payable (Net Pay) -->
+        <record id="account_2020300" model="ahadu.account">
+            <field name="code">2020300</field>
+            <field name="name">Salaries Payable / Net Pay Control</field>
+        </record>
+
+        <!-- New Accounts for Loans and Associations -->
+        <record id="account_1010202" model="ahadu.account">
+            <field name="code">1010202</field>
+            <field name="name">Advance Loan Receivable</field>
+        </record>
+        <record id="account_1010203" model="ahadu.account">
+            <field name="code">1010203</field>
+            <field name="name">Personal Loan Receivable</field>
+        </record>
+        <record id="account_2020310" model="ahadu.account">
+            <field name="code">2020310</field>
+            <field name="name">Savings Payable</field>
+        </record>
+        <record id="account_2020311" model="ahadu.account">
+            <field name="code">2020311</field>
+            <field name="name">Credit Association Payable</field>
+        </record>
+        <record id="account_2020312" model="ahadu.account">
+            <field name="code">2020312</field>
+            <field name="name">Other Deductions Payable</field>
+        </record>
+        <record id="account_5030222" model="ahadu.account">
+            <field name="code">5030222</field>
+            <field name="name">Overtime Expense</field>
+        </record>
+
+        <!-- Missing Accounts for CBS integration -->
+        <record id="account_5030103" model="ahadu.account">
+            <field name="code">5030103</field>
+            <field name="name">Acting Allowance</field>
+        </record>
+        <record id="account_5030104" model="ahadu.account">
+            <field name="code">5030104</field>
+            <field name="name">Over Time Clerical Staffs</field>
+        </record>
+        <record id="account_5030105" model="ahadu.account">
+            <field name="code">5030105</field>
+            <field name="name">Over Time Non Clerical Staffs</field>
+        </record>
+        <record id="account_5030215" model="ahadu.account">
+            <field name="code">5030215</field>
+            <field name="name">Shifting Allowance</field>
+        </record>
+        <record id="account_4050012" model="ahadu.account">
+            <field name="code">4050012</field>
+            <field name="name">Penalty</field>
+        </record>
+        <record id="account_1040309" model="ahadu.account">
+            <field name="code">1040309</field>
+            <field name="name">HO Finance Clearing Account</field>
+        </record>
+    </data>
+</odoo>

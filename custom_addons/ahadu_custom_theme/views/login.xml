@@ -1,0 +1,42 @@
+<odoo>
+    <template id="custom_login_page" inherit_id="web.login">
+        <!-- Add custom titles before the login form -->
+        <!-- Add custom titles before the login form -->
+        <xpath expr="//div[contains(@class, 'field-login')]" position="before">
+            <h5 class="text-center my-2">AHADU-ERP</h5>
+        </xpath>
+
+
+        <!-- Modify the label for the 'login' field from 'Email' to 'AHADU ID' -->
+        <xpath expr="//div[contains(@class, 'field-login')]//label[@for='login']" position="replace">
+            <label for="login" class="form-label d-flex justify-content-between" >AHADU ID</label>
+        </xpath>
+
+        <xpath expr="//div[contains(@class, 'field-login')]//input[@name='login']" position="attributes">
+            <attribute name="placeholder">ID</attribute>
+            <attribute name="maxlength">250</attribute> 
+            <attribute name="required">required</attribute> 
+        </xpath>
+
+        <!-- Keep the rest of the 'login' input field as it is -->
+        <xpath expr="//div[contains(@class, 'field-login')]//input[@name='login']" position="attributes">
+            <attribute name="class">form-control</attribute>
+        </xpath>
+        
+        <!-- Password field with toggle functionality -->
+        <xpath expr="//input[@name='password']" position="replace">
+            <div class="form-group field-password input-group"> 
+                <input type="password" placeholder="Password" name="password" id="password"
+                    t-attf-class="form-control #{'form-control-sm' if form_small else ''}" required="required"
+                    autocomplete="current-password" t-att-autofocus="'autofocus' if login else None" maxlength="4096"/>
+                <span class="fa fa-eye-slash input-group-text" id="rt_toggle_password" ></span> 
+            </div>
+        </xpath>
+
+
+        <!-- Remove the 'Log in as superuser' button -->
+        <xpath expr="//button[@name='redirect' and contains(text(), 'Log in as superuser')]" position="replace">
+        </xpath>
+    </template>
+    
+</odoo>

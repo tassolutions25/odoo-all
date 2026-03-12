@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+    <record id="view_employee_guarantee_form" model="ir.ui.view">
+    <field name="name">hr.employee.guarantee.form</field>
+    <field name="model">hr.employee.guarantee</field>
+    <field name="arch" type="xml">
+        <form string="Employee Guarantee Request">
+            <header>
+                <button name="action_submit" string="Submit" type="object" class="btn-primary" data-hotkey="s"
+                        invisible="state != 'draft'"/>
+                <button name="action_approve_step" string="Approve" type="object" class="btn-success" data-hotkey="a"
+                        invisible="can_approve == False"/>
+                <button name="action_reject" string="Reject" type="object" class="btn-danger" data-hotkey="z"
+                        invisible="can_approve == False"/>
+                <button name="action_draft" string="Reset to Draft" type="object" data-hotkey="d"
+                        invisible="state not in ('rejected')"/>
+                <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+            </header>
+            <sheet>
+                <div class="oe_title">
+                    <h1>Guarantee Request</h1>
+                </div>
+                <group>
+                    <group string="Guarantor Information (Our Employee)">
+                        <field name="employee_id"/>
+                        <field name="guarantee_date"/>
+                    </group>
+                    <group string="Approval Status">
+                        <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                        <field name="can_approve" invisible="1"/>
+                    </group>
+                </group>
+
+                <group string="Guaranteed Person Information (External)">
+                    <field name="guaranteed_person_name"/>
+                    <field name="guaranteed_person_company"/>
+                    <field name="guaranteed_person_id_number"/>
+                    <field name="po_box"/>
+                    <field name="organization_email" widget="email"/>
+                </group>
+
+                <group string="Guarantee Details">
+                    <field name="amount"/>
+                    <field name="description" placeholder="Enter reason for the guarantee..."/>
+                </group>
+
+                <notebook>
+                    <page string="Approval History">
+                        <field name="approval_line_ids">
+                            <list>
+                                <field name="sequence" widget="handle"/>
+                                <field name="approver_id"/>
+                                <field name="status"/>
+                                <field name="approval_date"/>
+                                <field name="comments"/>
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+            </sheet>
+        </form>
+    </field>
+</record>
+
+<record id="view_employee_guarantee_tree" model="ir.ui.view">
+    <field name="name">hr.employee.guarantee.tree</field>
+    <field name="model">hr.employee.guarantee</field>
+    <field name="arch" type="xml">
+        <list>
+            <field name="employee_id"/>
+            <field name="guaranteed_person_name"/>
+            <field name="guarantee_date"/>
+            <field name="amount"/>
+            <field name="state"/>
+        </list>
+    </field>
+</record>
+
+    <record id="view_employee_guarantee_search" model="ir.ui.view">
+    <field name="name">hr.employee.guarantee.search</field>
+    <field name="model">hr.employee.guarantee</field>
+    <field name="arch" type="xml">
+        <search>
+            <field name="employee_id"/>
+            <field name="guaranteed_person_name"/>
+            <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/> <!-- CHANGED & Corrected -->
+            <group expand="0" string="Group By">
+                <filter string="Guarantor Employee" name="group_guarantor" context="{'group_by': 'employee_id'}"/> <!-- CHANGED -->
+                <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+            </group>
+        </search>
+    </field>
+</record>
+    </data>
+</odoo>

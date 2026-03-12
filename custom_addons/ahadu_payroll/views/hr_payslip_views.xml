@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_payslip_view_form_inherit_ahadu_reporting" model="ir.ui.view">
+        <field name="name">hr.payslip.view.form.inherit.ahadu.reporting</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="payroll.hr_payslip_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='right']" position="inside">
+                <field name="working_days" string="Total Working Days"/>
+                <field name="worked_days" string="Attendance Days"/>
+                <field name="leave_days" string="Leave Days"/>
+                <field name="unauthorized_absent_days" string="Unauthorized Absences"/>
+                <field name="absent_days" string="Total Non-Worked Days"/>
+                <field name="overtime_amount" string="Overtime Amount" widget="monetary"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

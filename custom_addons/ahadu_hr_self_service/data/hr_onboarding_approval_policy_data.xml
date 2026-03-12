@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="policy_employee_onboarding" model="hr.approval.policy">
+            <field name="name">Employee Profile Update (Onboarding) Approval</field>
+            <field name="model_id" ref="ahadu_hr_self_service.model_hr_employee_onboarding"/>
+            <field name="domain">[]</field>
+            <field name="sequence">10</field>
+        </record>
+        
+        <record id="policy_line_onboarding_hr_officer" model="hr.approval.policy.line">
+            <field name="policy_id" ref="policy_employee_onboarding"/>
+            <field name="sequence">10</field>
+            <field name="approver_type">job_position</field>
+            <field name="job_id" ref="ahadu_hr.job_hr_officer"/>
+            <field name="is_required">True</field>
+        </record>
+    </data>
+</odoo>

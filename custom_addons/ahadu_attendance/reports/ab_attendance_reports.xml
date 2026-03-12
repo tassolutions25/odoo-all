@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_ab_report_attendance_log" model="ir.actions.report">
+            <field name="name">Attendance Log</field>
+            <field name="model">ab.hr.attendance</field> <!-- Can be any model, just a placeholder -->
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ahadu_attendance.report_attendance_template</field>
+            <field name="report_file">ahadu_attendance.report_attendance_template</field>
+            <field name="print_report_name">'Attendance Log - %s' % (object.name)</field>
+            <field name="binding_model_id" eval="False"/> <!-- Unlink from any model -->
+        </record>
+    </data>
+</odoo>

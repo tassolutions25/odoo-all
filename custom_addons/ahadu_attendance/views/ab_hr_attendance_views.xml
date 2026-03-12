@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Form View to add new fields -->
+    <record id="hr_attendance_view_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">hr.attendance.form.inherit.ahadu</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+           <!-- Add action buttons (Odoo 18 compatible) -->
+            <header position="inside">
+                <button name="action_lunch_out"
+                        string="Lunch Out"
+                        type="object"
+                        class="btn-secondary"
+                        icon="fa-cutlery"
+                        invisible="lunch_out != False"/>
+                <button name="action_lunch_in"
+                        string="Lunch In"
+                        type="object"
+                        class="btn-success"
+                        icon="fa-sign-in"
+                        invisible="not lunch_out or lunch_in"/>
+                <!-- <button name="action_lunch_out" type="object" string="Lunch Out" class="btn-primary" invisible="False"/>
+                <button name="action_lunch_in" type="object" string="Lunch In" class="btn-success" invisible="False"/> -->
+
+            </header>
+            <!-- Add a new notebook for better organization -->
+            <sheet position="after">
+                <notebook>
+                    <page string="Tracking &amp; Lateness">
+                        <group>
+                            <group string="Tracking Details">
+                                <field name="check_in_method"/>
+                                <field name="device_mac_address"/>
+                                <field name="check_in_gps"/>
+                                <field name="check_out_gps"/>
+                            </group>
+                            <!-- This group will only appear if the employee is late -->
+                            <group string="Lateness Details">
+                                <!-- <field name="is_late" invisible="1"/> keep hidden flag for raw boolean -->
+                                <field name="late_minutes" readonly="1"/>
+                                <field name="late_duration_display" readonly="1"/>
+                                <field name="early_out_minutes" string="Early Out" optional="show"/>
+                                <field name="is_late" invisible="1"/>
+                                <field name="lateness_reason_id" required="is_late"/>
+                                <field name="lateness_comment" placeholder="Add any extra comments here..."/>
+                                <field name="punch_type" readonly="1"/>
+                            </group>
+                        </group>
+                    </page>
+                    <page string="Lunch Tracking">
+                        <group>
+                            <field name="lunch_out" readonly="1"/>
+                            <field name="lunch_in" readonly="1"/>
+                        </group>
+                    </page>
+                </notebook>
+            </sheet>
+        </field>
+    </record>
+
+    <!-- Inherit Tree View to add status and other useful fields -->
+    <record id="hr_attendance_view_tree_inherit_ahadu" model="ir.ui.view">
+        <field name="name">hr.attendance.tree.inherit.ahadu</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+
+            <!-- Insert Employee ID (Emp Code) before employee name -->
+            <field name="employee_id" position="before">
+                <field name="employee_emp_code" string="Emp ID"/>
+            </field>
+            <!-- Insert Department right after Employee name -->
+            <field name="employee_id" position="after">
+                <field name="department_id" string="Department"/>
+            </field>
+            <field name="worked_hours" position="after">
+                <!-- Use a badge for better visibility -->
+                <field name="attendance_status" 
+                       widget="badge" 
+                       decoration-success="attendance_status == 'on_time'" 
+                       decoration-warning="attendance_status in ('late_in', 'early_out')" 
+                       decoration-danger="attendance_status == 'late_in_early_out'"
+                       decoration-muted="attendance_status == ('miss_out', 'late_in_miss_out')"
+                       decoration-info="attendance_status == 'on_time_miss_out'"/>
+                <!-- Make these columns optionally visible -->
+                <!-- <field name="is_late" optional="show"/> -->
+                <field name="late_minutes" string="Late (Min)" optional="hide" sum="Total Late Minutes"/>
+                <field name="late_duration_display" string="Late Minutes" optional="show"/>
+                <field name="early_out_duration_display" string="Early Out" optional="show"/>
+                                <!--  ✅ Lunch Columns  -->
+                <field name="lunch_out" optional="show"/>
+                <field name="lunch_in" optional="show"/>
+                <field name="punch_type" readonly="1"/>
+                <!-- <field name="extra_hours" string="Overtime" optional="show"/> -->
+                <!-- <field name="under_time_hours" string="Under Time" optional="show"/> -->
+
+                <field name="check_in_method" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- My Attendance Action (Shows only current user's records) -->
+    <record id="action_my_attendance" model="ir.actions.act_window">
+        <field name="name">My Attendance</field>
+        <field name="res_model">hr.attendance</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No attendance records found.
+            </p>
+            <p>
+                This shows only your personal attendance history.
+            </p>
+        </field>
+    </record>
+</odoo>

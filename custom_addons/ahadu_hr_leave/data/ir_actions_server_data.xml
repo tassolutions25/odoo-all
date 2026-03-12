@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_server_recompute_balances" model="ir.actions.server">
+            <field name="name">Recompute Balances</field>
+            <field name="model_id" ref="hr_holidays.model_hr_leave_allocation" />
+            <field name="binding_model_id" ref="hr_holidays.model_hr_leave_allocation" />
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                    records._manual_recompute_balance()
+            </field>
+        </record>
+    </data>
+</odoo>

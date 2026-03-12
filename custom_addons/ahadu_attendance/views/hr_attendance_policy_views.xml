@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Attendance Policy Tree View -->
+    <record id="view_hr_attendance_policy_tree" model="ir.ui.view">
+        <field name="name">hr.attendance.policy.tree</field>
+        <field name="model">hr.attendance.policy</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="resource_calendar_id"/>
+                <field name="check_in_earliest" widget="float_time"/>
+                <field name="check_in_latest_grace" widget="float_time"/>
+                <field name="check_out_earliest_grace" widget="float_time"/>
+                <field name="check_out_deadline" widget="float_time"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Attendance Policy Form View -->
+    <record id="view_hr_attendance_policy_form" model="ir.ui.view">
+        <field name="name">hr.attendance.policy.form</field>
+        <field name="model">hr.attendance.policy</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g., Head Office Policy"/></h1>
+                    </div>
+                    <group>
+                        <group string="General">
+                            <field name="resource_calendar_id"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Time Rules">
+                        <group>
+                            <field name="check_in_earliest" widget="float_time"/>
+                            <field name="check_in_latest_grace" widget="float_time"/>
+                        </group>
+                        <group>
+                            <field name="check_out_earliest_grace" widget="float_time"/>
+                            <field name="check_out_deadline" widget="float_time"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for Attendance Policies -->
+    <record id="action_hr_attendance_policy" model="ir.actions.act_window">
+        <field name="name">Attendance Policies</field>
+        <field name="res_model">hr.attendance.policy</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

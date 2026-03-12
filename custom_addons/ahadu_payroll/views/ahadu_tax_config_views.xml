@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ahadu_payroll_tax_config_form" model="ir.ui.view">
+        <field name="name">ahadu.payroll.tax.config.form</field>
+        <field name="model">ahadu.payroll.tax.config</field>
+        <field name="arch" type="xml">
+            <form string="Taxation Rules &amp; Fuel Rate" create="false" edit="true" delete="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Taxation Rules &amp; Fuel Rate</h1>
+                    </div>
+                    <group>
+                        <group string="Fuel Rate Configuration">
+                            <field name="fuel_price_per_liter" widget="monetary" groups="ahadu_payroll.group_ahadu_payroll_finance_officer"/>
+                            <field name="fuel_price_cutoff_date" groups="ahadu_payroll.group_ahadu_payroll_finance_officer"/>
+                            
+                            <!-- Readonly display for others -->
+                            <field name="fuel_price_per_liter" widget="monetary" readonly="1" groups="!ahadu_payroll.group_ahadu_payroll_finance_officer"/>
+                            <field name="fuel_price_cutoff_date" readonly="1" groups="!ahadu_payroll.group_ahadu_payroll_finance_officer"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Fuel Price History" name="fuel_history">
+                            <field name="fuel_price_history_ids">
+                                <list create="0" edit="0" delete="0">
+                                    <field name="effective_date"/>
+                                    <field name="price"/>
+                                    <field name="user_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Income Tax Brackets" name="tax_brackets">
+                            <field name="tax_bracket_ids">
+                                <list>
+                                    <field name="display_range" string="Income Range (ETB)"/>
+                                    <field name="rate" widget="percentage" string="Tax Rate"/>
+                                    <field name="deduction" string="Deduction (ETB)"/>
+                                </list>
+                            </field>
+                            <p class="text-muted mt-2">
+                                * These rules are automatically applied during payslip calculation based on the Ethiopian Income Tax proclamation.
+                            </p>
+                        </page>
+                        <page string="Region Fuel Tax Deduction Config" name="region_configs">
+                            <field name="region_config_ids">
+                                <list editable="bottom">
+                                    <field name="region_id"/>
+                                    <field name="transport_allowance_exemption"/>
+                                </list>
+                            </field>
+                            <p class="text-muted mt-2">
+                                * Define region-specific tax exemptions (e.g., Transport Allowance).
+                            </p>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ahadu_payroll_tax_config" model="ir.actions.act_window">
+        <field name="name">Taxation Rules &amp; Fuel Rate</field>
+        <field name="res_model">ahadu.payroll.tax.config</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem
+        id="menu_report_tax_config"
+        name="Taxation Rules &amp; Fuel Rate"
+        parent="menu_ahadu_reports_root"
+        action="action_ahadu_payroll_tax_config"
+        sequence="110" />
+</odoo>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_ahadu_attendance" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.ahadu.attendance</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Insert inside the form of General Settings -->
+            <xpath expr="//form" position="inside">
+
+                <div class="app_settings_block"
+                     data-string="Ahadu Attendance"
+                     string="Ahadu Attendance"
+                     data-key="ahadu_attendance">
+
+                    <h2>BioTime / ZKTeco Integration</h2>
+
+                    <div class="row mt16 o_settings_container">
+
+                        <!-- API Credentials Section (Option A) 
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <span class="o_form_label">Option A: API Connection</span>
+                                <div class="text-muted">
+                                    Connect via HTTP API (Slower, Real-time).
+                                </div>
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label for="biotime_api_url" class="col-lg-4 o_light_label"/>
+                                        <field name="biotime_api_url"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="biotime_api_user" class="col-lg-4 o_light_label"/>
+                                        <field name="biotime_api_user"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="biotime_api_password" class="col-lg-4 o_light_label"/>
+                                        <field name="biotime_api_password" password="True"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="biotime_default_area_id" class="col-lg-4 o_light_label"/>
+                                        <field name="biotime_default_area_id"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="biotime_timezone" class="col-lg-4 o_light_label"/>
+                                        <field name="biotime_timezone"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        -->
+
+                        <!-- Database Connection Section (Option B) -->
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <span class="o_form_label">Option B: Database Connection</span>
+                                <div class="text-muted">
+                                    Connect directly to PostgreSQL (Faster, Daily Summaries).
+                                </div>
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label for="biotime_db_host" class="col-lg-4 o_light_label"/>
+                                        <field name="biotime_db_host"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="biotime_db_port" class="col-lg-4 o_light_label"/>
+                                        <field name="biotime_db_port"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="biotime_db_name" class="col-lg-4 o_light_label"/>
+                                        <field name="biotime_db_name"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="biotime_db_user" class="col-lg-4 o_light_label"/>
+                                        <field name="biotime_db_user"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="biotime_db_password" class="col-lg-4 o_light_label"/>
+                                        <field name="biotime_db_password" password="True"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manual Sync Section -->
+                        <div class="col-12 col-lg-12 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <span class="o_form_label">Synchronization Control</span>
+                                <div class="text-muted">
+                                    Select dates and choose your sync method.
+                                </div>
+                                <div class="mt16">
+                                    <div class="row">
+                                        <label for="biotime_manual_start_date" class="col-lg-2 o_light_label"/>
+                                        <field name="biotime_manual_start_date"/>
+                                        <label for="biotime_manual_end_date" class="col-lg-2 o_light_label"/>
+                                        <field name="biotime_manual_end_date"/>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-6">
+                                            <p class="text-muted small mb-1"><b>Option A (API):</b> Standard sync. Fetches all raw punches.</p>
+                                            <!--
+                                            <button name="action_sync_attendance_from_biotime"
+                                                    string="Sync via API"
+                                                    type="object"
+                                                    class="btn-secondary"/>
+                                            -->
+                                        </div>
+                                        <div class="col-6">
+                                            <p class="text-muted small mb-1"><b>Option B (DB):</b> Smart sync. Auto-calculates First-In/Last-Out.</p>
+                                            <button name="action_sync_attendance_from_db"
+                                                    string="Sync via Database (Fast)"
+                                                    type="object"
+                                                    class="btn-primary"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <!--
+                                        <button name="action_sync_employees_to_biotime"
+                                                string="Sync Employees to BioTime"
+                                                type="object"
+                                                class="btn-link"/>
+                                        -->
+                                    </div>
+                                </div>
+                                
+                                <div class="mt16 row">
+                                    <label for="biotime_last_sync_time" class="col-lg-3 o_light_label"/>
+                                    <field name="biotime_last_sync_time" readonly="1"/>
+                                </div>
+                                
+                                <div class="row mt16">
+                                    <label for="biotime_auto_sync_interval" class="col-lg-3 o_light_label"/>
+                                    <field name="biotime_auto_sync_interval"/>
+                                    <div class="text-muted col-12">
+                                        Set how often attendance data should auto-sync (default: 30 minutes).
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </xpath>
+        </field>
+    </record>
+</odoo>

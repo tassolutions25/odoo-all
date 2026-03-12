@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ahadu_comparative_analytics_form" model="ir.ui.view">
+        <field name="name">ahadu.comparative.analytics.form</field>
+        <field name="model">ahadu.comparative.analytics</field>
+        <field name="arch" type="xml">
+            <form string="Comparative Analytics Report">
+                <header>
+                    <button name="action_refresh" string="Generate/Refresh" type="object" class="oe_highlight" icon="fa-refresh"/>
+                    <button name="action_generate_excel" string="Download Excel" type="object" class="btn-primary" icon="fa-file-excel-o" invisible="not detail_ids"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Comparative Analytics Report</h1>
+                    </div>
+                    <group>
+                        <group string="Report Selection">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="is_head_office" invisible="1"/>
+                            <field name="branch_id" options="{'no_create': True}" invisible="not is_head_office"/>
+                        </group>
+                    </group>
+
+                    <separator string="Period-on-Period Summary" invisible="not detail_ids"/>
+                    <div class="o_row" invisible="not detail_ids">
+                        <group col="4">
+                            <!-- New Additions -->
+                            <group string="New Additions" col="1">
+                                <field name="additions_cur" string="Current"/>
+                                <field name="additions_prev" string="Previous"/>
+                                <field name="additions_var" string="Variance" decoration-bf="1" decoration-danger="additions_var &lt; 0" decoration-success="additions_var &gt; 0"/>
+                            </group>
+                            <!-- Promotions -->
+                            <group string="Promotions" col="1">
+                                <field name="promotions_cur" string="Current"/>
+                                <field name="promotions_prev" string="Previous"/>
+                                <field name="promotions_var" string="Variance" decoration-bf="1" decoration-danger="promotions_var &lt; 0" decoration-success="promotions_var &gt; 0"/>
+                            </group>
+                            <!-- Salary Changes -->
+                            <group string="Salary Adjustments" col="1">
+                                <field name="salary_cur" string="Current"/>
+                                <field name="salary_prev" string="Previous"/>
+                                <field name="salary_var" string="Variance" decoration-bf="1" decoration-danger="salary_var &lt; 0" decoration-success="salary_var &gt; 0"/>
+                            </group>
+                            <!-- Transfers -->
+                            <group string="Transfers" col="1">
+                                <field name="transfers_cur" string="Current"/>
+                                <field name="transfers_prev" string="Previous"/>
+                                <field name="transfers_var" string="Variance" decoration-bf="1" decoration-danger="transfers_var &lt; 0" decoration-success="transfers_var &gt; 0"/>
+                            </group>
+                        </group>
+                    </div>
+                    <div class="o_row" invisible="not detail_ids">
+                        <group col="4">
+                            <!-- Demotions -->
+                            <group string="Demotions" col="1">
+                                <field name="demotions_cur" string="Current"/>
+                                <field name="demotions_prev" string="Previous"/>
+                                <field name="demotions_var" string="Variance" decoration-bf="1" decoration-danger="demotions_var &gt; 0" decoration-success="demotions_var &lt; 0"/>
+                            </group>
+                            <!-- Acting Assignments -->
+                            <group string="Acting" col="1">
+                                <field name="acting_cur" string="Current"/>
+                                <field name="acting_prev" string="Previous"/>
+                                <field name="acting_var" string="Variance" decoration-bf="1" decoration-danger="acting_var &lt; 0" decoration-success="acting_var &gt; 0"/>
+                            </group>
+                            <!-- Temporary Assignments -->
+                            <group string="Temporary" col="1">
+                                <field name="temporary_cur" string="Current"/>
+                                <field name="temporary_prev" string="Previous"/>
+                                <field name="temporary_var" string="Variance" decoration-bf="1" decoration-danger="temporary_var &lt; 0" decoration-success="temporary_var &gt; 0"/>
+                            </group>
+                            <!-- Terminations -->
+                            <group string="Terminations" col="1">
+                                <field name="terminations_cur" string="Current"/>
+                                <field name="terminations_prev" string="Previous"/>
+                                <field name="terminations_var" string="Variance" decoration-bf="1" decoration-danger="terminations_var &gt; 0" decoration-success="terminations_var &lt; 0"/>
+                            </group>
+                        </group>
+                    </div>
+
+                    <notebook invisible="not detail_ids">
+                        <page string="Consolidated Changes (Odoo View)">
+                            <field name="detail_ids" readonly="1">
+                                <list decoration-info="change_type in ['addition', 'acting', 'temporary']" 
+                                      decoration-success="change_type == 'promotion'" 
+                                      decoration-warning="change_type in ['transfer', 'demotion']" 
+                                      decoration-danger="change_type == 'termination'">
+                                    <field name="employee_id"/>
+                                    <field name="change_type" widget="badge"/>
+                                    <field name="change_date"/>
+                                    <field name="description"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Excel Export Note">
+                            <p class="text-muted">
+                                <strong>Tip:</strong> The Excel export will divide these activities into separate sheets 
+                                (New Additions, Promotions, Transfers, Demotions, Acting, Temporary, Termination) 
+                                with detailed "From/To" organizational fields (Branch, Dept, Division, Position, Cost Center) for each.
+                            </p>
+                        </page>
+                    </notebook>
+
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ahadu_comparative_analytics" model="ir.actions.act_window">
+        <field name="name">Comparative Analytics</field>
+        <field name="res_model">ahadu.comparative.analytics</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem
+        id="menu_report_comparative_analytics"
+        name="Comparative Analytics"
+        parent="menu_ahadu_reports_root"
+        action="action_ahadu_comparative_analytics"
+        sequence="120" />
+</odoo>

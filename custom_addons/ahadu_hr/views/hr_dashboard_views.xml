@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- HR Dashboard View -->
+    <record id="view_hr_dashboard" model="ir.ui.view">
+        <field name="name">hr.dashboard</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <form string="HR Dashboard" class="o_hr_dashboard">
+                <sheet>
+                    <div class="o_hr_dashboard_main">
+                        <!-- Header Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h1 class="text-center">HR Dashboard</h1>
+                            </div>
+                        </div>
+                        
+                        <!-- Statistics Cards -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card text-center bg-primary text-white">
+                                    <div class="card-body">
+                                        <i class="fa fa-users fa-3x mb-3"></i>
+                                        <h3 id="total_employees">0</h3>
+                                        <p>Total Employees</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center bg-success text-white">
+                                    <div class="card-body">
+                                        <i class="fa fa-arrow-up fa-3x mb-3"></i>
+                                        <h3 id="total_promotions">0</h3>
+                                        <p>Promotions This Year</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center bg-info text-white">
+                                    <div class="card-body">
+                                        <i class="fa fa-exchange fa-3x mb-3"></i>
+                                        <h3 id="total_transfers">0</h3>
+                                        <p>Transfers This Year</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center bg-warning text-white">
+                                    <div class="card-body">
+                                        <i class="fa fa-tasks fa-3x mb-3"></i>
+                                        <h3 id="pending_activities">0</h3>
+                                        <p>Pending Activities</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Charts Section -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Employee Distribution by Department</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="departmentChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Employee Activities by Type</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="activityChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Activities Section -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Recent Activities</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="recent_activities">
+                                            <!-- Activities will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Dashboard Action -->
+    <record id="action_hr_dashboard" model="ir.actions.act_window">
+        <field name="name">HR Dashboard</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_hr_dashboard"/>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Employee Statistics Dashboard -->
+    <record id="view_employee_statistics_dashboard" model="ir.ui.view">
+        <field name="name">employee.statistics.dashboard</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <form string="Employee Statistics">
+                <sheet>
+                    <div class="o_employee_statistics_dashboard">
+                        <!-- Filter Section -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="o_form_label">Select Date:</div>
+                                <input type="date" class="form-control" id="filter_date"/>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="o_form_label">Work Location:</div>
+                                <select class="form-control" id="filter_location">
+                                    <option value="">Select</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary mt-4" onclick="updateDashboard()">Update</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Statistics Grid -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fa fa-users"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3 id="stat_total_employees">3</h3>
+                                        <p>Total Employees</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <div class="stat-icon female">
+                                        <i class="fa fa-female"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3 id="stat_females">1</h3>
+                                        <p>Females: 33.3%</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <div class="stat-icon male">
+                                        <i class="fa fa-male"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3 id="stat_males">2</h3>
+                                        <p>Males: 66.7%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Charts Section -->
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="chart-container">
+                                    <h5>Job Category</h5>
+                                    <canvas id="jobCategoryChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="chart-container">
+                                    <h5>Gender</h5>
+                                    <canvas id="genderChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="chart-container">
+                                    <h5>Work Location</h5>
+                                    <canvas id="workLocationChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="chart-container">
+                                    <h5>Year of Service</h5>
+                                    <canvas id="yearOfServiceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Charts -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="chart-container">
+                                    <h5>Education</h5>
+                                    <canvas id="educationChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="chart-container">
+                                    <h5>Categories Vs Gender</h5>
+                                    <canvas id="categoriesGenderChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

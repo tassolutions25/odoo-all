@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Main Template for the Organization Chart (Container) -->
+    <t t-name="ahadu_hr.OrganizationChart" owl="1">
+        <div class="o_org_chart_container vh-100 d-flex flex-column">
+            <!-- Filter Bar -->
+            <div class="dashboard_filter_bar flex-shrink-0">
+                <h5 class="filter_label"><i class="fa fa-filter me-2"/>Filters</h5>
+                <div class="dashboard_filters">
+                    <select class="form-select" name="department_id" t-on-change="onFilterChange">
+                        <option value="all">All Departments</option>
+                        <t t-foreach="state.availableFilters.departments || []" t-as="dept" t-key="dept.id">
+                            <option t-att-value="dept.id" t-esc="dept.name" t-att-selected="state.filters.department_id == dept.id"/>
+                        </t>
+                    </select>
+                    <select class="form-select" name="job_id" t-on-change="onFilterChange">
+                        <option value="all">All Job Positions</option>
+                        <t t-foreach="state.availableFilters.job_positions || []" t-as="job" t-key="job.id">
+                            <option t-att-value="job.id" t-esc="job.name" t-att-selected="state.filters.job_id == job.id"/>
+                        </t>
+                    </select>
+                </div>
+                <button class="btn btn-secondary ms-2" t-on-click="resetFilters">
+                    <i class="fa fa-undo me-1"/> Reset
+                </button>
+            </div>
+            
+            <!-- Chart Area -->
+            <div class="flex-grow-1 overflow-auto">
+                <div t-if="state.loading" class="o_loading_indicator text-center py-5">
+                    <i class="fa fa-spinner fa-spin fa-3x text-muted"/>
+                    <p class="mt-3">Loading Organization Chart...</p>
+                </div>
+                <div t-elif="!state.hierarchyData.length" class="text-center py-5">
+                    <i class="fa fa-users fa-3x text-muted"/>
+                    <h4 class="mt-3">No Employees Found</h4>
+                    <p>No employees match the current filter criteria.</p>
+                </div>
+                <div t-else="" class="o_org_chart">
+                    <ul>
+                        <t t-foreach="state.hierarchyData" t-as="node" t-key="node.id">
+                            <OrganizationChartNode node="node" onToggle="toggleNode"/>
+                        </t>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Recursive Node Template -->
+    <t t-name="ahadu_hr.OrgChart.Node" owl="1">
+        <li>
+            <div class="o_org_node_card">
+                <div class="o_org_node_main_content">
+                    <img class="o_org_node_image" t-att-src="props.node.imageUrl" alt="Avatar"/>
+                    <div class="o_org_node_details">
+                        <div class="o_org_node_name" t-esc="props.node.name"/>
+                        <div class="o_org_node_position" t-esc="props.node.job_title || 'No Position'"/>
+                    </div>
+                </div>
+                <div t-if="props.node.subordinates_count > 0" class="o_org_node_toggle_container">
+                    <button class="o_org_node_toggle_button" t-on-click="() => props.onToggle(props.node)">
+                        <span class="o_org_toggle_count" t-esc="props.node.subordinates_count"/>
+                        <i class="fa fa-users o_org_toggle_icon" aria-hidden="true"/>
+                        <i t-att-class="props.node.is_expanded ? 'fa fa-chevron-up o_org_toggle_chevron' : 'fa fa-chevron-down o_org_toggle_chevron'"/>
+                    </button>
+                </div>
+            </div>
+            <ul t-if="props.node.is_expanded and props.node.children.length > 0">
+                <t t-foreach="props.node.children" t-as="childNode" t-key="childNode.id">
+                    <OrganizationChartNode node="childNode" onToggle="props.onToggle"/>
+                </t>
+            </ul>
+        </li>
+    </t>
+
+</templates>

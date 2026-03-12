@@ -1,0 +1,37 @@
+<odoo>
+    <data>
+        <!-- Example of inheriting the job form view to add a field (uncomment to use) -->
+        <!--
+        <record id="view_hr_job_form_inherit_ahadu" model="ir.ui.view">
+            <field name="name">hr.job.form.inherit.ahadu</field>
+            <field name="model">hr.job</field>
+            <field name="inherit_id" ref="hr_recruitment.view_hr_job_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='user_id']" position="after">
+                    <field name="custom_field"/>
+                </xpath>
+            </field>
+        </record>
+        -->
+
+        <!-- Example of inheriting the applicant form view (uncomment to use) -->
+        <!--
+        <record id="hr_applicant_view_form_inherit_ahadu" model="ir.ui.view">
+            <field name="name">hr.applicant.form.inherit.ahadu</field>
+            <field name="model">hr.applicant</field>
+            <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='email_from']" position="after">
+                    <field name="custom_applicant_field"/>
+                </xpath>
+            </field>
+        </record>
+        -->
+
+        <!-- If you just want to make sure your module is loaded and provides the default,
+             and don't have immediate view changes, you can keep this file minimal or empty for now.
+             The inheritance of models in Python is what gives you the core functionality.
+        -->
+
+    </data>
+</odoo>

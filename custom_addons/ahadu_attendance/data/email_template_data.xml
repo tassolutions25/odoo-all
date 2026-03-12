@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- 
+            This is the email template for sending disciplinary notes.
+            The 'id' here is what we reference in the Python code.
+        -->
+        <record id="email_template_disciplinary_note" model="mail.template">
+            <field name="name">Disciplinary Note Notification</field>
+            <field name="model_id" ref="ahadu_attendance.model_ab_hr_disciplinary_note"/>
+            <field name="subject">Disciplinary Note Regarding: {{ object.get_reason_type_display() }}</field>
+            <field name="email_from">"{{ object.company_id.name }}" &lt;{{ object.company_id.email or user.email }}&gt;</field>
+            <field name="email_to">{{ object.employee_id.work_email }}</field>
+            <field name="email_cc">{{ object.manager_id.work_email }}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; font-size: 14px;">
+    <p>Dear <t t-out="object.employee_id.name or ''">Employee</t>,</p>
+    
+    <p>This is a formal notification regarding a disciplinary issue recorded on <strong><t t-out="object.date or ''">Date</t></strong>.</p>
+    
+    <p><strong>Reason:</strong> <t t-out="object.get_reason_type_display() or ''"></t></p>
+    
+    <hr/>
+    
+    <h4>Details:</h4>
+    <div>
+        <!-- This will safely render the HTML details from the disciplinary note -->
+        <t t-out="object.details or ''"></t>
+    </div>
+    
+    <hr/>
+    
+    <p>This note has been added to your employee file. Please ensure adherence to company policies moving forward.</p>
+    
+    <p>If you have any questions, please contact your supervisor or the HR department.</p>
+    
+    <p>Sincerely,</p>
+    <p><strong>The HR Department</strong><br/>
+    <t t-out="object.company_id.name or ''"></t>
+    </p>
+</div>
+            ]]></field>
+        </record>
+         <!-- Template for Manager: Overtime Request to Approve -->
+        <record id="email_template_overtime_to_approve" model="mail.template">
+            <field name="name">Overtime: Request for Approval</field>
+            <field name="model_id" ref="ahadu_attendance.model_ab_hr_overtime_request"/>
+            <field name="subject">Overtime Request from {{ object.employee_id.name }} requires your approval</field>
+            <field name="email_to">{{ object.manager_id.work_email }}</field>
+            <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; font-size: 14px;">
+    <p>Dear <t t-out="object.manager_id.name or ''">Manager</t>,</p>
+    <p>
+        An overtime request submitted by <strong><t t-out="object.employee_id.name or ''"></t></strong> for the date <strong><t t-out="object.overtime_date or ''"></t></strong> is awaiting your approval.
+    </p>
+    <p><strong>Duration Requested:</strong> <t t-out="'%.2f' % object.duration"></t> hours</p>
+    <p><strong>Reason:</strong> <t t-out="object.reason or ''"></t></p>
+    <br/>
+    <div style="text-align: center; margin: 20px;">
+        <a t-attf-href="{{ object.get_access_action()['url'] }}"
+           style="background-color: #8A0037; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            View Request
+        </a>
+    </div>
+    <p>Thank you,</p>
+    <p>Ahadu Bank HR System</p>
+</div>
+            ]]></field>
+        </record>
+
+        <!-- Template for Employee: Overtime Request Approved/Rejected -->
+        <record id="email_template_overtime_status_change" model="mail.template">
+            <field name="name">Overtime: Request Status Updated</field>
+            <field name="model_id" ref="ahadu_attendance.model_ab_hr_overtime_request"/>
+            <field name="subject">Update on your Overtime Request for {{ object.overtime_date }}</field>
+            <field name="email_to">{{ object.employee_id.work_email }}</field>
+            <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; font-size: 14px;">
+    <p>Dear <t t-out="object.employee_id.name or ''">Employee</t>,</p>
+    <p>
+        Your overtime request for <strong><t t-out="object.overtime_date or ''"></t></strong> has been 
+        <t t-if="object.state == 'approved'">
+            <strong style="color: green;">APPROVED</strong>.
+        </t>
+        <t t-if="object.state == 'rejected'">
+            <strong style="color: red;">REJECTED</strong>.
+        </t>
+    </p>
+    <p><strong>Payable Hours:</strong> <t t-out="'%.2f' % object.payable_hours"></t> hours</p>
+    <br/>
+    <p>You can view the request for more details in the system.</p>
+    <p>Thank you,</p>
+    <p>Ahadu Bank HR System</p>
+</div>
+            ]]></field>
+        </record>
+    </data>
+</odoo>

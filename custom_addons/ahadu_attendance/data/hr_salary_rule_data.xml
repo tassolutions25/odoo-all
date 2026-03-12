@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+        =====================================================
+        1. Payslip Input Types
+        These act as channels to send data from our attendance
+        module into the payslip calculation.
+        =====================================================
+        -->
+        <!-- <record id="input_overtime_hours" model="hr.payslip.input.type">
+            <field name="name">Overtime Hours (Bank)</field>
+            <field name="code">B_OVERTIME</field>
+            <field name="country_id" eval="False"/>
+        </record>
+
+        <record id="input_undertime_hours" model="hr.payslip.input.type">
+            <field name="name">Under Time Hours (Bank)</field>
+            <field name="code">B_UNDERTIME</field>
+            <field name="country_id" eval="False"/>
+        </record> -->
+        
+        <!--
+        =====================================================
+        2. Salary Rules
+        These rules use the data from the input types to
+        calculate allowances and deductions.
+        =====================================================
+        -->
+        <!-- <record id="hr_salary_rule_overtime_bank" model="hr.salary.rule">
+            <field name="name">Overtime Pay (Bank Policy)</field>
+            <field name="sequence">150</field>
+            <field name="code">B_OT_PAY</field> -->
+            <!-- Assumes your community payroll module has this category ID -->
+            <!-- <field name="category_id" ref="payroll.ALW"/>
+            <field name="condition_select">python</field> -->
+            <!-- Condition: Only run this rule if the B_OVERTIME input exists and has a value > 0 -->
+            <!-- <field name="condition_python">result = inputs.B_OVERTIME and inputs.B_OVERTIME.amount &gt; 0</field>
+            <field name="amount_select">code</field> -->
+            <!-- 
+                Calculation Logic:
+                - Finds all approved OT requests for the employee in the payslip period.
+                - Calculates the hourly rate (assuming 176 hours/month).
+                - For each request, applies the rate multiplier from its linked policy.
+                - Sums up the total payment.
+            -->
+            <!-- <field name="amount_python_compute"><![CDATA[
+result = 0.0
+if contract.wage and inputs.B_OVERTIME:
+    overtime_requests = env['ab.hr.overtime.request'].search([
+        ('employee_id', '=', payslip.employee_id.id),
+        ('overtime_date', '>=', payslip.date_from),
+        ('overtime_date', '<=', payslip.date_to),
+        ('state', '=', 'approved'),
+    ])
+    # Assuming a standard of 176 working hours per month to calculate hourly rate
+    hourly_rate = contract.wage / 176
+    for request in overtime_requests:
+        rate_multiplier = request.overtime_policy_id.rate_multiplier or 1.0
+        result += hourly_rate * rate_multiplier * request.payable_hours
+]]></field> -->
+            <!-- Assumes your base salary structure has this ID -->
+            <!-- <field name="struct_id" ref="payroll.hr_payroll_structure_base"/>
+        </record> -->
+
+        <!-- <record id="hr_salary_rule_undertime_bank" model="hr.salary.rule">
+            <field name="name">Under Time Deduction (Bank Policy)</field>
+            <field name="sequence">160</field>
+            <field name="code">B_UT_DED</field> -->
+            <!-- Assumes your community payroll module has this category ID -->
+            <!-- <field name="category_id" ref="payroll.DED"/>
+            <field name="condition_select">python</field> -->
+            <!-- Condition: Only run this rule if the B_UNDERTIME input exists and has a value < 0 -->
+            <!-- <field name="condition_python">result = inputs.B_UNDERTIME and inputs.B_UNDERTIME.amount &lt; 0</field>
+            <field name="amount_select">code</field> -->
+            <!-- 
+                Calculation Logic:
+                - Calculates the hourly rate.
+                - Multiplies it by the number of hours missed (using abs() to make it positive).
+            -->
+            <!-- <field name="amount_python_compute"><![CDATA[
+result = 0.0
+if contract.wage and inputs.B_UNDERTIME:
+    hourly_rate = contract.wage / 176
+    result = hourly_rate * abs(inputs.B_UNDERTIME.amount)
+]]></field> -->
+            <!-- Assumes your base salary structure has this ID -->
+            <!-- <field name="struct_id" ref="payroll.hr_payroll_structure_base"/>
+        </record> -->
+    </data>
+</odoo>

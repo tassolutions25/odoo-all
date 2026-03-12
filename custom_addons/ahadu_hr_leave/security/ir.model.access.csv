@@ -1,0 +1,16 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_leave_ahadu,Ahadu HR Leave Access,model_hr_leave,base.group_user,1,1,1,1
+access_ahadu_hr_leave_dashboard,Ahadu HR Leave Dashboard Access,model_ahadu_hr_leave_dashboard,base.group_user,1,0,0,0
+access_ahadu_public_holiday_manager,Public Holiday Access for Leave Manager,model_ahadu_public_holiday,hr_holidays.group_hr_holidays_manager,1,1,1,1
+access_ahadu_leave_balance_report_wizard,Leave Balance Report Wizard,model_ahadu_leave_balance_report_wizard,hr_holidays.group_hr_holidays_user,1,1,1,1
+access_ahadu_pro_rata_leave_wizard,ahadu.pro_rata.leave.wizard,model_ahadu_pro_rata_leave_wizard,base.group_user,1,1,1,1
+access_ahadu_leave_request_wizard,ahadu.leave.request.wizard,model_ahadu_leave_request_wizard,base.group_user,1,1,1,1
+access_ahadu_leave_ledger_wizard,ahadu.leave.ledger.wizard,model_ahadu_leave_ledger_wizard,hr_holidays.group_hr_holidays_user,1,1,1,1
+access_ahadu_leave_partial_cancel_wizard,ahadu.leave.partial.cancel.wizard,model_ahadu_leave_partial_cancel_wizard,hr_holidays.group_hr_holidays_user,1,1,1,1
+access_ahadu_leave_full_cancel_wizard,ahadu.leave.full.cancel.wizard,model_ahadu_leave_full_cancel_wizard,base.group_user,1,1,1,1
+access_ahadu_migrated_leave_history_responsible,ahadu.migrated.leave.history.responsible,model_ahadu_migrated_leave_history,hr_holidays.group_hr_holidays_responsible,1,0,0,0
+access_ahadu_migrated_leave_history_manager,ahadu.migrated.leave.history.manager,model_ahadu_migrated_leave_history,hr_holidays.group_hr_holidays_manager,1,1,1,1
+access_ahadu_leave_report_wizard,ahadu.leave.report.wizard,model_ahadu_leave_report_wizard,base.group_user,1,1,1,1
+
+
+

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ahadu_leave_partial_cancel_wizard_form" model="ir.ui.view">
+        <field name="name">ahadu.leave.partial.cancel.wizard.form</field>
+        <field name="model">ahadu.leave.partial.cancel.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="original_end_date" />
+                    <field name="new_end_date" />
+                    <field name="reason" placeholder="e.g., Recalled for urgent project work..." />
+                </group>
+                <footer>
+                    <!-- THE FIX: A single, smart button for all users -->
+                    <button name="action_confirm" string="Confirm"
+                        type="object" class="btn-primary" />
+
+                    <button string="Discard" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ahadu_leave_partial_cancel_wizard" model="ir.actions.act_window">
+        <field name="name">Partially Cancel Leave</field>
+        <field name="res_model">ahadu.leave.partial.cancel.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="groups_id" eval="[(6, 0, [])]" />
+    </record>
+</odoo>

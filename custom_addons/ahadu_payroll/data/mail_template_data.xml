@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Email Template for Payslips -->
+        <record id="mail_template_payslip_ahadu_v2" model="mail.template">
+            <field name="name">Ahadu: Payslip Notification</field>
+            <field name="model_id" ref="payroll.model_hr_payslip"/>
+            <field name="subject">Payslip for {{ object.employee_id.name }} for {{ format_date(object.date_to, date_format='MMMM YYYY') }}</field>
+            <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="partner_to">{{ object.employee_id.work_contact_id.id or object.employee_id.user_id.partner_id.id }}</field>
+            <field name="email_to">{{ object.employee_id.work_email }}</field>
+            <field name="description">Sent to employee when their payslip is confirmed.</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Dear <t t-out="object.employee_id.name or ''">Employee</t>,<br/><br/>
+                        Please find attached your payslip for the month of <t t-out="format_date(object.date_to, date_format='MMMM YYYY') or ''">Month Year</t>.<br/><br/>
+                        If you have any questions, please contact the Payroll Department.<br/><br/>
+                        Best regards,<br/>
+                        <t t-out="object.company_id.name or ''">Ahadu Bank S.C.</t>
+                    </p>
+                </div>
+            </field>
+            <field name="report_template_ids" eval="[(4, ref('ahadu_payroll.action_report_ahadu_payslip'))]"/>
+            <field name="lang">en_US</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

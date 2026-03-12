@@ -1,0 +1,43 @@
+<odoo>
+    <template id="job_apply_date_control_inherit"
+              inherit_id="website_hr_recruitment.detail"
+              name="Restrict Job Apply Visibility by Mission Dates">
+
+        <!-- Replace the bottom Apply Now section -->
+        <xpath expr="//section[contains(@class, 'o_job_bottom_bar')]" position="replace">
+            <t t-if="job.is_application_open()">
+                <!-- Show normal apply section -->
+                <section class="o_job_bottom_bar mt24 mb48">
+                    <div class="text-center">
+                        <a role="button" t-attf-href="/jobs/apply/#{slug(job)}" class="btn btn-primary btn-lg">Apply Now!</a>
+                    </div>
+                </section>
+            </t>
+            <t t-else="">
+                <!-- Show message if application is closed or not yet open -->
+                <section class="o_job_bottom_bar mt24 mb48 text-center">
+                    <div class="alert alert-warning d-inline-block">
+                        <t t-if="job.mission_start_date and job.mission_end_date">
+                            This job accepts applications from
+                            <strong><t t-esc="job.mission_start_date"/></strong>
+                            to
+                            <strong><t t-esc="job.mission_end_date"/></strong>.
+                        </t>
+                        <t t-elif="job.mission_start_date">
+                            Applications open on
+                            <strong><t t-esc="job.mission_start_date"/></strong>.
+                        </t>
+                        <t t-elif="job.mission_end_date">
+                            The application period ended on
+                            <strong><t t-esc="job.mission_end_date"/></strong>.
+                        </t>
+                        <t t-else="">
+                            Applications are currently not available.
+                        </t>
+                    </div>
+                </section>
+            </t>
+        </xpath>
+
+    </template>
+</odoo>

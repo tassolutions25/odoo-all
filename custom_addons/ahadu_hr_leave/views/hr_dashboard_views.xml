@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        This action is now a 'client' action, which tells the web client
+        to launch the Javascript component with the tag 'ahadu_leave_dashboard_tag'.
+    -->
+    <record id="hr_leave_dashboard_action" model="ir.actions.client">
+        <field name="name">Leave Dashboard</field>
+        <field name="tag">ahadu_leave_dashboard_tag</field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="ahadu_hr_leave_menu_root" name="Ahadu Leave" action="hr_leave_dashboard_action"
+        sequence="10" />
+    <menuitem id="ahadu_hr_leave_dashboard_submenu" name="Dashboard"
+        parent="ahadu_hr_leave_menu_root" action="hr_leave_dashboard_action" sequence="1" />
+
+
+    <!-- NEW CLIENT ACTION FOR OUR CUSTOM CALENDAR -->
+    <record id="ahadu_calendar_view_action_client" model="ir.actions.client">
+        <field name="name">Yearly Calendar</field>
+        <field name="tag">ahadu_calendar_view_tag</field>
+    </record>
+
+
+</odoo>
