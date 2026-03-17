@@ -3,23 +3,25 @@
 import { Component, useState, useRef } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { rpc } from "@web/core/network/rpc"; // 1. IMPORT RPC DIRECTLY
+import { rpc } from "@web/core/network/rpc"; // 1. Imported rpc directly (Fixes White Screen)
 
 export class AhaduBotSystray extends Component {
+  static template = "ahadu_bot.SystrayItem"; // Moved template inside the class
+  static props = { "*": true }; // 2. Added wildcard props (Fixes the Owl Dev Warning)
+
   setup() {
-    // 2. REMOVED: this.rpc = useService("rpc");
+    // this.rpc = useService("rpc"); <--- REMOVED: This was causing the crash
     this.actionService = useService("action");
     this.inputRef = useRef("inputRef");
 
     this.state = useState({
       isOpen: false,
-      isLoading: false,
       inputValue: "",
       messages: [
         {
           id: 0,
           type: "bot",
-          text: "Hello! I am your Ahadu Assistant. How can I help you today?",
+          text: "Hello! I am your Ahadu Assistant. Type what you are looking for (e.g., 'Leave', 'Payslip', 'Promotions', 'Dashboards').",
         },
       ],
     });
@@ -30,6 +32,7 @@ export class AhaduBotSystray extends Component {
     if (this.state.isOpen) {
       setTimeout(() => {
         if (this.inputRef.el) this.inputRef.el.focus();
+        this.scrollToBottom();
       }, 100);
     }
   }
@@ -38,44 +41,42 @@ export class AhaduBotSystray extends Component {
     const text = this.state.inputValue.trim();
     if (!text) return;
 
-    // Add User Message
+    // 1. Add User Message to screen
     const msgId = new Date().getTime();
     this.state.messages.push({ id: msgId, type: "user", text: text });
     this.state.inputValue = "";
-    this.state.isLoading = true;
     this.scrollToBottom();
 
     try {
-      // 3. USE THE IMPORTED RPC DIRECTLY INSTEAD OF this.rpc
+      // 2. Send message to Python Controller using the imported rpc function
       const response = await rpc("/ahadu_bot/chat", { message: text });
 
-      // Add Bot Message
+      // 3. Add Bot Response to screen
       this.state.messages.push({
         id: msgId + 1,
         type: "bot",
         text: response.text,
       });
-      this.state.isLoading = false;
       this.scrollToBottom();
 
-      // Execute Actions if returned
+      // 4. If python returned an action, open it automatically!
       if (response.action) {
-        // Little delay so user reads the message before popup appears
         setTimeout(() => {
           this.actionService.doAction(response.action);
-          this.state.isOpen = false; // Close bot when action opens
-        }, 1500);
-      } else if (response.url) {
+          this.state.isOpen = false; // Close chat window
+        }, 1500); // 1.5 second delay so user can read the text
+      }
+      // 5. If python returned a URL, redirect to it!
+      else if (response.url) {
         setTimeout(() => {
-          window.open(response.url, "_blank");
+          window.location.href = response.url;
         }, 1500);
       }
     } catch (error) {
-      this.state.isLoading = false;
       this.state.messages.push({
         id: msgId + 1,
         type: "bot",
-        text: "Sorry, I am having trouble connecting to the server.",
+        text: "Sorry, I lost connection to the server.",
       });
     }
   }
@@ -90,9 +91,7 @@ export class AhaduBotSystray extends Component {
   }
 }
 
-AhaduBotSystray.template = "ahadu_bot.SystrayItem";
-
-// Add to the Systray
+// Adds the bot to the top menu bar in Odoo
 registry.category("systray").add(
   "ahadu_bot.AhaduBotSystray",
   {

@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <record id="view_employee_form_inherit_benefits" model="ir.ui.view">
+            <field name="name">hr.employee.form.inherit.benefits</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Benefits &amp; Allowances" name="benefits_allowances">
+                        <group>
+                            <group string="Fixed Allowances">
+                                <field name="housing_allowance" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="mobile_allowance" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="representation_allowance" />
+                                <field name="hardship_allowance_level_id" />
+                            </group>
+                            <group string="Transport Allowance">
+                                <field name="transport_allowance_liters" />
+                                <field name="transport_allowance_amount" force_save="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
         <record id="view_employee_form_extended" model="ir.ui.view">
             <field name="name">hr.employee.form.extended</field>
             <field name="model">hr.employee</field>
@@ -81,8 +104,8 @@
                         <field name="position_classification" />
                         <field name="ahadu_employee_type_id" readonly="1" force_save="1"/>
                         <field name="grade_id" />
-                        <field name="representation_allowance" />
-                        <field name="hardship_allowance_level_id" />
+                        <!-- <field name="representation_allowance" />
+                        <field name="hardship_allowance_level_id" /> -->
                         <field name="emp_wage" />
                         <field name="is_acting" invisible="1" />
                         <field name="acting_job_id" invisible="is_acting == False" readonly="1" />
@@ -273,7 +296,7 @@
                 </xpath>
             </field>
         </record>
-        <record id="view_employee_form_inherit_benefits" model="ir.ui.view">
+        <!-- <record id="view_employee_form_inherit_benefits" model="ir.ui.view">
             <field name="name">hr.employee.form.inherit.benefits</field>
             <field name="model">hr.employee</field>
             <field name="inherit_id" ref="hr.view_employee_form" />
@@ -317,7 +340,7 @@
                     </page>
                 </xpath>
             </field>
-        </record>
+        </record> -->
         <record id="view_hr_employee_family_tree_in_form" model="ir.ui.view">
             <field name="name">hr.employee.family.list.in.form</field>
             <field name="model">hr.employee.family</field>

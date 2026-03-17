@@ -46,9 +46,9 @@
                                 <field name="years_of_service" readonly="1"/>
                                 <field name="final_salary"/>
                             </group>
-                            <group>
+                            <!-- <group>
                                 <field name="pension_amount"/>
-                            </group>
+                            </group> -->
                         </group>
                         <group>
                             <field name="reason" placeholder="Enter reason for retirement..."/>

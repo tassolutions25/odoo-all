@@ -19,9 +19,9 @@ class HrEmployee(models.Model):
         "mail.activity.mixin",
     ]
     _description = "Employee"
-    
+
     _order = "employee_id asc, name asc"
-    _rec_names_search = ['name', 'employee_id']
+    _rec_names_search = ["name", "employee_id"]
 
     name = fields.Char(
         string="Full Name",
@@ -199,7 +199,7 @@ class HrEmployee(models.Model):
     children_names = fields.Text(
         string="Names of Children", help="List the names of the children, one per line."
     )
-    
+
     education_ids = fields.One2many(
         "hr.employee.education", "employee_id", string="Education History"
     )
@@ -230,13 +230,13 @@ class HrEmployee(models.Model):
         readonly=True,
         help="Calculated based on liters and the global fuel price set in HR Settings.",
     )
-    benefit_package_id = fields.Many2one(
-        "hr.benefit.package",
-        string="Benefit Package",
-        compute="_compute_benefit_package",
-        store=True,
-        help="The benefit package applicable to this employee based on their job position.",
-    )
+    # benefit_package_id = fields.Many2one(
+    #     "hr.benefit.package",
+    #     string="Benefit Package",
+    #     compute="_compute_benefit_package",
+    #     store=True,
+    #     help="The benefit package applicable to this employee based on their job position.",
+    # )
     ahadu_employee_type_id = fields.Many2one(
         "hr.employee.type",
         string="Employee Type",
@@ -245,9 +245,9 @@ class HrEmployee(models.Model):
         recursive=True,
         help="Determined based on the employee's job position.",
     )
-    benefit_line_ids = fields.One2many(
-        related="benefit_package_id.line_ids", string="Applicable Benefits"
-    )
+    # benefit_line_ids = fields.One2many(
+    #     related="benefit_package_id.line_ids", string="Applicable Benefits"
+    # )
 
     woreda = fields.Char(string="Woreda")
     house_number = fields.Char(string="House Number")
@@ -295,7 +295,6 @@ class HrEmployee(models.Model):
                 self.region_id = self.branch_id.region_id.id
             if self.branch_id.cost_center_id:
                 self.cost_center_id = self.branch_id.cost_center_id.id
-    
 
     # Activity tracking
     ahadu_activity_ids = fields.One2many(
@@ -402,7 +401,9 @@ class HrEmployee(models.Model):
     #         ] + domain
     #     return self._search(domain, limit=limit, order=order)
 
-    def _get_weighted_fuel_price(self, company_id, start_date, end_date, cutoff_date=None):
+    def _get_weighted_fuel_price(
+        self, company_id, start_date, end_date, cutoff_date=None
+    ):
         """
         Calculate weighted average fuel price between start_date and end_date.
         If cutoff_date is provided, ignore price changes happening STRICTLY AFTER cutoff_date.
@@ -412,19 +413,20 @@ class HrEmployee(models.Model):
         from datetime import datetime, date, timedelta
 
         days_in_period = (end_date - start_date).days + 1
-        
+
         # 1. Fetch relevant price history
         # Fetch all changes effective on or before the end date
         domain = [
             ("company_id", "=", company_id),
             ("effective_date", "<=", end_date),
         ]
-        
-        
-        history = self.env["ahadu.fuel.price.history"].sudo().search(
-            domain, order="effective_date asc, create_date asc"
+
+        history = (
+            self.env["ahadu.fuel.price.history"]
+            .sudo()
+            .search(domain, order="effective_date asc, create_date asc")
         )
-        
+
         # If cutoff provided, filter out "future knowledge"
         if cutoff_date:
             history = history.filtered(lambda r: r.effective_date <= cutoff_date)
@@ -435,7 +437,7 @@ class HrEmployee(models.Model):
         # 2. Construct the timeline
         total_weighted_price = 0.0
         covered_days = 0
-        
+
         # Find the active price at start_date
         current_price_rec = None
         future_changes = []
@@ -445,21 +447,21 @@ class HrEmployee(models.Model):
                 current_price_rec = rec
             else:
                 future_changes.append(rec)
-        
+
         pointer_date = start_date
         current_price = current_price_rec.price if current_price_rec else 0.0
-        
+
         for change in future_changes:
             change_date = change.effective_date
             if change_date > end_date:
                 break
-            
+
             days_active = (change_date - pointer_date).days
             if days_active > 0:
                 weight = (current_price / days_in_period) * days_active
                 total_weighted_price += weight
                 covered_days += days_active
-                
+
             pointer_date = change_date
             current_price = change.price
 
@@ -468,7 +470,7 @@ class HrEmployee(models.Model):
             weight = (current_price / days_in_period) * remaining_days
             total_weighted_price += weight
             covered_days += remaining_days
-            
+
         return total_weighted_price
 
     @api.depends("transport_allowance_liters", "company_id.fuel_price_cutoff_date")
@@ -484,42 +486,53 @@ class HrEmployee(models.Model):
         # Previous Month Calculation
         prev_month_end = month_start - timedelta(days=1)
         prev_month_start = date(prev_month_end.year, prev_month_end.month, 1)
-        
+
         for employee in self:
             company = employee.company_id
             if not company:
                 continue
 
             # 1. Current Month Weighted Price
-            current_rate = self._get_weighted_fuel_price(company.id, month_start, month_end)
-            
+            current_rate = self._get_weighted_fuel_price(
+                company.id, month_start, month_end
+            )
+
             # 2. Retroactive Adjustment for Previous Month
             adjustment_rate = 0.0
-            
-          
-            
+
             config_cutoff_date = company.fuel_price_cutoff_date
             if config_cutoff_date:
                 # We assume the "Cutoff Day" is consistent, e.g. 21st of the month.
                 cutoff_day = config_cutoff_date.day
-                
+
                 # Handle edge case where prev month has fewer days than cutoff day
                 # e.g. Feb 28, but cutoff is 30th.
-                prev_month_days = calendar.monthrange(prev_month_start.year, prev_month_start.month)[1]
+                prev_month_days = calendar.monthrange(
+                    prev_month_start.year, prev_month_start.month
+                )[1]
                 actual_cutoff_day = min(cutoff_day, prev_month_days)
-                
-                prev_cutoff_date = date(prev_month_start.year, prev_month_start.month, actual_cutoff_day)
-                
+
+                prev_cutoff_date = date(
+                    prev_month_start.year, prev_month_start.month, actual_cutoff_day
+                )
+
                 # Rate A: The "Real" rate (Full knowledge of Jan)
-                rate_real = self._get_weighted_fuel_price(company.id, prev_month_start, prev_month_end)
-                
+                rate_real = self._get_weighted_fuel_price(
+                    company.id, prev_month_start, prev_month_end
+                )
+
                 # Rate B: The "Snapshot" rate (Knowledge stuck at Cutoff Date)
-                rate_snapshot = self._get_weighted_fuel_price(company.id, prev_month_start, prev_month_end, cutoff_date=prev_cutoff_date)
-                
+                rate_snapshot = self._get_weighted_fuel_price(
+                    company.id,
+                    prev_month_start,
+                    prev_month_end,
+                    cutoff_date=prev_cutoff_date,
+                )
+
                 adjustment_rate = rate_real - rate_snapshot
-            
+
             final_rate = current_rate + adjustment_rate
-            
+
             employee.transport_allowance_amount = (
                 employee.transport_allowance_liters * final_rate
             )
@@ -543,22 +556,24 @@ class HrEmployee(models.Model):
         for employee in self:
             if employee.job_id and employee.job_id.ahadu_employee_type_ids:
                 # Since we enforced exclusivity, there should be at most one type
-                employee.ahadu_employee_type_id = employee.job_id.ahadu_employee_type_ids[0].id
+                employee.ahadu_employee_type_id = (
+                    employee.job_id.ahadu_employee_type_ids[0].id
+                )
             else:
                 employee.ahadu_employee_type_id = False
 
-    @api.depends("job_id")
-    def _compute_benefit_package(self):
-        for employee in self:
-            if employee.job_id:
-                # Search for a package that includes the employee's job position.
-                package = self.env["hr.benefit.package"].search(
-                    [("job_ids", "=", employee.job_id.id), ("active", "=", True)],
-                    limit=1,
-                )
-                employee.benefit_package_id = package.id if package else False
-            else:
-                employee.benefit_package_id = False
+    # @api.depends("job_id")
+    # def _compute_benefit_package(self):
+    #     for employee in self:
+    #         if employee.job_id:
+    #             # Search for a package that includes the employee's job position.
+    #             package = self.env["hr.benefit.package"].search(
+    #                 [("job_ids", "=", employee.job_id.id), ("active", "=", True)],
+    #                 limit=1,
+    #             )
+    #             employee.benefit_package_id = package.id if package else False
+    #         else:
+    #             employee.benefit_package_id = False
 
     # @api.constrains("employee_id")
     # def _check_employee_id_format(self):
@@ -667,7 +682,6 @@ class HrEmployee(models.Model):
             )
         except (ValueError, TypeError):
             return False
-
 
     _JD_EPOCH_OFFSET_AMETE_MIHRET = 1723856
 
@@ -788,7 +802,6 @@ class HrEmployee(models.Model):
             employee.age = age_val
             employee.age_group = age_group_val
 
-
     @api.depends("first_name", "middle_name", "last_name")
     def _compute_full_name(self):
         for record in self:
@@ -821,12 +834,15 @@ class HrEmployee(models.Model):
                 record.middle_name = ""
                 record.last_name = ""
 
-    
-    @api.depends('name', 'employee_id')
-    @api.depends_context('show_manager_with_id')
+    @api.depends("name", "employee_id")
+    @api.depends_context("show_manager_with_id")
     def _compute_display_name(self):
         for employee in self:
-            if self.env.context.get('show_manager_with_id') and employee.name and employee.employee_id:
+            if (
+                self.env.context.get("show_manager_with_id")
+                and employee.name
+                and employee.employee_id
+            ):
                 employee.display_name = f"{employee.name} ({employee.employee_id})"
             else:
                 employee.display_name = employee.name
@@ -866,7 +882,6 @@ class HrEmployee(models.Model):
                     _("First Name, Middle Name, and Last Name are required.")
                 )
 
-
             if not vals.get("resource_id"):
                 resource = self.env["resource.resource"].create(
                     {
@@ -877,9 +892,7 @@ class HrEmployee(models.Model):
                 )
                 vals["resource_id"] = resource.id
 
-
         employees = super().create(vals_list)
-
 
         return employees
 
@@ -1285,7 +1298,7 @@ class HrEmployee(models.Model):
             try:
                 domain.append(("department_id", "=", int(filters["department_id"])))
             except (ValueError, TypeError):
-                pass 
+                pass
         if filters.get("job_id") and filters["job_id"] != "all":
             try:
                 domain.append(("job_id", "=", int(filters["job_id"])))

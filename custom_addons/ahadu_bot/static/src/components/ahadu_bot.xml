@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-    <!-- Systray Icon -->
     <t t-name="ahadu_bot.SystrayItem">
         <div class="o-dropdown dropdown o-mail-SystrayItem" t-on-click="toggleBot">
             <a class="dropdown-toggle o-mail-SystrayItem-toggler px-2" href="#" role="button" title="Ahadu Assistant">
-                <i class="fa fa-lg fa-comments-o" role="img" aria-label="Ahadu Assistant"></i>
+                <i class="fa fa-lg fa-comments-o text-primary" role="img" aria-label="Ahadu Assistant"></i>
             </a>
         </div>
 
-        <!-- Chat Window -->
         <div t-if="state.isOpen" class="ahadu-bot-window shadow-lg border rounded">
-            <div class="ahadu-bot-header bg-primary text-white p-2 d-flex justify-content-between align-items-center">
-                <strong><i class="fa fa-robot me-2"/> Ahadu Assistant</strong>
-                <i class="fa fa-times" style="cursor:pointer;" t-on-click="toggleBot"/>
+            <div class="ahadu-bot-header p-3 d-flex justify-content-between align-items-center">
+                <strong style="font-size: 16px;"><i class="fa fa-robot me-2"/> Ahadu Assistant</strong>
+                <i class="fa fa-times fa-lg" style="cursor:pointer;" t-on-click="toggleBot"/>
             </div>
             
-            <div class="ahadu-bot-messages p-2" id="ahadu_bot_messages">
+            <div class="ahadu-bot-messages p-3" id="ahadu_bot_messages">
                 <t t-foreach="state.messages" t-as="msg" t-key="msg.id">
-                    <div t-attf-class="mb-2 ahadu-msg-wrapper {{ msg.type === 'user' ? 'text-end' : 'text-start' }}">
-                        <div t-attf-class="d-inline-block p-2 rounded {{ msg.type === 'user' ? 'bg-info text-white' : 'bg-light text-dark border' }}" style="max-width: 85%;">
+                    <div t-attf-class="mb-3 d-flex flex-column {{ msg.type === 'user' ? 'align-items-end' : 'align-items-start' }}">
+                        <span class="text-muted" style="font-size: 10px; margin-bottom: 2px;">
+                            <t t-esc="msg.type === 'user' ? 'You' : 'Ahadu Bot'"/>
+                        </span>
+                        <div t-attf-class="p-2 rounded {{ msg.type === 'user' ? 'bg-primary text-white' : 'bg-white border text-dark' }}" style="max-width: 85%; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
                             <t t-esc="msg.text"/>
                         </div>
                     </div>
                 </t>
-                <div t-if="state.isLoading" class="text-muted text-start mb-2"><small><i>Assistant is typing...</i></small></div>
             </div>
 
-            <div class="ahadu-bot-input p-2 border-top">
+            <div class="ahadu-bot-input p-2 border-top bg-light">
                 <form t-on-submit.prevent="sendMessage" class="d-flex">
-                    <input type="text" class="form-control me-2" placeholder="Ask something..." t-model="state.inputValue" t-ref="inputRef"/>
-                    <button type="submit" class="btn btn-primary"><i class="fa fa-send"/></button>
+                    <input type="text" class="form-control me-2" placeholder="E.g. I want to request leave..." t-model="state.inputValue" t-ref="inputRef"/>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"/></button>
                 </form>
             </div>
         </div>

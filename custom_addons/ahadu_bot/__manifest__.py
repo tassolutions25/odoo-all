@@ -1,16 +1,17 @@
 {
-    "name": "Ahadu ERP Assistant Bot",
+    "name": "Ahadu ERP Smart Assistant",
     "version": "18.0.1.0.0",
-    # 'category': 'Human Resources',
-    "summary": "AI Assistant to help employees navigate the Ahadu ERP system.",
-    "author": "ERP Team",
+    "summary": "Free built-in chatbot dictionary for Ahadu employees and HR admins.",
+    "author": "Ahadu ERP Team",
     "depends": [
         "base",
         "web",
         "mail",
+        "hr",
         "ahadu_hr",
         "ahadu_hr_leave",
         "ahadu_hr_self_service",
+        "ahadu_payroll",
     ],
     "data": [],
     "assets": {

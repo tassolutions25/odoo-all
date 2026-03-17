@@ -24,9 +24,9 @@
         "security/hr_approval_security.xml",
         "data/hr_notification_data.xml",
         "data/hr_employee_type_data.xml",
-        "data/hr_organogram_data.xml",
+        # "data/hr_organogram_data.xml",
         # "data/hr_probation_data.xml",
-        "data/hr_approval_policy_data.xml",
+        # "data/hr_approval_policy_data.xml",
         "views/hr_grade_views.xml",
         "views/hr_region_views.xml",
         "views/hr_city_views.xml",
@@ -52,8 +52,8 @@
         "views/hr_employee_termination_views.xml",
         "views/hr_employee_acting_views.xml",
         "views/hr_employee_temporary_assignment_views.xml",
-        "views/hr_employee_retirement_views.xml",  # Make sure this is here
-        "views/hr_additional_activity_views.xml",
+        'views/hr_employee_retirement_views.xml', # Make sure this is here
+        'views/hr_additional_activity_views.xml',
         "views/hr_organization_chart_views.xml",
         "views/hr_report_views.xml",
         "views/hr_analytics_dashboard_views.xml",

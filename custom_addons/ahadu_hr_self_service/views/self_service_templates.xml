@@ -37,7 +37,7 @@
                                 </a>
                             </div>
                             <div class="col-6 col-md-4 col-lg-3 mb-4">
-                                <a href="/web#action=hr_holidays.hr_leave_action_my" class="card h-100 text-center text-decoration-none dashboard-card">
+                                <a href="/web#action=ahadu_hr_leave.hr_leave_dashboard_action" class="card h-100 text-center text-decoration-none dashboard-card">
                                     <div class="card-body d-flex flex-column justify-content-center">
                                         <i class="fa fa-calendar-times dashboard-card-icon mb-3"/>
                                         <h5 class="card-title">Leave</h5>
@@ -53,14 +53,14 @@
                                     </div>
                                 </a>
                             </div>
-                            <div class="col-6 col-md-4 col-lg-3 mb-4">
-                                <a href="/web#action=payroll.hr_payslip_action_employee" class="card h-100 text-center text-decoration-none dashboard-card">
+                            <!-- <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <a href="/web#action=ahadu_payroll.action_ahadu_payroll_dashboard" class="card h-100 text-center text-decoration-none dashboard-card">
                                     <div class="card-body d-flex flex-column justify-content-center">
                                         <i class="fa fa-tasks dashboard-card-icon mb-3"/>
                                         <h5 class="card-title">Payroll</h5>
                                     </div>
                                 </a>
-                            </div>
+                            </div> -->
                             <!-- To-Do -->
                             <div class="col-6 col-md-4 col-lg-3 mb-4">
                                  <a href="/web#action=project_todo.project_task_action_todo" class="card h-100 text-center text-decoration-none dashboard-card">
@@ -90,7 +90,7 @@
                             </div>
                             <!-- Projects -->
                             <div class="col-6 col-md-4 col-lg-3 mb-4">
-                                <a href="/web#action=project.open_view_project_all" class="card h-100 text-center text-decoration-none dashboard-card">
+                                <a href="/web#action=project.action_view_my_task" class="card h-100 text-center text-decoration-none dashboard-card">
                                     <div class="card-body d-flex flex-column justify-content-center">
                                         <i class="fa fa-project-diagram dashboard-card-icon mb-3"/>
                                         <h5 class="card-title">Projects</h5>
@@ -466,7 +466,19 @@
                 </div>
             </div>
 
-            <!-- JAVASCRIPT: DRAFT PERSISTENCE & DYNAMIC ROWS -->
+            <!-- Toast Container (Top Right & Z-Index extremely high to clear the navbar) -->
+            <div class="toast-container position-fixed p-3" style="top: 80px; right: 20px; z-index: 100000;">
+                <div id="validationToast" class="toast align-items-center text-white bg-danger border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body" id="validationToastBody" style="font-size: 1rem; font-weight: 500;">
+                            <!-- JS Will Inject Missing Fields Here -->
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Close" onclick="document.getElementById('validationToast').classList.remove('show'); document.getElementById('validationToast').style.display='none';"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JAVASCRIPT: DRAFT PERSISTENCE & DYNAMIC ROWS & VALIDATION -->
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     // 1. Initial Counters from Server
@@ -520,7 +532,7 @@
                     if (form) {
                         // --- 2. Restore Dynamic Rows ---
                         const savedBankCount = parseInt(localStorage.getItem(prefix + 'added_bank_count') || 0);
-                        for(let i=0; i &lt; savedBankCount; i++) addBankRow(false); // false = don't increment storage again
+                        for(let i=0; i &lt; savedBankCount; i++) addBankRow(false);
 
                         const savedFamilyCount = parseInt(localStorage.getItem(prefix + 'added_family_count') || 0);
                         for(let i=0; i &lt; savedFamilyCount; i++) addFamilyRow(false);
@@ -571,12 +583,103 @@
                         if (activeTabId) {
                             const tabTriggerEl = document.getElementById(activeTabId);
                             if (tabTriggerEl) {
-                                const tab = new bootstrap.Tab(tabTriggerEl);
-                                tab.show();
+                                // Fallback native click if bootstrap tab object isn't globally active
+                                tabTriggerEl.click();
                             }
                         }
 
-                        // --- 6. Clear Storage on Submit ---
+                        // --- 6. Form Validation and Missing Fields Toast ---
+                        const submitBtn = document.getElementById('btn_submit_onboarding');
+                        if (submitBtn) {
+                            submitBtn.addEventListener('click', function(e) {
+                                if (!form.checkValidity()) {
+                                    e.preventDefault(); // Stop form submission
+                                    
+                                    const invalidInputs = form.querySelectorAll(':invalid');
+                                    if (invalidInputs.length > 0) {
+                                        const firstInvalid = invalidInputs[0];
+                                        
+                                        // 6.1 Open the tab containing the first invalid input
+                                        const tabPane = firstInvalid.closest('.tab-pane');
+                                        if (tabPane) {
+                                            const tabId = tabPane.id;
+                                            const tabTrigger = document.querySelector('button[data-bs-target="#' + tabId + '"]');
+                                            if (tabTrigger) {
+                                                // Natively click the tab to show it
+                                                tabTrigger.click();
+                                            }
+                                        }
+                                        
+                                        // 6.2 Gather missing field labels safely
+                                        let missingNames =[];
+                                        const maxToasts = 6; // Limit items to avoid huge popups
+                                        
+                                        invalidInputs.forEach((input, index) => {
+                                            let labelText = '';
+                                            
+                                            // Method 1: Check by input "id" and "for" attribute
+                                            if (input.id) {
+                                                const label = form.querySelector('label[for="' + input.id + '"]');
+                                                if (label) labelText = label.textContent.replace('*', '').trim();
+                                            }
+                                            
+                                            // Method 2: Check closest container containing a label (works well for dynamic rows)
+                                            if (!labelText) {
+                                                const parentWrapper = input.closest('.mb-3') || input.closest('div');
+                                                if (parentWrapper) {
+                                                    const label = parentWrapper.querySelector('label');
+                                                    if (label) labelText = label.textContent.replace('*', '').trim();
+                                                }
+                                            }
+                                            
+                                            // Method 3: Fallback to the name attribute
+                                            if (!labelText) {
+                                                labelText = input.name || 'Unknown Field';
+                                            }
+                                            
+                                            // Add to list if it's unique and within our display limit
+                                            if (index &lt; maxToasts &amp;&amp; !missingNames.includes(labelText)) {
+                                                missingNames.push('&lt;li&gt;' + labelText + '&lt;/li&gt;');
+                                            }
+                                        });
+
+                                        // 6.3 Build and Show the Toast manually (safest cross-version Odoo method)
+                                        let toastHtml = '&lt;strong&gt;Please fix the following required/invalid fields:&lt;/strong&gt;&lt;ul class="mt-2 mb-0 ps-3"&gt;' + missingNames.join('') + '&lt;/ul&gt;';
+                                        
+                                        if (invalidInputs.length > maxToasts) {
+                                            toastHtml += '&lt;div class="mt-2"&gt;&lt;small&gt;...and ' + (invalidInputs.length - maxToasts) + ' more field(s).&lt;/small&gt;&lt;/div&gt;';
+                                        }
+
+                                        const toastBody = document.getElementById('validationToastBody');
+                                        if (toastBody) {
+                                            toastBody.innerHTML = toastHtml;
+                                            const toastEl = document.getElementById('validationToast');
+                                            
+                                            // Force display block to avoid Bootstrap JS dependency
+                                            toastEl.style.display = 'block';
+                                            toastEl.classList.add('show');
+                                            toastEl.style.opacity = '1';
+                                            
+                                            // Auto hide after 8 seconds
+                                            setTimeout(() => {
+                                                toastEl.classList.remove('show');
+                                                toastEl.style.opacity = '0';
+                                                setTimeout(() => {
+                                                    toastEl.style.display = 'none';
+                                                }, 300);
+                                            }, 8000);
+                                        }
+
+                                        // 6.4 Focus the first invalid input so the user sees it
+                                        setTimeout(() => {
+                                            firstInvalid.focus();
+                                        }, 200);
+                                    }
+                                }
+                            });
+                        }
+
+                        // --- 7. Clear Storage on Submit ---
                         form.addEventListener('submit', function() {
                             Object.keys(localStorage).forEach(key => {
                                 if (key.startsWith(prefix)) {

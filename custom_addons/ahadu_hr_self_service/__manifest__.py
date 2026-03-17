@@ -18,11 +18,11 @@
         "security/ir.model.access.csv",
         "security/onboarding_security.xml",
         "security/document_request_security.xml",
-        "data/hr_document_request_approval_policy_data.xml",
+        # "data/hr_document_request_approval_policy_data.xml",
         "views/self_service_templates.xml",
         "views/hr_employee_onboarding_views.xml",
         "views/hr_document_request_views.xml",
-        "data/hr_onboarding_approval_policy_data.xml",
+        # "data/hr_onboarding_approval_policy_data.xml",
     ],
     "assets": {
         "web.assets_frontend": [
