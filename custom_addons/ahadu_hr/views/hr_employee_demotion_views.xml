@@ -37,6 +37,7 @@
                                 <field name="current_division_id"/>
                                 <field name="current_branch_id"/>
                                 <field name="current_cost_center_id"/>
+                                <field name="currency_id" invisible="1"/>
                             </group>
                         </div>
                         <div class="col-md-6">
@@ -46,7 +47,28 @@
                                 <field name="new_department_id"/>
                                 <field name="new_division_id"/>
                                 <field name="new_branch_id"/>
-                                    <field name="new_cost_center_id"/>
+                                <field name="new_cost_center_id"/>
+                            </group>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <group string="Current Allowances">
+                                <field name="current_housing_allowance" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="current_mobile_allowance" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="current_transport_allowance_liters"/>
+                                <field name="current_representation_allowance"/>
+                                <field name="current_hardship_allowance_level_id"/>
+                            </group>
+                        </div>
+                        <div class="col-md-6">
+                            <group string="New Allowances">
+                                <field name="new_housing_allowance" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="state != 'draft'"/>
+                                <field name="new_mobile_allowance" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="state != 'draft'"/>
+                                <field name="new_transport_allowance_liters" readonly="state != 'draft'"/>
+                                <field name="new_representation_allowance" readonly="state != 'draft'"/>
+                                <field name="new_hardship_allowance_level_id" readonly="state != 'draft'"/>
                             </group>
                         </div>
                     </div>
@@ -72,7 +94,7 @@
             </form>
         </field>
     </record>
-
+    
     <record id="view_employee_demotion_tree" model="ir.ui.view">
         <field name="name">hr.employee.demotion.tree</field>
         <field name="model">hr.employee.demotion</field>

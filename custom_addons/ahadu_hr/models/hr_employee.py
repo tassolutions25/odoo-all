@@ -834,11 +834,26 @@ class HrEmployee(models.Model):
                 record.middle_name = ""
                 record.last_name = ""
 
+    # @api.depends("name", "employee_id")
+    # @api.depends_context("show_manager_with_id")
+    # def _compute_display_name(self):
+    #     for employee in self:
+    #         if (
+    #             self.env.context.get("show_manager_with_id")
+    #             and employee.name
+    #             and employee.employee_id
+    #         ):
+    #             employee.display_name = f"{employee.name} ({employee.employee_id})"
+    #         else:
+    #             employee.display_name = employee.name
+    
     @api.depends("name", "employee_id")
-    @api.depends_context("show_manager_with_id")
+    @api.depends_context("show_manager_with_id", "show_employee_id_only")
     def _compute_display_name(self):
         for employee in self:
-            if (
+            if self.env.context.get("show_employee_id_only") and employee.employee_id:
+                employee.display_name = employee.employee_id
+            elif (
                 self.env.context.get("show_manager_with_id")
                 and employee.name
                 and employee.employee_id
@@ -846,6 +861,7 @@ class HrEmployee(models.Model):
                 employee.display_name = f"{employee.name} ({employee.employee_id})"
             else:
                 employee.display_name = employee.name
+    
 
     @api.model_create_multi
     def create(self, vals_list):
