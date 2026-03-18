@@ -7,7 +7,13 @@ class HrEmployeeReinitiate(models.Model):
     _inherit = ["mail.thread", "mail.activity.mixin", "hr.approval.mixin"]
     _order = "date desc"
 
-    employee_id = fields.Many2one("hr.employee", string="Employee", required=True)
+    # Allow domain to include inactive (archived) employees
+    employee_id = fields.Many2one(
+        "hr.employee",
+        string="Employee",
+        required=True,
+        domain="['|', ('active', '=', False), ('active', '=', True)]",
+    )
     date = fields.Date(string="Date", default=fields.Date.today, required=True)
     reason = fields.Text(string="Reason")
     activity_id = fields.Many2one("hr.employee.activity", string="Activity Record")
@@ -17,9 +23,14 @@ class HrEmployeeReinitiate(models.Model):
     @api.onchange("employee_number_search")
     def _onchange_employee_number_search(self):
         if self.employee_number_search:
-            employee = self.env["hr.employee"].search(
-                [("employee_id", "=ilike", self.employee_number_search.strip())],
-                limit=1,
+            # We MUST use with_context(active_test=False) so it can find archived employees
+            employee = (
+                self.env["hr.employee"]
+                .with_context(active_test=False)
+                .search(
+                    [("employee_id", "=ilike", self.employee_number_search.strip())],
+                    limit=1,
+                )
             )
 
             if employee:
@@ -52,4 +63,15 @@ class HrEmployeeReinitiate(models.Model):
         return records
 
     def _perform_final_approval(self):
-        pass
+        self.ensure_one()
+        # Unarchive the employee and clear the departure details
+        self.employee_id.write(
+            {
+                "active": True,
+                "departure_date": False,
+            }
+        )
+        # Post a message on their chatter
+        self.employee_id.message_post(
+            body=_("Employee successfully reinitiated and reactivated.")
+        )

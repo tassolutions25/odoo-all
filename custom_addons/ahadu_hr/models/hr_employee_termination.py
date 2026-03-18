@@ -87,7 +87,7 @@ class HrEmployeeTermination(models.Model):
         subordinates = self.employee_id.child_ids.filtered(lambda e: e.active)
         if subordinates:
             # If there are subordinates, open the wizard to reassign them.
-            # The wizard will be responsible for the final deactivation.
+            # The wizard will be responsible for the final deactivation and contract closing.
             return {
                 "name": _("Reassign Subordinates"),
                 "type": "ir.actions.act_window",
@@ -103,5 +103,16 @@ class HrEmployeeTermination(models.Model):
             self.employee_id.write(
                 {"active": False, "departure_date": self.termination_date}
             )
+            running_contracts = self.env["hr.contract"].search(
+                [
+                    ("employee_id", "=", self.employee_id.id),
+                    ("state", "in", ["draft", "open"]),
+                ]
+            )
+            if running_contracts:
+                running_contracts.write(
+                    {"date_end": self.termination_date, "state": "close"}
+                )
+
             if self.activity_id:
                 self.activity_id.action_approve()
