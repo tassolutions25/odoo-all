@@ -159,7 +159,29 @@ class HrEmployeePromotion(models.Model):
                 rec.current_mobile_allowance = 0.0
                 rec.current_housing_allowance = 0.0
 
+    employee_number_search = fields.Char(string="Employee ID", store=False)
+
+    @api.onchange("employee_number_search")
+    def _onchange_employee_number_search(self):
+        if self.employee_number_search:
+            employee = self.env["hr.employee"].search(
+                [("employee_id", "=ilike", self.employee_number_search.strip())],
+                limit=1,
+            )
+
+            if employee:
+                self.employee_id = employee
+            else:
+                self.employee_id = False
+
     @api.onchange("employee_id")
+    def _onchange_employee_id_sync(self):
+        if self.employee_id:
+            self.employee_number_search = self.employee_id.employee_id
+        else:
+            self.employee_number_search = False
+
+    @api.onchange("employee_id", "employee_number_search")
     def _onchange_employee_allowances(self):
         for rec in self:
             if rec.employee_id:

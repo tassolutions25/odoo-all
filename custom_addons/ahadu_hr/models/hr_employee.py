@@ -846,7 +846,7 @@ class HrEmployee(models.Model):
     #             employee.display_name = f"{employee.name} ({employee.employee_id})"
     #         else:
     #             employee.display_name = employee.name
-    
+
     @api.depends("name", "employee_id")
     @api.depends_context("show_manager_with_id", "show_employee_id_only")
     def _compute_display_name(self):
@@ -861,7 +861,6 @@ class HrEmployee(models.Model):
                 employee.display_name = f"{employee.name} ({employee.employee_id})"
             else:
                 employee.display_name = employee.name
-    
 
     @api.model_create_multi
     def create(self, vals_list):

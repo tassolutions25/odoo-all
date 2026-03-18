@@ -19,6 +19,7 @@
                     </div>
                     <group>
                         <group>
+                            <field name="employee_number_search" placeholder="e.g. AHB1234"/>
                             <field name="employee_id"/>
                             <field name="promotion_date"/>
                         </group>

@@ -23,6 +23,7 @@
                 </div>
                 <group>
                     <group string="Guarantor Information (Our Employee)">
+                        <field name="employee_number_search" placeholder="e.g. AHB1234"/>
                         <field name="employee_id"/>
                         <field name="guarantee_date"/>
                     </group>

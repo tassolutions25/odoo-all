@@ -71,6 +71,28 @@ class HrEmployeeActing(models.Model):
     #         if record.start_date > record.end_date:
     #             raise ValidationError(_("The start date cannot be after the end date."))
 
+    employee_number_search = fields.Char(string="Employee ID", store=False)
+
+    @api.onchange("employee_number_search")
+    def _onchange_employee_number_search(self):
+        if self.employee_number_search:
+            employee = self.env["hr.employee"].search(
+                [("employee_id", "=ilike", self.employee_number_search.strip())],
+                limit=1,
+            )
+
+            if employee:
+                self.employee_id = employee
+            else:
+                self.employee_id = False
+
+    @api.onchange("employee_id")
+    def _onchange_employee_id_sync(self):
+        if self.employee_id:
+            self.employee_number_search = self.employee_id.employee_id
+        else:
+            self.employee_number_search = False
+
     @api.depends("employee_id")
     def _compute_current_fields(self):
         for rec in self:
@@ -89,7 +111,7 @@ class HrEmployeeActing(models.Model):
             activity = self.env["hr.employee.activity"].create(
                 {
                     "employee_id": rec.employee_id.id,
-                    "activity_type": "acting", 
+                    "activity_type": "acting",
                     "date": rec.start_date,
                     "acting_id": rec.id,
                     "description": f"Acting assignment for position: {rec.acting_job_id.name}",

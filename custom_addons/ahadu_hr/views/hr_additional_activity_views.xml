@@ -215,6 +215,7 @@
                     <div class="oe_title"><h1>Employee Reinitiate</h1></div>
                     <group>
                         <group>
+                            <field name="employee_number_search" placeholder="e.g. AHB1234"/>
                             <field name="employee_id" readonly="state != 'draft'"/>
                             <field name="date" readonly="state != 'draft'"/>
                         </group>
