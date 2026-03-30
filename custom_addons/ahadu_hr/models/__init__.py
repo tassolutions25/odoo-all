@@ -1,5 +1,6 @@
 from . import ahadu_fuel_price
 from . import hr_approval_policy
+
 # from . import res_users
 from . import res_config_settings
 from . import hr_approval_line
@@ -36,9 +37,12 @@ from . import hr_employee_demotion
 from . import hr_employee_disciplinary
 from . import hr_employee_guarantee
 from . import hr_employee_termination
+from . import hr_employee_resignation
 from . import hr_employee_acting
 from . import hr_employee_temporary_assignment
 from . import hr_contract
 from . import hr_organogram_node
 from . import hr_employee_export_fields
+from . import hr_employee_suspension
+
 # from . import hr_employee_lateral

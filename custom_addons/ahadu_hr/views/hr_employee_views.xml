@@ -24,12 +24,34 @@
                 </xpath>
             </field>
         </record>
+        <record id="view_employee_tree_inherit_archived" model="ir.ui.view">
+            <field name="name">hr.employee.tree.archived.ahadu</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="departure_type" widget="badge" 
+                        decoration-danger="departure_type == 'termination'" 
+                        decoration-warning="departure_type == 'resignation'"
+                        decoration-info="departure_type == 'retirement'"
+                        invisible="active == True"/>
+                </xpath>
+            </field>
+        </record>
         <record id="view_employee_form_extended" model="ir.ui.view">
             <field name="name">hr.employee.form.extended</field>
             <field name="model">hr.employee</field>
             <field name="inherit_id" ref="hr.view_employee_form" />
             <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="action_view_suspensions" string="Suspension Management" 
+                            type="object" groups="hr.group_hr_manager" class="btn-warning"/>
+                </xpath>
                 <xpath expr="//sheet" position="before">
+                <field name="ahadu_state" widget="badge" 
+                        decoration-success="ahadu_state == 'active'" 
+                        decoration-danger="ahadu_state == 'suspended'"
+                        style="margin-left: 10px;"/>
                     <header>
                         <button name="action_submit" string="Submit for Approval" type="object"
                             class="btn-primary" invisible="state != 'draft'" />
@@ -42,8 +64,8 @@
                         <field name="state" widget="statusbar"
                             statusbar_visible="draft,submitted,approved,rejected" />
                     </header>
-                </xpath>
-
+                </xpath>     
+                
                 <xpath expr="//field[@name='name']" position="replace">
                     <field name="name" invisible="1" />
                     <div class="oe_title">
@@ -64,7 +86,7 @@
                             </group>
                         </h4>
                     </div>
-                </xpath>
+                </xpath>  
                 <xpath expr="//div[hasclass('oe_button_box')]" position="after">
                     <group invisible="state == 'draft'">
                         <group>
@@ -209,6 +231,9 @@
                 </xpath>
 
                 <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_suspensions" type="object" class="oe_stat_button" icon="fa-ban">
+                        <field name="suspension_count" widget="statinfo" string="Suspensions"/>
+                    </button>
                     <button name="action_view_activities" type="object" class="oe_stat_button"
                         icon="fa-tasks">
                         <field name="total_activities" widget="statinfo" string="Activities" />

@@ -115,6 +115,19 @@ class EmployeeActivityDashboard extends Component {
           name: "Temporary Assignments",
         };
         break;
+      case "suspension":
+        action = {
+          type: "ir.actions.act_window",
+          res_model: "hr.employee.suspension",
+          view_mode: "list,form",
+          views: [
+            [false, "list"],
+            [false, "form"],
+            [false, "graph"],
+          ],
+          name: "Suspensions",
+        };
+        break;
       case "disciplinary":
         action = {
           type: "ir.actions.act_window",
@@ -305,6 +318,14 @@ EmployeeActivityDashboard.template = xml`
                   <h5 class="mt-3">Resignation</h5>
               </div>
           </div>
+      </div>
+      <div class="col-lg-3 col-md-4 mb-4">
+        <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('suspension')">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <i class="fa fa-user-times fa-3x" style="color: #860037;"></i>
+                <h5 class="mt-3">Suspension</h5>
+            </div>
+        </div>
       </div>
         <div class="col-lg-3 col-md-4 mb-4">
             <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('disciplinary')">

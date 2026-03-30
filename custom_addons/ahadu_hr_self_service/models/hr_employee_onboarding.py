@@ -163,10 +163,10 @@ class HrEmployeeOnboarding(models.Model):
         string="Cost-Sharing Document Filename"
     )
     declaration_confirmed = fields.Boolean(
-        string="Data Accuracy Declaration", 
-        default=False, 
+        string="Data Accuracy Declaration",
+        default=False,
         tracking=True,
-        help="Confirms that the employee verified the accuracy of the information provided."
+        help="Confirms that the employee verified the accuracy of the information provided.",
     )
 
     @api.constrains("mobile_phone", "work_phone", "emergency_contact_phone")
@@ -375,6 +375,8 @@ class HrEmployeeOnboarding(models.Model):
 
         if vals_to_write:
             self.employee_id.write(vals_to_write)
+
+        self.employee_id.write({"active": True, "ahadu_state": "active"})
 
         self.employee_id.message_post(
             body=_("Employee profile updated via Self-Service.")

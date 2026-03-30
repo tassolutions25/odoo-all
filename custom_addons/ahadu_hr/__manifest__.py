@@ -50,10 +50,12 @@
         "views/hr_employee_disciplinary_views.xml",
         "views/hr_employee_guarantee_views.xml",
         "views/hr_employee_termination_views.xml",
+        "views/hr_employee_resignation_views.xml",
+        "views/hr_employee_suspension_views.xml",
         "views/hr_employee_acting_views.xml",
         "views/hr_employee_temporary_assignment_views.xml",
-        'views/hr_employee_retirement_views.xml', # Make sure this is here
-        'views/hr_additional_activity_views.xml',
+        "views/hr_employee_retirement_views.xml",
+        "views/hr_additional_activity_views.xml",
         "views/hr_organization_chart_views.xml",
         "views/hr_report_views.xml",
         "views/hr_analytics_dashboard_views.xml",
@@ -61,6 +63,7 @@
         "views/hr_organogram_node_views.xml",
         "views/hr_structural_org_chart_views.xml",
         "views/menu_items.xml",
+        "data/ir_cron.xml",
     ],
     "assets": {
         "web.assets_backend": [

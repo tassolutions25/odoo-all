@@ -1,4 +1,4 @@
-from odoo import http, _
+from odoo import http, fields, _
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal
 from odoo.addons.web.controllers.home import Home
@@ -185,11 +185,23 @@ class AhaduSelfServicePortal(CustomerPortal):
     )
     def resignation_submit(self, **kw):
         employee = request.env.user.employee_id
+
+        res_date = kw.get("resignation_date")
+        last_day = kw.get("last_day")
+
+        if not res_date or not last_day:
+            return request.render(
+                "ahadu_hr_self_service.submission_error",
+                {
+                    "error_message": "Both Resignation Date and Last Working Day are required."
+                },
+            )
+
         vals = {
             "employee_id": employee.id,
             "reason": kw.get("reason"),
-            "proposed_last_working_day": kw.get("last_day"),
-            "resignation_date": fields.Date.today(),
+            "proposed_last_working_day": last_day,
+            "resignation_date": res_date,
         }
         res_req = request.env["hr.employee.resignation"].sudo().create(vals)
         res_req.sudo().action_submit()
@@ -207,6 +219,69 @@ class AhaduSelfServicePortal(CustomerPortal):
         if res_req.employee_id.user_id == request.env.user:
             res_req.action_withdraw()
         return request.redirect("/my/dashboard?withdrawn=1")
+
+    @http.route(["/my/resignation"], type="http", auth="user", website=True)
+    def resignation_request_form(self, **kw):
+        employee = request.env.user.employee_id
+        if not employee:
+            return request.render("ahadu_hr_self_service.onboarding_no_employee")
+
+        # Check for existing pending request
+        pending_request = request.env["hr.employee.resignation"].search(
+            [
+                ("employee_id", "=", employee.id),
+                ("state", "in", ["draft", "submitted"]),
+            ],
+            limit=1,
+        )
+
+        values = {
+            "pending_request": pending_request,
+            "page_name": "resignation",
+        }
+        return request.render("ahadu_hr_self_service.resignation_request_form", values)
+
+    @http.route(
+        ["/my/resignation/submit"],
+        type="http",
+        auth="user",
+        website=True,
+        methods=["POST"],
+        csrf=True,
+    )
+    def resignation_request_submit(self, **kw):
+        employee = request.env.user.employee_id
+        if not employee:
+            return request.render("ahadu_hr_self_service.onboarding_no_employee")
+
+        try:
+            # Ensure dates are valid
+            res_date = kw.get("resignation_date")
+            last_day = kw.get("last_day")
+
+            if not res_date or not last_day:
+                raise ValidationError(_("Dates are required."))
+
+            vals = {
+                "employee_id": employee.id,
+                "resignation_date": res_date,
+                "proposed_last_working_day": last_day,
+                "reason": kw.get("reason"),
+            }
+
+            # Create via sudo to avoid portal permission issues on custom models
+            res_request = request.env["hr.employee.resignation"].sudo().create(vals)
+            res_request.sudo().action_submit()
+
+            return request.render("ahadu_hr_self_service.resignation_submit_success")
+
+        except Exception as e:
+            # Log the actual error to the server console
+            _logger.error("Resignation Submission Error: %s", str(e))
+            # Fallback render - ensure this template ID is correct in your XML
+            return request.render(
+                "ahadu_hr_self_service.submission_error", {"error_message": str(e)}
+            )
 
     @http.route(
         ["/my/onboarding/submit"],

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_resignation_tree" model="ir.ui.view">
+        <field name="name">hr.employee.resignation.list</field>
+        <field name="model">hr.employee.resignation</field>
+        <field name="arch" type="xml">
+            <list string="Resignations" decoration-info="state == 'submitted'" decoration-success="state == 'approved'" decoration-muted="state == 'withdrawn'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="resignation_date"/>
+                <field name="proposed_last_working_day"/>
+                <!-- <field name="notice_period_days"/> -->
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_resignation_form" model="ir.ui.view">
+        <field name="name">hr.employee.resignation.form</field>
+        <field name="model">hr.employee.resignation</field>
+        <field name="arch" type="xml">
+            <form string="Resignation Request">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve_step" string="Approve" type="object" class="btn-success" invisible="can_approve == False"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="can_approve == False"/>
+                    <button name="action_withdraw" string="Withdraw" type="object" class="btn-secondary" confirm="Are you sure you want to withdraw this resignation?" invisible="state not in ['submitted']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Employee Information">
+                            <field name="employee_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="resignation_date" readonly="state != 'draft'"/>
+                            <field name="proposed_last_working_day" readonly="state != 'draft'"/>
+                        </group>                        
+                        <group string="Compliance">
+                            <field name="archive_date" readonly="1" string="Scheduled Archive Date"/>
+                            <field name="withdrawal_date" invisible="state != 'withdrawn'"/>
+                            <field name="can_approve" invisible="1"/>
+                            <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                        </group>
+                        <!-- <group string="Compliance">
+                            <field name="notice_period_days" readonly="1"/>
+                            <field name="withdrawal_date" invisible="state != 'withdrawn'"/>
+                            <field name="can_approve" invisible="1"/>
+                            <field name="next_approver_ids" widget="many2many_tags" readonly="1" invisible="state != 'submitted'"/>
+                        </group> -->
+                    </group>
+                    <group string="Resignation Reason">
+                        <field name="reason" nolabel="1" placeholder="Please provide detailed reason..." readonly="state != 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="Supporting Documents" name="attachments">
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                        <page string="Approval History" name="approval">
+                            <field name="approval_line_ids" readonly="1">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="approver_id"/>
+                                    <field name="status" widget="badge" decoration-success="status == 'approved'" decoration-warning="status == 'pending'" decoration-danger="status == 'rejected'"/>
+                                    <field name="approval_date"/>
+                                    <field name="comments"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_hr_employee_resignation" model="ir.actions.act_window">
+        <field name="name">Employee Resignations</field>
+        <field name="res_model">hr.employee.resignation</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Submit your first resignation request.</p>
+        </field>
+    </record>
+</odoo>

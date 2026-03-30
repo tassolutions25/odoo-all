@@ -115,5 +115,20 @@
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
         </record>
+        <!-- Rule: Employees can only see their own resignation records -->
+        <record id="hr_resignation_approval_rule_user" model="ir.rule">
+            <field name="name">Resignation: User's own records</field>
+            <field name="model_id" ref="model_hr_employee_resignation"/>
+            <field name="domain_force">['|', ('employee_id.user_id', '=', user.id), ('next_approver_ids', 'in', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Rule: HR Managers can see all resignation records -->
+        <record id="hr_resignation_approval_rule_manager" model="ir.rule">
+            <field name="name">Resignation: Manager Full Access</field>
+            <field name="model_id" ref="model_hr_employee_resignation"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
+        </record>
     </data>
 </odoo>

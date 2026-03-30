@@ -23,6 +23,16 @@ class HrEmployee(models.Model):
     _order = "employee_id asc, name asc"
     _rec_names_search = ["name", "employee_id"]
 
+    ahadu_state = fields.Selection(
+        [("active", "Active"), ("suspended", "Suspended")],
+        string="Work Status",
+        default="active",
+        tracking=True,
+        copy=False,
+    )
+
+    suspension_count = fields.Integer(compute="_compute_suspension_count")
+
     name = fields.Char(
         string="Full Name",
         compute="_compute_full_name",
@@ -284,6 +294,16 @@ class HrEmployee(models.Model):
     )
     city_id = fields.Many2one(
         "hr.city", string="City", ondelete="set null", tracking=True
+    )
+    departure_type = fields.Selection(
+        [
+            ("resignation", "Resigned"),
+            ("termination", "Terminated"),
+            ("retirement", "Retired"),
+        ],
+        string="Departure Type",
+        readonly=True,
+        copy=False,
     )
 
     @api.onchange("branch_id")
@@ -561,6 +581,22 @@ class HrEmployee(models.Model):
                 )
             else:
                 employee.ahadu_employee_type_id = False
+
+    def _compute_suspension_count(self):
+        for rec in self:
+            rec.suspension_count = self.env["hr.employee.suspension"].search_count(
+                [("employee_id", "=", rec.id)]
+            )
+
+    def action_view_suspensions(self):
+        return {
+            "name": _("Suspension History"),
+            "type": "ir.actions.act_window",
+            "res_model": "hr.employee.suspension",
+            "view_mode": "list,form",
+            "domain": [("employee_id", "=", self.id)],
+            "context": {"default_employee_id": self.id},
+        }
 
     # @api.depends("job_id")
     # def _compute_benefit_package(self):

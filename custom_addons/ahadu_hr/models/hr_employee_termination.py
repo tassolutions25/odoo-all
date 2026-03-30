@@ -106,7 +106,11 @@ class HrEmployeeTermination(models.Model):
         else:
             # If no subordinates, proceed with deactivation immediately.
             self.employee_id.write(
-                {"active": False, "departure_date": self.termination_date}
+                {
+                    "active": False,
+                    "departure_type": "termination",
+                    "departure_date": self.termination_date,
+                }
             )
             running_contracts = self.env["hr.contract"].search(
                 [

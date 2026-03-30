@@ -93,5 +93,9 @@ class HrEmployeeRetirement(models.Model):
     def _perform_final_approval(self):
         self.ensure_one()
         self.employee_id.write(
-            {"active": False, "departure_date": self.retirement_date}
+            {
+                "active": False,
+                "departure_type": "retirement",
+                "departure_date": self.retirement_date,
+            }
         )

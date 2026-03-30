@@ -56,6 +56,9 @@ class HrEmployeeActivity(models.Model):
     demotion_id = fields.Many2one(
         "hr.employee.demotion", string="Demotion Record", ondelete="set null"
     )
+    suspension_id = fields.Many2one(
+        "hr.employee.suspension", string="Suspension Record", ondelete="set null"
+    )
     disciplinary_id = fields.Many2one(
         "hr.employee.disciplinary", string="Disciplinary Record", ondelete="set null"
     )
@@ -101,6 +104,7 @@ class HrEmployeeActivity(models.Model):
             "promotion": "promotion_id",
             "demotion": "demotion_id",
             "transfer": "transfer_id",
+            "suspension": "suspension_id",
             "disciplinary": "disciplinary_id",
             "guarantee": "guarantee_id",
             "termination": "termination_id",

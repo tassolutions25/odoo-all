@@ -22,6 +22,8 @@ access_hr_employee_guarantee_user,hr.employee.guarantee.user,model_hr_employee_g
 access_hr_employee_guarantee_manager,hr.employee.guarantee.manager,model_hr_employee_guarantee,hr.group_hr_manager,1,1,1,1
 access_hr_employee_termination_user,hr.employee.termination.user,model_hr_employee_termination,hr.group_hr_user,1,1,1,0
 access_hr_employee_termination_manager,hr.employee.termination.manager,model_hr_employee_termination,hr.group_hr_manager,1,1,1,1
+access_hr_employee_resignation_user,hr.employee.resignation user,model_hr_employee_resignation,base.group_user,1,1,1,0
+access_hr_employee_resignation_manager,hr.employee.resignation manager,model_hr_employee_resignation,hr.group_hr_manager,1,1,1,1
 access_hr_division_user,hr.division.user,model_hr_division,hr.group_hr_user,1,1,1,0
 access_hr_division_manager,hr.division.manager,model_hr_division,hr.group_hr_manager,1,1,1,1
 access_hr_employee_acting_user,hr.employee.acting.user,model_hr_employee_acting,hr.group_hr_user,1,1,1,0
@@ -75,3 +77,4 @@ access_hr_employee_reassign_user,hr.employee.reassign.user,model_hr_employee_rea
 access_hr_employee_reassign_manager,hr.employee.reassign.manager,model_hr_employee_reassign,hr.group_hr_manager,1,1,1,1
 access_hr_employee_reinitiate_user,hr.employee.reinitiate.user,model_hr_employee_reinitiate,hr.group_hr_user,1,1,1,0
 access_hr_employee_reinitiate_manager,hr.employee.reinitiate.manager,model_hr_employee_reinitiate,hr.group_hr_manager,1,1,1,1
+access_hr_employee_suspension_manager,hr.employee.suspension manager,model_hr_employee_suspension,hr.group_hr_manager,1,1,1,1

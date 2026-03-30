@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_suspension_list" model="ir.ui.view">
+        <field name="name">hr.employee.suspension.list</field>
+        <field name="model">hr.employee.suspension</field>
+        <field name="arch" type="xml">
+            <list string="Suspensions" decoration-danger="state == 'active'" decoration-success="state == 'reinstated'">
+                <field name="employee_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="duration_type"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_suspension_form" model="ir.ui.view">
+        <field name="name">hr.employee.suspension.form</field>
+        <field name="model">hr.employee.suspension</field>
+        <field name="arch" type="xml">
+            <form string="Suspension">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve_step" string="Approve" type="object" class="btn-success" invisible="can_approve == False"/>
+                    
+                    <button name="action_reinstate" 
+                        string="Unsuspend / Reinstate Employee" 
+                        type="object" 
+                        class="btn-info" 
+                        groups="hr.group_hr_manager"  
+                                              
+                        />
+                        <!-- invisible="state != 'approved' or employee_id.ahadu_state != 'suspended'" -->
+                            
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,reinstated"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="start_date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="duration_type" widget="radio" readonly="state != 'draft'"/>
+                            <field name="end_date" invisible="duration_type == 'open'" required="duration_type == 'fixed'" readonly="state != 'draft'"/>
+                            <field name="can_approve" invisible="1"/>
+                            <field name="next_approver_ids" widget="many2many_tags" invisible="state != 'submitted'" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Reason">
+                            <field name="reason" placeholder="Provide detailed reason..." readonly="state != 'draft'"/>
+                        </page>
+                        <page string="Approval History">
+                            <field name="approval_line_ids" readonly="1">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="approver_id"/>
+                                    <field name="status" widget="badge" decoration-success="status == 'approved'" decoration-danger="status == 'rejected'"/>
+                                    <field name="approval_date"/>
+                                    <field name="comments"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_employee_suspension" model="ir.actions.act_window">
+        <field name="name">Employee Suspensions</field>
+        <field name="res_model">hr.employee.suspension</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
