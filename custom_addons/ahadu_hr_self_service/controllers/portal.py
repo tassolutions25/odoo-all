@@ -11,16 +11,16 @@ _logger = logging.getLogger(__name__)
 
 
 class AhaduLoginRedirect(Home):
-    
+
     def _login_redirect(self, uid, redirect=None):
-        user = request.env['res.users'].browse(uid)
-        
+        user = request.env["res.users"].browse(uid)
+
         # Check if the logged-in user is an internal employee/admin
-        if user.has_group('base.group_user'):
+        if user.has_group("base.group_user"):
             # If the redirect is empty or points to the standard backend root, force it to the frontend '/'
-            if not redirect or redirect in['/web', '/odoo', '/web?', '/odoo?']:
-                return '/'
-                
+            if not redirect or redirect in ["/web", "/odoo", "/web?", "/odoo?"]:
+                return "/"
+
         return super(AhaduLoginRedirect, self)._login_redirect(uid, redirect)
 
 
@@ -153,6 +153,61 @@ class AhaduSelfServicePortal(CustomerPortal):
                 },
             )
 
+    @http.route(["/my/resignation"], type="http", auth="user", website=True)
+    def resignation_form(self, **kw):
+        employee = request.env.user.employee_id
+        if not employee:
+            return request.render("ahadu_hr_self_service.onboarding_no_employee")
+
+        # Check if there is already a pending resignation
+        existing = request.env["hr.employee.resignation"].search(
+            [
+                ("employee_id", "=", employee.id),
+                ("state", "in", ["draft", "submitted"]),
+            ],
+            limit=1,
+        )
+
+        values = {
+            "employee": employee,
+            "existing_request": existing,
+            "page_name": "resignation",
+        }
+        return request.render("ahadu_hr_self_service.resignation_submit_form", values)
+
+    @http.route(
+        ["/my/resignation/submit"],
+        type="http",
+        auth="user",
+        website=True,
+        methods=["POST"],
+        csrf=True,
+    )
+    def resignation_submit(self, **kw):
+        employee = request.env.user.employee_id
+        vals = {
+            "employee_id": employee.id,
+            "reason": kw.get("reason"),
+            "proposed_last_working_day": kw.get("last_day"),
+            "resignation_date": fields.Date.today(),
+        }
+        res_req = request.env["hr.employee.resignation"].sudo().create(vals)
+        res_req.sudo().action_submit()
+        return request.redirect("/my/dashboard?resignation_success=1")
+
+    @http.route(
+        ["/my/resignation/withdraw/<int:res_id>"],
+        type="http",
+        auth="user",
+        website=True,
+        csrf=True,
+    )
+    def resignation_withdraw(self, res_id, **kw):
+        res_req = request.env["hr.employee.resignation"].browse(res_id)
+        if res_req.employee_id.user_id == request.env.user:
+            res_req.action_withdraw()
+        return request.redirect("/my/dashboard?withdrawn=1")
+
     @http.route(
         ["/my/onboarding/submit"],
         type="http",
@@ -168,10 +223,17 @@ class AhaduSelfServicePortal(CustomerPortal):
 
         try:
 
+            # 1. Enforce Declaration Check
+            if not kw.get("declaration_confirmed"):
+                raise ValidationError(
+                    _(
+                        "You must confirm the accuracy of the information by selecting the declaration checkbox."
+                    )
+                )
+
             def safe_int(val):
                 return int(val) if val and str(val).isdigit() else False
 
-            
             vals = {
                 "employee_id": employee.id,
                 # Personal Info

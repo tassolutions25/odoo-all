@@ -49,6 +49,11 @@ class HrEmployeeGuarantee(models.Model):
 
     po_box = fields.Char(string="P.O. Box", tracking=True)
     organization_email = fields.Char(string="Organization Email", tracking=True)
+    attachment_ids = fields.Many2many(
+        "ir.attachment",
+        string="Attachments",
+        help="Upload supporting documents like notices, letters, or certificates.",
+    )
 
     activity_id = fields.Many2one(
         "hr.employee.activity",

@@ -49,6 +49,9 @@
                     <group>
                         <field name="reason"/>
                     </group>
+                    <group string="Attachments">
+                        <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                    </group>
                     
                     <notebook>
                         <page string="Approval History">

@@ -47,12 +47,12 @@
                                 <field name="years_of_service" readonly="1"/>
                                 <field name="final_salary"/>
                             </group>
-                            <!-- <group>
-                                <field name="pension_amount"/>
-                            </group> -->
                         </group>
                         <group>
                             <field name="reason" placeholder="Enter reason for retirement..."/>
+                        </group>
+                        <group string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
                         </group>
                         <notebook>
                             <page string="Approval History">

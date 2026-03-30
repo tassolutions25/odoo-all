@@ -22,6 +22,11 @@ class HrEmployeeDisciplinary(models.Model):
     )
     violation = fields.Text(string="Violation Description", required=True)
     action_taken = fields.Text(string="Action Taken", required=True)
+    attachment_ids = fields.Many2many(
+        "ir.attachment",
+        string="Attachments",
+        help="Upload supporting documents like notices, letters, or certificates.",
+    )
     duration = fields.Integer(string="Duration (Days)", help="For suspension actions")
     activity_id = fields.Many2one(
         "hr.employee.activity", string="Activity Record", ondelete="set null"

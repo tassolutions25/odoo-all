@@ -104,6 +104,11 @@ class HrEmployeeTransfer(models.Model):
 
     currency_id = fields.Many2one(related="employee_id.currency_id")
     reason = fields.Text(string="Reason for Transfer")
+    attachment_ids = fields.Many2many(
+        "ir.attachment",
+        string="Attachments",
+        help="Upload supporting documents like notices, letters, or certificates.",
+    )
     activity_id = fields.Many2one(
         "hr.employee.activity", string="Activity Record", ondelete="set null"
     )

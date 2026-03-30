@@ -92,6 +92,11 @@ class HrEmployeeDemotion(models.Model):
         "res.users", string="Approved By", tracking=True, readonly=True, copy=False
     )
     reason = fields.Text(string="Reason for Demotion", required=True)
+    attachment_ids = fields.Many2many(
+        "ir.attachment",
+        string="Attachments",
+        help="Upload supporting documents like notices, letters, or certificates.",
+    )
     activity_id = fields.Many2one(
         "hr.employee.activity",
         string="Activity Record",

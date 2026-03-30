@@ -393,6 +393,21 @@
                                 </div>
                             </div>
 
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card bg-light border-info">
+                                        <div class="card-body">
+                                            <div class="form-check">
+                                                <input type="checkbox" name="declaration_confirmed" id="declaration_confirmed" class="form-check-input" required="1"/>
+                                                <label class="form-check-label fw-bold" for="declaration_confirmed" style="font-size: 1.1rem;">
+                                                    I confirm that all the information provided is accurate, and complete to the best of my knowledge. *
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="text-center mt-4">
                                 <button type="submit" id="btn_submit_onboarding" class="btn btn-primary btn-lg">Submit for Approval</button>
                             </div>
@@ -733,6 +748,40 @@
                         <hr/>
                         <a href="javascript:history.back()" class="btn btn-secondary">Go Back and Fix</a>
                     </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <template id="resignation_submit_form" name="Submit Resignation">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <div class="col-md-8 mx-auto">
+                    <t t-if="existing_request">
+                        <div class="alert alert-warning">
+                            <h4>Pending Resignation Found</h4>
+                            <p>You submitted a request on <span t-field="existing_request.resignation_date"/>. 
+                            Status: <span t-field="existing_request.state"/>.</p>
+                            <a t-attf-href="/my/resignation/withdraw/#{existing_request.id}" 
+                            class="btn btn-danger" onclick="return confirm('Withdraw this resignation?')">
+                            Withdraw Resignation
+                            </a>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <h3>Submit Resignation</h3>
+                        <form action="/my/resignation/submit" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <div class="mb-3">
+                                <label class="form-label">Proposed Last Working Day</label>
+                                <input type="date" name="last_day" class="form-control" required="1"/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Reason</label>
+                                <textarea name="reason" class="form-control" rows="4" required="1"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Resignation</button>
+                        </form>
+                    </t>
                 </div>
             </div>
         </t>

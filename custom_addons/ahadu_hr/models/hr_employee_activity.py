@@ -17,6 +17,7 @@ class HrEmployeeActivity(models.Model):
             ("disciplinary", "Disciplinary Action"),
             ("guarantee", "Guarantee"),
             ("termination", "Termination"),
+            ("resignation", "Resignation"),
             ("acting", "Acting Assignment"),
             ("temporary", "Temporary Assignment"),
             ("ctc", "CTC Adjustment"),
@@ -67,6 +68,9 @@ class HrEmployeeActivity(models.Model):
     termination_id = fields.Many2one(
         "hr.employee.termination", string="Termination Record", ondelete="set null"
     )
+    resignation_id = fields.Many2one(
+        "hr.employee.resignation", string="Resignation Record", ondelete="set null"
+    )
     acting_id = fields.Many2one(
         "hr.employee.acting", string="Acting Record", ondelete="set null"
     )
@@ -100,6 +104,7 @@ class HrEmployeeActivity(models.Model):
             "disciplinary": "disciplinary_id",
             "guarantee": "guarantee_id",
             "termination": "termination_id",
+            "resignation": "resignation_id",
             "acting": "acting_id",
             "temporary": "temporary_assignment_id",
             "retirement": "retirement_id",

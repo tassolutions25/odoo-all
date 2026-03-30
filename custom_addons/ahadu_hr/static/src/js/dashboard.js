@@ -15,9 +15,8 @@ class EmployeeActivityDashboard extends Component {
       //   action = {
       //     type: "ir.actions.act_window",
       //     res_model: "hr.employee",
-      //     view_mode: "kanban,list,form,graph",
+      //     view_mode: "list,form,graph",
       //     views: [
-      //       [false, "kanban"],
       //       [false, "list"],
       //       [false, "form"],
       //       [false, "graph"],
@@ -29,9 +28,8 @@ class EmployeeActivityDashboard extends Component {
         action = {
           type: "ir.actions.act_window",
           res_model: "hr.employee.demotion",
-          view_mode: "kanban,list,form,graph",
+          view_mode: "list,form,graph",
           views: [
-            [false, "kanban"],
             [false, "list"],
             [false, "form"],
             [false, "graph"],
@@ -43,9 +41,8 @@ class EmployeeActivityDashboard extends Component {
         action = {
           type: "ir.actions.act_window",
           res_model: "hr.employee.promotion",
-          view_mode: "kanban,list,form,graph",
+          view_mode: "list,form,graph",
           views: [
-            [false, "kanban"],
             [false, "list"],
             [false, "form"],
             [false, "graph"],
@@ -57,9 +54,8 @@ class EmployeeActivityDashboard extends Component {
         action = {
           type: "ir.actions.act_window",
           res_model: "hr.employee.transfer",
-          view_mode: "kanban,list,form,graph",
+          view_mode: "list,form,graph",
           views: [
-            [false, "kanban"],
             [false, "list"],
             [false, "form"],
             [false, "graph"],
@@ -71,9 +67,8 @@ class EmployeeActivityDashboard extends Component {
         action = {
           type: "ir.actions.act_window",
           res_model: "hr.employee.termination",
-          view_mode: "kanban,list,form,graph",
+          view_mode: "list,form,graph",
           views: [
-            [false, "kanban"],
             [false, "list"],
             [false, "form"],
             [false, "graph"],
@@ -81,13 +76,25 @@ class EmployeeActivityDashboard extends Component {
           name: "Employee Terminations",
         };
         break;
+      case "resignation":
+        action = {
+          type: "ir.actions.act_window",
+          res_model: "hr.employee.resignation",
+          view_mode: "list,form,graph",
+          views: [
+            [false, "list"],
+            [false, "form"],
+            [false, "graph"],
+          ],
+          name: "Employee resignations",
+        };
+        break;
       case "acting":
         action = {
           type: "ir.actions.act_window",
           res_model: "hr.employee.acting",
-          view_mode: "kanban,list,form,graph",
+          view_mode: "list,form,graph",
           views: [
-            [false, "kanban"],
             [false, "list"],
             [false, "form"],
             [false, "graph"],
@@ -99,9 +106,8 @@ class EmployeeActivityDashboard extends Component {
         action = {
           type: "ir.actions.act_window",
           res_model: "hr.employee.temporary.assignment",
-          view_mode: "kanban,list,form,graph",
+          view_mode: "list,form,graph",
           views: [
-            [false, "kanban"],
             [false, "list"],
             [false, "form"],
             [false, "graph"],
@@ -113,9 +119,8 @@ class EmployeeActivityDashboard extends Component {
         action = {
           type: "ir.actions.act_window",
           res_model: "hr.employee.disciplinary",
-          view_mode: "kanban,list,form,graph",
+          view_mode: "list,form,graph",
           views: [
-            [false, "kanban"],
             [false, "list"],
             [false, "form"],
             [false, "graph"],
@@ -139,9 +144,8 @@ class EmployeeActivityDashboard extends Component {
         action = {
           type: "ir.actions.act_window",
           res_model: "hr.employee.guarantee",
-          view_mode: "kanban,list,form,graph",
+          view_mode: "list,form,graph",
           views: [
-            [false, "kanban"],
             [false, "list"],
             [false, "form"],
             [false, "graph"],
@@ -164,7 +168,7 @@ class EmployeeActivityDashboard extends Component {
       case "data_change":
         action = {
           type: "ir.actions.act_window",
-          res_model: "hr.employee.data.change", 
+          res_model: "hr.employee.data.change",
           view_mode: "list,form",
           views: [
             [false, "list"],
@@ -294,6 +298,14 @@ EmployeeActivityDashboard.template = xml`
                 </div>
             </div>
         </div>
+        <div class="col-lg-3 col-md-4 mb-4">
+          <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('resignation')">
+              <div class="card-body text-center d-flex flex-column justify-content-center">
+                  <i class="fa fa-user-times fa-3x" style="color: #860037;"></i>
+                  <h5 class="mt-3">Resignation</h5>
+              </div>
+          </div>
+      </div>
         <div class="col-lg-3 col-md-4 mb-4">
             <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('disciplinary')">
                 <div class="card-body text-center d-flex flex-column justify-content-center">

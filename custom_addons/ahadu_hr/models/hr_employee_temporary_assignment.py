@@ -122,6 +122,11 @@ class HrEmployeeTemporaryAssignment(models.Model):
         selection_add=[("completed", "Completed"), ("cancelled", "Cancelled")],
         ondelete={"completed": "cascade", "cancelled": "cascade"},
     )
+    attachment_ids = fields.Many2many(
+        "ir.attachment",
+        string="Attachments",
+        help="Upload supporting documents like notices, letters, or certificates.",
+    )
 
     @api.depends("employee_id")
     def _compute_name(self):

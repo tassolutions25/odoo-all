@@ -120,7 +120,6 @@ class HrEmployeeOnboarding(models.Model):
     )
     emergency_contact_phone = fields.Char(string="Emergency Contact Phone")
 
-    # ... Relation fields ...
     bank_account_ids = fields.One2many(
         "hr.employee.onboarding.bank.account", "onboarding_id", string="Bank Accounts"
     )
@@ -163,7 +162,12 @@ class HrEmployeeOnboarding(models.Model):
     cost_sharing_document_filename = fields.Char(
         string="Cost-Sharing Document Filename"
     )
-
+    declaration_confirmed = fields.Boolean(
+        string="Data Accuracy Declaration", 
+        default=False, 
+        tracking=True,
+        help="Confirms that the employee verified the accuracy of the information provided."
+    )
 
     @api.constrains("mobile_phone", "work_phone", "emergency_contact_phone")
     def _check_ethiopian_phone(self):

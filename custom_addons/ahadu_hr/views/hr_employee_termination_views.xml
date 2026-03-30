@@ -31,6 +31,9 @@
                     <group>
                         <field name="reason" placeholder="Enter reason for termination..."/>
                     </group>
+                    <group string="Attachments">
+                        <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                    </group>
                     <notebook>
                         <page string="Approval History">
                             <field name="approval_line_ids">

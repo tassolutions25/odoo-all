@@ -45,6 +45,9 @@
                     <field name="amount"/>
                     <field name="description" placeholder="Enter reason for the guarantee..."/>
                 </group>
+                <group string="Attachments">
+                    <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                </group>
 
                 <notebook>
                     <page string="Approval History">

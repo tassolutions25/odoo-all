@@ -16,6 +16,11 @@ class HrEmployeeReinitiate(models.Model):
     )
     date = fields.Date(string="Date", default=fields.Date.today, required=True)
     reason = fields.Text(string="Reason")
+    attachment_ids = fields.Many2many(
+        "ir.attachment",
+        string="Attachments",
+        help="Upload supporting documents like notices, letters, or certificates.",
+    )
     activity_id = fields.Many2one("hr.employee.activity", string="Activity Record")
 
     employee_number_search = fields.Char(string="Employee ID", store=False)

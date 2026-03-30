@@ -67,6 +67,9 @@
                     <notebook>
                         <page string="Notes">
                             <field name="notes" placeholder="Add any relevant details or reasons for the assignment here..."/>
+                            <group string="Attachments">
+                                <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                            </group>
                         </page>
                          <page string="Approval History" name="approval_history">
                             <field name="approval_line_ids" readonly="1">
