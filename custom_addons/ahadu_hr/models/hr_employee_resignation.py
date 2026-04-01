@@ -14,6 +14,47 @@ class HrEmployeeResignation(models.Model):
 
     name = fields.Char(string="Reference", compute="_compute_name", store=True)
     employee_id = fields.Many2one("hr.employee", string="Employee", required=True)
+
+    employee_number_search = fields.Char(
+        string="Employee ID",
+        compute="_compute_employee_number_search",
+        inverse="_inverse_employee_number_search",
+        store=True,
+        readonly=False,
+    )
+
+    @api.depends("employee_id")
+    def _compute_employee_number_search(self):
+        for rec in self:
+            # Name -> ID: Update search field when employee is selected
+            if rec.employee_id:
+                rec.employee_number_search = rec.employee_id.employee_id
+
+    def _inverse_employee_number_search(self):
+        for rec in self:
+            if rec.employee_number_search:
+                rec._sync_employee_data()
+
+    @api.onchange("employee_number_search")
+    def _onchange_employee_number_search(self):
+        # ID -> Name: Instant UI sync when typing ID
+        if self.employee_number_search:
+            self._sync_employee_data()
+
+    def _sync_employee_data(self):
+        """Helper to find employee by ID string"""
+        employee = (
+            self.env["hr.employee"]
+            .sudo()
+            .with_context(active_test=False)
+            .search(
+                [("employee_id", "=ilike", self.employee_number_search.strip())],
+                limit=1,
+            )
+        )
+        if employee:
+            self.employee_id = employee.id
+
     resignation_date = fields.Date(
         string="Resignation Date", default=fields.Date.today, required=True
     )

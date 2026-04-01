@@ -57,6 +57,45 @@ class HrEmployeeLateral(models.Model):
         "hr.employee.activity", string="Activity Record", ondelete="set null"
     )
 
+    employee_number_search = fields.Char(
+        string="Employee ID",
+        compute="_compute_employee_number_search",
+        inverse="_inverse_employee_number_search",
+        store=True,
+        readonly=False,
+    )
+
+    @api.depends("employee_id")
+    def _compute_employee_number_search(self):
+        for rec in self:
+            if rec.employee_id:
+                rec.employee_number_search = rec.employee_id.employee_id
+
+    def _inverse_employee_number_search(self):
+        for rec in self:
+            if rec.employee_number_search:
+                rec._sync_employee_data()
+
+    @api.onchange("employee_number_search")
+    def _onchange_employee_number_search(self):
+        if self.employee_number_search:
+            self._sync_employee_data()
+
+    def _sync_employee_data(self):
+        employee = (
+            self.env["hr.employee"]
+            .sudo()
+            .with_context(active_test=False)
+            .search(
+                [("employee_id", "=ilike", self.employee_number_search.strip())],
+                limit=1,
+            )
+        )
+        if employee:
+            self.employee_id = employee.id
+        else:
+            self.employee_id = False
+
     @api.depends("employee_id")
     def _compute_current_fields(self):
         for rec in self:

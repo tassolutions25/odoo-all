@@ -62,27 +62,44 @@ class HrEmployeeGuarantee(models.Model):
         readonly=True,
     )
 
-    employee_number_search = fields.Char(string="Employee ID", store=False)
+    employee_number_search = fields.Char(
+        string="Employee ID",
+        compute="_compute_employee_number_search",
+        inverse="_inverse_employee_number_search",
+        store=True,
+        readonly=False,
+    )
+
+    @api.depends("employee_id")
+    def _compute_employee_number_search(self):
+        for rec in self:
+            if rec.employee_id:
+                rec.employee_number_search = rec.employee_id.employee_id
+
+    def _inverse_employee_number_search(self):
+        for rec in self:
+            if rec.employee_number_search:
+                rec._sync_employee_data()
 
     @api.onchange("employee_number_search")
     def _onchange_employee_number_search(self):
         if self.employee_number_search:
-            employee = self.env["hr.employee"].search(
+            self._sync_employee_data()
+
+    def _sync_employee_data(self):
+        employee = (
+            self.env["hr.employee"]
+            .sudo()
+            .with_context(active_test=False)
+            .search(
                 [("employee_id", "=ilike", self.employee_number_search.strip())],
                 limit=1,
             )
-
-            if employee:
-                self.employee_id = employee
-            else:
-                self.employee_id = False
-
-    @api.onchange("employee_id")
-    def _onchange_employee_id_sync(self):
-        if self.employee_id:
-            self.employee_number_search = self.employee_id.employee_id
+        )
+        if employee:
+            self.employee_id = employee.id
         else:
-            self.employee_number_search = False
+            self.employee_id = False
 
     @api.depends("employee_id", "guaranteed_person_name")
     def _compute_name(self):
