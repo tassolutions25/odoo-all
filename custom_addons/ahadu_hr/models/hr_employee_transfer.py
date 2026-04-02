@@ -179,7 +179,7 @@ class HrEmployeeTransfer(models.Model):
     def _inverse_employee_number_search(self):
         for rec in self:
             if rec.employee_number_search:
-                rec._sync_employee_data()te
+                rec._sync_employee_data()
 
     def _sync_employee_data(self):
         employee = (
