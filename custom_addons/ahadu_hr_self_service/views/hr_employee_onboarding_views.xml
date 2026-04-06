@@ -103,9 +103,9 @@
                                 <field name="physical_challenge_detail" invisible="physical_challenge != 'yes'"/>
                             </group>
 
-                            <group string="Employee Declaration" name="declaration">
+                            <!-- <group string="Employee Declaration" name="declaration">
                                 <field name="declaration_confirmed" readonly="1" widget="boolean_toggle"/>
-                            </group>
+                            </group> -->
                         </page>
                         <page string="Contact &amp; ID">
                              <group>

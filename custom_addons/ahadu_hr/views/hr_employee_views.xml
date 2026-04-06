@@ -198,6 +198,33 @@
             <attribute name="context">{'show_manager_with_id': True}</attribute>
         </xpath>
 
+        <xpath expr="//field[@name='private_street']" position="attributes">
+            <attribute name="invisible">1</attribute>
+        </xpath>
+        <xpath expr="//field[@name='private_street2']" position="attributes">
+            <attribute name="invisible">1</attribute>
+        </xpath>
+
+        <xpath expr="//page[@name='skills_resume']" position="attributes">
+            <attribute name="invisible">1</attribute>
+        </xpath>
+
+        <xpath expr="//notebook" position="inside">
+            <page string="Curriculum Vitae (CV)" name="cv_attachment_page">
+                <group>
+                    <group string="Employee CV">
+                        <field name="resume_attachment" widget="binary" filename="resume_attachment_filename" string="Upload CV Document"/>
+                        <field name="resume_attachment_filename" invisible="1"/>
+                    </group>
+                    <group string="Instructions">
+                        <p class="text-muted">
+                            Please upload the latest version of the employee's CV here. 
+                            Supported formats: PDF, DOCX, PNG, JPG.
+                        </p>
+                    </group>
+                </group>
+            </page>
+        </xpath>
                 <xpath expr="//notebook" position="inside">
                     <page string="Bank Details" name="bank_details">
                         <field name="bank_account_ids">
@@ -228,6 +255,18 @@
                             </form>
                         </field>
                     </page>
+                </xpath>
+
+                <xpath expr="//field[@name='bank_account_ids']//list" position="attributes">
+                    <attribute name="edit">true</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='bank_account_ids']//field[@name='bank_id']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                    <attribute name="force_save">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='bank_account_ids']//field[@name='account_number']" position="attributes">
+                    <attribute name="placeholder">13 digits required</attribute>
                 </xpath>
 
                 <xpath expr="//div[@name='button_box']" position="inside">
@@ -269,6 +308,9 @@
                 </xpath>
 
                 <xpath expr="//field[@name='job_title']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='category_ids']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
                 <xpath expr="//field[@name='coach_id']" position="attributes">

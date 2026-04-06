@@ -301,13 +301,28 @@
                                         <div class="mb-3 col-md-3"><label for="middle_name" class="form-label">Middle Name *</label><input type="text" class="form-control" name="middle_name" t-att-value="employee.middle_name" readonly="1"/></div>
                                         <div class="mb-3 col-md-3"><label for="last_name" class="form-label">Last Name *</label><input type="text" class="form-control" name="last_name" t-att-value="employee.last_name" readonly="1"/></div>
                                         <div class="mb-3 col-md-4"><label for="gender" class="form-label">Gender *</label><select name="gender" class="form-select" required="1"><option value="">...</option><option value="male" t-att-selected="employee.gender_updated == 'male'">Male</option><option value="female" t-att-selected="employee.gender_updated == 'female'">Female</option></select></div>
-                                        <div class="mb-3 col-md-4"><label for="birthday" class="form-label">Birthdate *</label><input type="date" name="birthday" class="form-control" t-att-value="employee.birthday" required="1"/></div>
+                                        <!-- <div class="mb-3 col-md-4"><label for="birthday" class="form-label">Birthdate *</label><input type="date" name="birthday" class="form-control" t-att-value="employee.birthday" required="1"/></div> -->
+                                        <div class="mb-3 col-md-4">
+                                            <label for="birthday" class="form-label">Birthdate (DD/MM/YYYY) *</label>
+                                            <input type="text" name="birthday" 
+                                                class="form-control s_website_form_datetime" 
+                                                placeholder="DD/MM/YYYY" 
+                                                required="1"
+                                                t-att-value="employee.birthday.strftime('%d/%m/%Y') if employee.birthday else ''"/>
+                                        </div>
                                         <div class="mb-3 col-md-4"><label for="birth_place" class="form-label">Place of Birth</label><input type="text" class="form-control" name="birth_place" t-att-value="employee.birth_place"/></div>
                                         <div class="mb-3 col-md-3"><label for="nationality_id" class="form-label">Nationality</label><select name="nationality_id" class="form-select"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.nationality_id.id or 68)" t-esc="c.name"/></t></select></div>
                                         <div class="mb-3 col-md-3"><label for="country_id" class="form-label">Country of Residence *</label><select name="country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
                                         <div class="mb-3 col-md-3"><label for="subcity" class="form-label">Sub City</label><input type="text" class="form-control" name="subcity" t-att-value="employee.subcity"/></div>
                                         <div class="mb-3 col-md-3"><label for="marital" class="form-label">Marital Status</label><select name="marital" class="form-select"><option value="">...</option><option value="single" t-att-selected="employee.marital == 'single'">Single</option><option value="married" t-att-selected="employee.marital == 'married'">Married</option><option value="cohabitant" t-att-selected="employee.marital == 'cohabitant'">Legal Cohabitant</option><option value="widower" t-att-selected="employee.marital == 'widower'">Widower</option><option value="divorced" t-att-selected="employee.marital == 'divorced'">Divorced</option></select></div>
-                                        <div class="mb-3 col-md-4"><label for="wedding_date" class="form-label">Wedding Date</label><input type="date" class="form-control" name="wedding_date" t-att-value="employee.wedding_date"/></div>
+                                        <!-- <div class="mb-3 col-md-4"><label for="wedding_date" class="form-label">Wedding Date</label><input type="date" class="form-control" name="wedding_date" t-att-value="employee.wedding_date"/></div> -->
+                                        <div class="mb-3 col-md-4">
+                                            <label for="wedding_date" class="form-label">Wedding Date (DD/MM/YYYY)</label>
+                                            <input type="text" name="wedding_date" 
+                                                class="form-control s_website_form_datetime" 
+                                                placeholder="DD/MM/YYYY"
+                                                t-att-value="employee.wedding_date.strftime('%d/%m/%Y') if employee.wedding_date else ''"/>
+                                        </div>
                                         <div class="mb-3 col-md-4"><label for="language_ids" class="form-label">Languages Spoken *</label><select name="language_ids" class="form-select" multiple="multiple" required="1"><t t-foreach="languages" t-as="language_rec"><option t-att-value="language_rec.id" t-att-selected="language_rec in employee.language_ids or language_rec.code == 'en_US'" t-esc="language_rec.name"/></t></select></div>
                                         <div class="mb-3 col-md-4"><label for="blood_group" class="form-label">Blood Group</label><select name="blood_group" class="form-select"><option value="">...</option><option value="A+" t-att-selected="employee.blood_group == 'A+'">A+</option><option value="A-" t-att-selected="employee.blood_group == 'A-'">A-</option><option value="B+" t-att-selected="employee.blood_group == 'B+'">B+</option><option value="B-" t-att-selected="employee.blood_group == 'B-'">B-</option><option value="O+" t-att-selected="employee.blood_group == 'O+'">O+</option><option value="O-" t-att-selected="employee.blood_group == 'O-'">O-</option><option value="AB+" t-att-selected="employee.blood_group == 'AB+'">AB+</option><option value="AB-" t-att-selected="employee.blood_group == 'AB-'">AB-</option></select></div>
                                         <div class="mb-3 col-md-4"><label for="physical_challenge" class="form-label">Physical Challenge</label><select name="physical_challenge" class="form-select" onchange="this.value == 'yes' ? document.getElementById('physical_challenge_detail_div').classList.remove('d-none') : document.getElementById('physical_challenge_detail_div').classList.add('d-none');"><option value="">...</option><option value="yes" t-att-selected="employee.physical_challenge == 'yes'">Yes</option><option value="no" t-att-selected="employee.physical_challenge == 'no'">No</option></select></div>
@@ -443,8 +458,18 @@
                                         <div class="mb-3 col-md-6"><label class="form-label">Name as on Passport</label><input type="text" name="passport_name" class="form-control" t-att-value="employee.passport_name"/></div>
                                         <div class="mb-3 col-md-6"><label class="form-label">Passport Number</label><input type="text" name="passport_number" class="form-control" t-att-value="employee.passport_id"/></div>
                                         <div class="mb-3 col-md-4"><label class="form-label">Place Issued</label><input type="text" name="passport_issue_place" class="form-control" t-att-value="employee.passport_issue_place"/></div>
-                                        <div class="mb-3 col-md-4"><label class="form-label">Issued Date</label><input type="date" name="passport_issue_date" class="form-control" t-att-value="employee.passport_issue_date"/></div>
-                                        <div class="mb-3 col-md-4"><label class="form-label">Expiry Date</label><input type="date" name="passport_expiry_date" class="form-control" t-att-value="employee.passport_expiry_date"/></div>
+                                        <!-- <div class="mb-3 col-md-4"><label class="form-label">Issued Date</label><input type="date" name="passport_issue_date" class="form-control" t-att-value="employee.passport_issue_date"/></div> -->
+                                        <!-- <div class="mb-3 col-md-4"><label class="form-label">Expiry Date</label><input type="date" name="passport_expiry_date" class="form-control" t-att-value="employee.passport_expiry_date"/></div> -->
+                                        <div class="mb-3 col-md-4">
+                                            <label class="form-label">Issued Date (DD/MM/YYYY)</label>
+                                            <input type="text" name="passport_issue_date" class="form-control s_website_form_datetime" 
+                                                placeholder="DD/MM/YYYY" t-att-value="employee.passport_issue_date.strftime('%d/%m/%Y') if employee.passport_issue_date else ''"/>
+                                        </div>
+                                        <div class="mb-3 col-md-4">
+                                            <label class="form-label">Expiry Date (DD/MM/YYYY)</label>
+                                            <input type="text" name="passport_expiry_date" class="form-control s_website_form_datetime" 
+                                                placeholder="DD/MM/YYYY" t-att-value="employee.passport_expiry_date.strftime('%d/%m/%Y') if employee.passport_expiry_date else ''"/>
+                                        </div>
                                         <div class="mb-3 col-md-6"><label class="form-label">ENCR Required?</label><select name="encr_required" class="form-select"><option value="">...</option><option value="yes" t-att-selected="employee.encr_required == 'yes'">Yes</option><option value="no" t-att-selected="employee.encr_required == 'no'">No</option></select></div>
                                         <div class="mb-3 col-md-6"><label class="form-label">Upload Passport</label><input type="file" name="passport_file" class="form-control"/></div>
                                     </div>
@@ -501,9 +526,20 @@
                     </div>
                     <hr/>
                     <div class="row">
-                        <div class="mb-3 col-md-6"><label class="form-label">Bank Name *</label><select name="bank_name_" class="form-select" required="1"><t t-foreach="banks" t-as="b"><option t-att-value="b.id" t-esc="b.name"/></t></select></div>
+                        <!-- <div class="mb-3 col-md-6"><label class="form-label">Bank Name *</label><select name="bank_name_" class="form-select" required="1"><t t-foreach="banks" t-as="b"><option t-att-value="b.id" t-esc="b.name"/></t></select></div> -->
+                        <div class="mb-3 col-md-6">
+                            <label class="form-label">Bank Name</label>
+                            <t t-set="ahadu_bank" t-value="banks.filtered(lambda b: 'Ahadu' in b.name)[:1]"/>
+                            <input type="text" class="form-control" value="Ahadu Bank" readonly="1"/>
+                            <input type="hidden" name="bank_name_" t-att-value="ahadu_bank.id if ahadu_bank else ''"/>
+                        </div>
                         <div class="mb-3 col-md-6"><label class="form-label">Bank Country *</label><select name="bank_country_id_" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == default_country_id" t-esc="c.name"/></t></select></div>
-                        <div class="mb-3 col-md-6"><label class="form-label">Account Number *</label><input type="text" name="bank_account_number_" class="form-control" required="1"/></div>
+                        <!-- <div class="mb-3 col-md-6"><label class="form-label">Account Number *</label><input type="text" name="bank_account_number_" class="form-control" required="1"/></div> -->
+                        <div class="mb-3 col-md-6">
+                            <label class="form-label">Account Number (13 Digits) *</label>
+                            <input type="text" name="bank_account_number_" class="form-control" 
+                                required="1" maxlength="13" minlength="13" pattern="\d{13}"/>
+                        </div>
                         <div class="mb-3 col-md-6"><label class="form-label">Currency *</label><select name="bank_currency_id_" class="form-select" required="1"><t t-foreach="currencies" t-as="curr"><option t-att-value="curr.id" t-esc="curr.name"/></t></select></div>
                         <div class="mb-3 col-md-6"><label class="form-label">Account Holder</label><input type="text" name="bank_account_holder_" class="form-control" t-att-value="employee.name"/></div>
                         <div class="mb-3 col-md-6"><label class="form-label">Account Type *</label><select name="bank_account_type_" class="form-select" required="1">
@@ -549,8 +585,16 @@
                         <div class="mb-3 col-md-6"><label class="form-label">School/University *</label><input type="text" name="edu_school_" class="form-control" required="1"/></div>
                         <div class="mb-3 col-md-6"><label class="form-label">Level of Education *</label><select name="edu_level_" class="form-select" required="1"><option value="">...</option><option value="high_school">High School</option><option value="diploma">Diploma</option><option value="bachelor">Bachelor's Degree</option><option value="master">Master's Degree</option><option value="phd">PhD</option><option value="other">Other</option></select></div>
                         <div class="mb-3 col-md-6"><label class="form-label">Field of Study *</label><input type="text" name="edu_field_" class="form-control" required="1"/></div>
-                        <div class="mb-3 col-md-4"><label class="form-label">Start Date *</label><input type="date" name="edu_start_date_" class="form-control" required="1"/></div>
-                        <div class="mb-3 col-md-4"><label class="form-label">Graduation Date *</label><input type="date" name="edu_end_date_" class="form-control" required="1"/></div>
+                        <!-- <div class="mb-3 col-md-4"><label class="form-label">Start Date *</label><input type="date" name="edu_start_date_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Graduation Date *</label><input type="date" name="edu_end_date_" class="form-control" required="1"/></div> -->
+                        <div class="mb-3 col-md-4">
+                            <label class="form-label">Start Date (DD/MM/YYYY) *</label>
+                            <input type="text" name="edu_start_date_" class="form-control s_website_form_datetime" placeholder="DD/MM/YYYY" required="1"/>
+                        </div>
+                        <div class="mb-3 col-md-4">
+                            <label class="form-label">Graduation Date (DD/MM/YYYY) *</label>
+                            <input type="text" name="edu_end_date_" class="form-control s_website_form_datetime" placeholder="DD/MM/YYYY" required="1"/>
+                        </div>
                         <div class="mb-3 col-md-4"><label class="form-label">CGPA *</label><input type="number" step="0.01" name="edu_cgpa_" class="form-control" required="1"/></div>
                         <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG) *</label><input type="file" name="edu_certificate_" class="form-control" accept=".pdf,.png,.jpg,.jpeg" required="1"/></div>
                     </div>
@@ -569,7 +613,7 @@
                 </div>
             </div>
 
-            <!-- JAVASCRIPT: DRAFT PERSISTENCE & DYNAMIC ROWS & VALIDATION -->
+            <!-- JAVASCRIPT: DRAFT PERSISTENCE, DYNAMIC DATE PICKER & DYNAMIC ROWS & VALIDATION -->
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     // 1. Initial Counters from Server
@@ -778,6 +822,29 @@
                                 }
                             });
                         });
+                    }
+                });
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Function to initialize datepickers on all fields with our specific class
+                    function initDatePickers() {
+                        $(".s_website_form_datetime").datepicker({
+                            format: "dd/mm/yyyy",
+                            calendarWeeks: true,
+                            autoclose: true,
+                            todayHighlight: true,
+                            orientation: "bottom auto"
+                        });
+                    }
+
+                    // Initialize on load
+                    initDatePickers();
+
+                    // Re-initialize when dynamic rows (Education/Bank) are added
+                    const originalAddEdu = window.addEducationRow;
+                    window.addEducationRow = function(isUserAction) {
+                        originalAddEdu(isUserAction);
+                        initDatePickers(); // Re-apply picker to new fields
                     }
                 });
             </script>

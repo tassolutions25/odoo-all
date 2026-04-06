@@ -3,6 +3,7 @@ from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal
 from odoo.addons.web.controllers.home import Home
 from odoo.exceptions import ValidationError
+from datetime import datetime
 import base64
 import logging
 import re
@@ -25,6 +26,16 @@ class AhaduLoginRedirect(Home):
 
 
 class AhaduSelfServicePortal(CustomerPortal):
+
+    def _parse_portal_date(self, date_str):
+        """Helper to convert DD/MM/YYYY string to Date object"""
+        if not date_str:
+            return None
+        try:
+            # Parse the specific format requested
+            return datetime.strptime(date_str, "%d/%m/%Y").date()
+        except (ValueError, TypeError):
+            raise ValidationError(_("Invalid date format. Please use DD/MM/YYYY."))
 
     def _get_country_list(self):
         return request.env["res.country"].search([])
@@ -314,13 +325,13 @@ class AhaduSelfServicePortal(CustomerPortal):
                 # Personal Info
                 "salutation": kw.get("salutation"),
                 "gender_updated": kw.get("gender"),
-                "birthday": kw.get("birthday") or None,
+                "birthday": self._parse_portal_date(kw.get("birthday")),
                 "birth_place": kw.get("birth_place"),
                 "nationality_id": safe_int(kw.get("nationality_id")),
                 "country_id": safe_int(kw.get("country_id")),
                 "subcity": kw.get("subcity"),
                 "marital": kw.get("marital"),
-                "wedding_date": kw.get("wedding_date") or None,
+                "wedding_date": self._parse_portal_date(kw.get("wedding_date")) or None,
                 "language_ids": [
                     (
                         6,
@@ -360,8 +371,14 @@ class AhaduSelfServicePortal(CustomerPortal):
                 "passport_name": kw.get("passport_name"),
                 "passport_id": kw.get("passport_number"),
                 "passport_issue_place": kw.get("passport_issue_place"),
-                "passport_issue_date": kw.get("passport_issue_date") or None,
-                "passport_expiry_date": kw.get("passport_expiry_date") or None,
+                "passport_issue_date": self._parse_portal_date(
+                    kw.get("passport_issue_date")
+                )
+                or None,
+                "passport_expiry_date": self._parse_portal_date(
+                    kw.get("passport_expiry_date")
+                )
+                or None,
                 "encr_required": kw.get("encr_required"),
                 # Cost-Sharing
                 "cost_sharing_institution": kw.get("cost_sharing_institution"),
@@ -458,8 +475,14 @@ class AhaduSelfServicePortal(CustomerPortal):
                         "certificate_level": kw.get(f"edu_level_{idx}"),
                         "field_of_study": kw.get(f"edu_field_{idx}"),
                         "cgpa": float(kw.get(f"edu_cgpa_{idx}") or 0.0),
-                        "start_date": kw.get(f"edu_start_date_{idx}") or None,
-                        "end_date": kw.get(f"edu_end_date_{idx}") or None,
+                        # "start_date": kw.get(f"edu_start_date_{idx}") or None,
+                        # "end_date": kw.get(f"edu_end_date_{idx}") or None,
+                        "start_date": self._parse_portal_date(
+                            kw.get(f"edu_start_date_{idx}")
+                        ),
+                        "end_date": self._parse_portal_date(
+                            kw.get(f"edu_end_date_{idx}")
+                        ),
                     }
 
                     # File handling

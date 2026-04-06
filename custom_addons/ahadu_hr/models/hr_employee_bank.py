@@ -1,6 +1,5 @@
-# models/hr_employee_bank.py
-
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 
 class HrEmployeeBankAccount(models.Model):
@@ -12,9 +11,9 @@ class HrEmployeeBankAccount(models.Model):
     )
 
     balance = fields.Monetary(
-        string="Balance", 
+        string="Balance",
         currency_field="currency_id",
-        help="Current balance for Cash Indemnity accounts."
+        help="Current balance for Cash Indemnity accounts.",
     )
 
     bank_id = fields.Many2one(
@@ -56,6 +55,24 @@ class HrEmployeeBankAccount(models.Model):
         string="Account Type",
         required=True,
     )
+
+    @api.constrains("account_number")
+    def _check_account_number_length(self):
+        for rec in self:
+            if rec.account_number and (
+                not rec.account_number.isdigit() or len(rec.account_number) != 13
+            ):
+                raise ValidationError(
+                    _("Bank Account Number must be exactly 13 digits.")
+                )
+
+    @api.model
+    def default_get(self, fields):
+        res = super(HrEmployeeBankAccount, self).default_get(fields)
+        bank = self.env["res.bank"].search([("name", "ilike", "Ahadu")], limit=1)
+        if bank:
+            res["bank_id"] = bank.id
+        return res
 
     # Prevent duplicate account numbers
     _sql_constraints = [

@@ -202,13 +202,16 @@ class HrEmployee(models.Model):
         help="The Cost Center to which this employee's costs are allocated.",
     )
     tin_number = fields.Char(string="TIN Number", size=10, required=True)
-    kebele_id = fields.Char(string="Kebele ID", size=20)
+    kebele_id = fields.Char(string="Kebele ID Number", size=20)
     mother_name = fields.Char(string="Mother's Full Name")
     spouse_name = fields.Char(string="Spouse's Full Name")
     number_of_children = fields.Integer(string="Number of Children")
     children_names = fields.Text(
         string="Names of Children", help="List the names of the children, one per line."
     )
+
+    resume_attachment = fields.Binary(string="CV/Resume File", attachment=True)
+    resume_attachment_filename = fields.Char(string="CV/Resume Filename")
 
     education_ids = fields.One2many(
         "hr.employee.education", "employee_id", string="Education History"
