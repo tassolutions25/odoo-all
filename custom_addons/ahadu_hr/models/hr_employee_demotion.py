@@ -34,6 +34,12 @@ class HrEmployeeDemotion(models.Model):
         string="Current Cost Center",
         compute="_compute_current_fields",
     )
+    current_parent_id = fields.Many2one(
+        "hr.employee",
+        string="Current Manager",
+        related="employee_id.parent_id",
+        readonly=True,
+    )
     current_transport_allowance_liters = fields.Float(
         string="Current Transport Allowance (Liters)",
         compute="_compute_current_fields",
@@ -69,6 +75,7 @@ class HrEmployeeDemotion(models.Model):
     new_department_id = fields.Many2one("hr.department", string="New Department")
     new_division_id = fields.Many2one("hr.division", string="New Division")
     new_cost_center_id = fields.Many2one("hr.cost.center", string="New Cost Center")
+    new_parent_id = fields.Many2one("hr.employee", string="New Manager")
     new_transport_allowance_liters = fields.Float(
         string="New Transport Allowance (Liters)", tracking=True
     )
@@ -124,6 +131,7 @@ class HrEmployeeDemotion(models.Model):
                 rec.current_grade_id = employee.grade_id.id
                 rec.current_branch_id = employee.branch_id.id
                 rec.current_cost_center_id = employee.cost_center_id.id
+                rec.current_parent_id = employee.parent_id.id
                 rec.current_transport_allowance_liters = (
                     employee.transport_allowance_liters
                 )
@@ -261,5 +269,7 @@ class HrEmployeeDemotion(models.Model):
             employee_vals["branch_id"] = self.new_branch_id.id
         if self.new_cost_center_id:
             employee_vals["cost_center_id"] = self.new_cost_center_id.id
+        if self.new_parent_id:
+            self.employee_id.sudo().write({"parent_id": self.new_parent_id.id})
 
         self.employee_id.write(employee_vals)

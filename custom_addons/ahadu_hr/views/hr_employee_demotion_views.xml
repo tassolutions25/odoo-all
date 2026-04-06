@@ -38,6 +38,7 @@
                                 <field name="current_division_id"/>
                                 <field name="current_branch_id"/>
                                 <field name="current_cost_center_id"/>
+                                <field name="current_parent_id"/>
                                 <field name="currency_id" invisible="1"/>
                             </group>
                         </div>
@@ -49,6 +50,7 @@
                                 <field name="new_division_id"/>
                                 <field name="new_branch_id"/>
                                 <field name="new_cost_center_id"/>
+                                <field name="new_parent_id" placeholder="Select new manager if changing"/>
                             </group>
                         </div>
                     </div>

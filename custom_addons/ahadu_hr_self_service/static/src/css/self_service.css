@@ -1,5 +1,7 @@
 .dashboard-card {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   border: 1px solid #dee2e6;
   border-radius: 0.5rem;
 }
@@ -36,4 +38,19 @@
 }
 .o_onboarding_form .nav-link {
   font-size: 0.9rem;
+}
+.s_website_form_datetime {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23860037' class='bi bi-calendar-event' viewBox='0 0 16 16'%3E%3Cpath d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z'/%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+
+/* Ensure the calendar popup is always on top */
+.datepicker {
+  z-index: 9999 !important;
+  padding: 10px !important;
+  border: 1px solid #dee2e6 !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  background: white !important;
 }

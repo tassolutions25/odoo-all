@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
 
@@ -36,12 +36,18 @@ class HrEmployeeOnboardingBankAccount(models.Model):
     @api.constrains("account_number")
     def _check_account_number_length(self):
         for rec in self:
-            if rec.account_number and (
-                not rec.account_number.isdigit() or len(rec.account_number) != 13
-            ):
-                raise ValidationError(
-                    _("Bank Account Number must be exactly 13 digits.")
-                )
+            if rec.account_number:
+                if not rec.account_number.isdigit():
+                    raise ValidationError(
+                        _("Bank Account Number must contain only digits.")
+                    )
+                if len(rec.account_number) != 13:
+                    raise ValidationError(
+                        _(
+                            "Bank Account Number for %s must be exactly 13 digits. You provided %s digits."
+                        )
+                        % (rec.bank_id.name, len(rec.account_number))
+                    )
 
     @api.model
     def default_get(self, fields):

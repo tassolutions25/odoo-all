@@ -7,6 +7,7 @@
     "website": "",
     "depends": [
         "ahadu_hr",
+        "ahadu_recruitment",
         "website",
         "portal",
         "hr_holidays",

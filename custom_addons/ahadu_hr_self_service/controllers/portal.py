@@ -65,6 +65,8 @@ class AhaduSelfServicePortal(CustomerPortal):
     def self_service_dashboard(self, **kw):
         employee = request.env.user.employee_id
         is_onboarded = False
+        has_jd = False
+
         if employee:
             approved_request_count = request.env["hr.employee.onboarding"].search_count(
                 [("employee_id", "=", employee.id), ("state", "=", "approved")]
@@ -72,10 +74,32 @@ class AhaduSelfServicePortal(CustomerPortal):
             if approved_request_count > 0:
                 is_onboarded = True
 
+            if employee.job_id and employee.job_id.job_description:
+                has_jd = True
+
         values = {
             "is_onboarded": is_onboarded,
+            "has_jd": has_jd,
         }
         return request.render("ahadu_hr_self_service.self_service_dashboard", values)
+
+    @http.route(["/my/download/jd"], type="http", auth="user", website=True)
+    def download_job_description(self, **kw):
+        """Route to download the Job Description binary file"""
+        employee = request.env.user.employee_id
+        if not employee or not employee.job_id or not employee.job_id.job_description:
+            return request.not_found()
+
+        job = employee.job_id
+        file_content = base64.b64decode(job.job_description)
+        filename = job.job_description_filename or "Job_Description.pdf"
+
+        # Determine content type (default to octet-stream for download)
+        headers = [
+            ("Content-Type", "application/octet-stream"),
+            ("Content-Disposition", http.content_disposition(filename)),
+        ]
+        return request.make_response(file_content, headers)
 
     @http.route(["/my/onboarding"], type="http", auth="user", website=True)
     def employee_onboarding_form(self, **kw):

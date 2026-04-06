@@ -27,7 +27,18 @@
                                 </div>
                             </a>
                         </div>
+                        
                         <t t-if="is_onboarded">
+                            <t t-if="has_jd">
+                                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                    <a href="/my/download/jd" target="_blank" class="card h-100 text-center text-decoration-none dashboard-card">
+                                        <div class="card-body d-flex flex-column justify-content-center">
+                                            <i class="fa fa-file-pdf dashboard-card-icon mb-3" style="color: #dc3545;"/>
+                                            <h5 class="card-title">Job Description</h5>
+                                        </div>
+                                    </a>
+                                </div>
+                            </t>
                             <div class="col-6 col-md-4 col-lg-3 mb-4">
                                 <a href="/my/document_request" class="card h-100 text-center text-decoration-none dashboard-card">
                                     <div class="card-body d-flex flex-column justify-content-center">
@@ -36,6 +47,7 @@
                                     </div>
                                 </a>
                             </div>
+                            
                             <div class="col-6 col-md-4 col-lg-3 mb-4">
                                 <a href="/my/resignation" class="card h-100 text-center text-decoration-none dashboard-card">
                                     <div class="card-body d-flex flex-column justify-content-center">
@@ -439,8 +451,22 @@
                                                     <div class="mb-3 col-md-6"><label class="form-label">School/University *</label><input type="text" t-attf-name="edu_school_#{edu_index}" class="form-control" t-att-value="edu.school" required="1"/></div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Level of Education *</label><select t-attf-name="edu_level_#{edu_index}" class="form-select" required="1"><option value="high_school" t-att-selected="edu.certificate_level == 'high_school'">High School</option><option value="diploma" t-att-selected="edu.certificate_level == 'diploma'">Diploma</option><option value="bachelor" t-att-selected="edu.certificate_level == 'bachelor'">Bachelor's Degree</option><option value="master" t-att-selected="edu.certificate_level == 'master'">Master's Degree</option><option value="phd" t-att-selected="edu.certificate_level == 'phd'">PhD</option><option value="other" t-att-selected="edu.certificate_level == 'other'">Other</option></select></div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Field of Study *</label><input type="text" t-attf-name="edu_field_#{edu_index}" class="form-control" t-att-value="edu.field_of_study" required="1"/></div>
-                                                    <div class="mb-3 col-md-4"><label class="form-label">Start Date *</label><input type="date" t-attf-name="edu_start_date_#{edu_index}" class="form-control" t-att-value="edu.start_date" required="1"/></div>
-                                                    <div class="mb-3 col-md-4"><label class="form-label">Graduation Date *</label><input type="date" t-attf-name="edu_end_date_#{edu_index}" class="form-control" t-att-value="edu.end_date" required="1"/></div>
+                                                    <!-- <div class="mb-3 col-md-4"><label class="form-label">Start Date *</label><input type="date" t-attf-name="edu_start_date_#{edu_index}" class="form-control" t-att-value="edu.start_date" required="1"/></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Graduation Date *</label><input type="date" t-attf-name="edu_end_date_#{edu_index}" class="form-control" t-att-value="edu.end_date" required="1"/></div> -->
+                                                    <div class="mb-3 col-md-4">
+                                                        <label class="form-label">Start Date (DD/MM/YYYY) *</label>
+                                                        <input type="text" t-attf-name="edu_start_date_#{edu_index}" 
+                                                            class="form-control s_website_form_datetime" 
+                                                            placeholder="DD/MM/YYYY"
+                                                            t-att-value="edu.start_date.strftime('%d/%m/%Y') if edu.start_date else ''" required="1"/>
+                                                    </div>
+                                                    <div class="mb-3 col-md-4">
+                                                        <label class="form-label">Graduation Date (DD/MM/YYYY) *</label>
+                                                        <input type="text" t-attf-name="edu_end_date_#{edu_index}" 
+                                                            class="form-control s_website_form_datetime" 
+                                                            placeholder="DD/MM/YYYY"
+                                                            t-att-value="edu.end_date.strftime('%d/%m/%Y') if edu.end_date else ''" required="1"/>
+                                                    </div>
                                                     <div class="mb-3 col-md-4"><label class="form-label">CGPA *</label><input type="number" step="0.01" t-attf-name="edu_cgpa_#{edu_index}" class="form-control" t-att-value="edu.cgpa" required="1"/></div>
                                                     <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG)</label><input type="file" t-attf-name="edu_certificate_#{edu_index}" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/><t t-if="edu.certification_filename"><small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="edu.certification_filename"/></small><input type="hidden" t-attf-name="edu_keep_file_#{edu_index}" value="1"/></t></div>
                                                 </div>
@@ -478,21 +504,40 @@
                                 <!-- Cost-Sharing Tab -->
                                 <div class="tab-pane fade" id="cost-sharing" role="tabpanel">
                                     <div class="row">
-                                        <div class="mb-3 col-md-4"><label class="form-label">Institution</label><select name="cost_sharing_institution" class="form-select"><option value="">...</option><option value="government" t-att-selected="employee.cost_sharing_institution == 'government'">Government</option><option value="private" t-att-selected="employee.cost_sharing_institution == 'private'">Private</option></select></div>
-                                        <div class="mb-3 col-md-4"><label class="form-label">Status</label><select name="cost_sharing_status" class="form-select"><option value="">...</option><option value="paid" t-att-selected="employee.cost_sharing_status == 'paid'">Paid</option><option value="unpaid" t-att-selected="employee.cost_sharing_status == 'unpaid'">Unpaid</option><option value="na" t-att-selected="employee.cost_sharing_status == 'na'">N/A</option></select></div>
-                                        
                                         <div class="mb-3 col-md-4">
-                                            <label class="form-label">Commitment Amount</label>
-                                            <div class="input-group">
-                                                <input type="number" step="0.01" name="cost_sharing_amount" class="form-control" t-att-value="employee.cost_sharing_amount"/>
-                                                <span class="input-group-text"><t t-esc="employee.currency_id.symbol if employee.currency_id else 'ETB'"/></span>
-                                            </div>
+                                            <label class="form-label">Institution</label>
+                                            <select name="cost_sharing_institution" class="form-select" 
+                                                    onchange="this.value == 'government' ? document.getElementById('cost_sharing_details_div').classList.remove('d-none') : document.getElementById('cost_sharing_details_div').classList.add('d-none');">
+                                                <option value="">...</option>
+                                                <option value="government" t-att-selected="employee.cost_sharing_institution == 'government'">Government</option>
+                                                <option value="private" t-att-selected="employee.cost_sharing_institution == 'private'">Private</option>
+                                            </select>
                                         </div>
+                                        
+                                        <div id="cost_sharing_details_div" t-attf-class="row col-md-8 #{'d-none' if employee.cost_sharing_institution != 'government' else ''}">
+                                            <div class="mb-3 col-md-6">
+                                                <label class="form-label">Status</label>
+                                                <select name="cost_sharing_status" class="form-select">
+                                                    <option value="">...</option>
+                                                    <option value="paid" t-att-selected="employee.cost_sharing_status == 'paid'">Paid</option>
+                                                    <option value="unpaid" t-att-selected="employee.cost_sharing_status == 'unpaid'">Unpaid</option>
+                                                    <option value="na" t-att-selected="employee.cost_sharing_status == 'na'">N/A</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mb-3 col-md-6">
+                                                <label class="form-label">Commitment Amount</label>
+                                                <div class="input-group">
+                                                    <input type="number" step="0.01" name="cost_sharing_amount" class="form-control" t-att-value="employee.cost_sharing_amount"/>
+                                                    <span class="input-group-text"><t t-esc="employee.currency_id.symbol if employee.currency_id else 'ETB'"/></span>
+                                                </div>
+                                            </div>
 
-                                        <div class="mb-3 col-md-4"><label class="form-label">Upload Document</label><input type="file" name="cost_sharing_document" class="form-control"/></div>
+                                            <div class="mb-3 col-md-12"><label class="form-label">Upload Document</label><input type="file" name="cost_sharing_document" class="form-control"/></div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> 
 
                             <div class="row mt-4">
                                 <div class="col-12">
@@ -826,25 +871,33 @@
                 });
 
                 document.addEventListener('DOMContentLoaded', function () {
-                    // Function to initialize datepickers on all fields with our specific class
-                    function initDatePickers() {
+                   function initDatePickers() {
+                        // Target the class used in our inputs
                         $(".s_website_form_datetime").datepicker({
                             format: "dd/mm/yyyy",
-                            calendarWeeks: true,
                             autoclose: true,
                             todayHighlight: true,
-                            orientation: "bottom auto"
+                            orientation: "bottom auto",
+                            container: 'body'
                         });
                     }
 
-                    // Initialize on load
+                    // Initialize on page load
                     initDatePickers();
 
-                    // Re-initialize when dynamic rows (Education/Bank) are added
+                    // Fix: Re-initialize when dynamic rows are added
                     const originalAddEdu = window.addEducationRow;
                     window.addEducationRow = function(isUserAction) {
                         originalAddEdu(isUserAction);
-                        initDatePickers(); // Re-apply picker to new fields
+                        // Small timeout to ensure DOM is updated before applying picker
+                        setTimeout(initDatePickers, 50); 
+                    }
+                    
+                    // Similarly for others if they have dates
+                    const originalAddBank = window.addBankRow;
+                    window.addBankRow = function(isUserAction) {
+                        originalAddBank(isUserAction);
+                        setTimeout(initDatePickers, 50);
                     }
                 });
             </script>
