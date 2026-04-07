@@ -28,6 +28,7 @@
     "assets": {
         "web.assets_frontend": [
             "ahadu_hr_self_service/static/src/css/self_service.css",
+            "ahadu_hr_self_service/static/src/js/ahadu_datepicker.js",
         ],
     },
     "installable": True,

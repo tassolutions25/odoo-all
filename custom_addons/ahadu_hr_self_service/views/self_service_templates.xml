@@ -222,14 +222,15 @@
                             <div class="row">
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Resignation Date *</label>
-                                    <input type="date" name="resignation_date" class="form-control" 
-                                        required="1" t-att-value="datetime.date.today().strftime('%Y-%m-%d')"/>
+                                    <input type="text" name="resignation_date" class="form-control ahadu-datepicker" 
+                                        required="1" placeholder="DD/MM/YYYY"
+                                        t-att-value="datetime.date.today().strftime('%d/%m/%Y')"/>
                                     <div class="form-text">The date you are officially notifying the bank.</div>
                                 </div>
 
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Proposed Last Working Day *</label>
-                                    <input type="date" name="last_day" class="form-control" required="1"/>
+                                    <input type="text" name="last_day" class="form-control ahadu-datepicker" required="1" placeholder="DD/MM/YYYY"/>
                                     <div class="form-text">The final day you intend to work.</div>
                                 </div>
                             </div>               
@@ -317,7 +318,7 @@
                                         <div class="mb-3 col-md-4">
                                             <label for="birthday" class="form-label">Birthdate (DD/MM/YYYY) *</label>
                                             <input type="text" name="birthday" 
-                                                class="form-control s_website_form_datetime" 
+                                                class="form-control ahadu-datepicker" 
                                                 placeholder="DD/MM/YYYY" 
                                                 required="1"
                                                 t-att-value="employee.birthday.strftime('%d/%m/%Y') if employee.birthday else ''"/>
@@ -331,7 +332,7 @@
                                         <div class="mb-3 col-md-4">
                                             <label for="wedding_date" class="form-label">Wedding Date (DD/MM/YYYY)</label>
                                             <input type="text" name="wedding_date" 
-                                                class="form-control s_website_form_datetime" 
+                                                class="form-control ahadu-datepicker" 
                                                 placeholder="DD/MM/YYYY"
                                                 t-att-value="employee.wedding_date.strftime('%d/%m/%Y') if employee.wedding_date else ''"/>
                                         </div>
@@ -456,14 +457,14 @@
                                                     <div class="mb-3 col-md-4">
                                                         <label class="form-label">Start Date (DD/MM/YYYY) *</label>
                                                         <input type="text" t-attf-name="edu_start_date_#{edu_index}" 
-                                                            class="form-control s_website_form_datetime" 
+                                                            class="form-control ahadu-datepicker" 
                                                             placeholder="DD/MM/YYYY"
                                                             t-att-value="edu.start_date.strftime('%d/%m/%Y') if edu.start_date else ''" required="1"/>
                                                     </div>
                                                     <div class="mb-3 col-md-4">
                                                         <label class="form-label">Graduation Date (DD/MM/YYYY) *</label>
                                                         <input type="text" t-attf-name="edu_end_date_#{edu_index}" 
-                                                            class="form-control s_website_form_datetime" 
+                                                            class="form-control ahadu-datepicker" 
                                                             placeholder="DD/MM/YYYY"
                                                             t-att-value="edu.end_date.strftime('%d/%m/%Y') if edu.end_date else ''" required="1"/>
                                                     </div>
@@ -488,12 +489,12 @@
                                         <!-- <div class="mb-3 col-md-4"><label class="form-label">Expiry Date</label><input type="date" name="passport_expiry_date" class="form-control" t-att-value="employee.passport_expiry_date"/></div> -->
                                         <div class="mb-3 col-md-4">
                                             <label class="form-label">Issued Date (DD/MM/YYYY)</label>
-                                            <input type="text" name="passport_issue_date" class="form-control s_website_form_datetime" 
+                                            <input type="text" name="passport_issue_date" class="form-control ahadu-datepicker" 
                                                 placeholder="DD/MM/YYYY" t-att-value="employee.passport_issue_date.strftime('%d/%m/%Y') if employee.passport_issue_date else ''"/>
                                         </div>
                                         <div class="mb-3 col-md-4">
                                             <label class="form-label">Expiry Date (DD/MM/YYYY)</label>
-                                            <input type="text" name="passport_expiry_date" class="form-control s_website_form_datetime" 
+                                            <input type="text" name="passport_expiry_date" class="form-control ahadu-datepicker" 
                                                 placeholder="DD/MM/YYYY" t-att-value="employee.passport_expiry_date.strftime('%d/%m/%Y') if employee.passport_expiry_date else ''"/>
                                         </div>
                                         <div class="mb-3 col-md-6"><label class="form-label">ENCR Required?</label><select name="encr_required" class="form-select"><option value="">...</option><option value="yes" t-att-selected="employee.encr_required == 'yes'">Yes</option><option value="no" t-att-selected="employee.encr_required == 'no'">No</option></select></div>
@@ -634,11 +635,11 @@
                         <div class="mb-3 col-md-4"><label class="form-label">Graduation Date *</label><input type="date" name="edu_end_date_" class="form-control" required="1"/></div> -->
                         <div class="mb-3 col-md-4">
                             <label class="form-label">Start Date (DD/MM/YYYY) *</label>
-                            <input type="text" name="edu_start_date_" class="form-control s_website_form_datetime" placeholder="DD/MM/YYYY" required="1"/>
+                            <input type="text" name="edu_start_date_" class="form-control ahadu-datepicker" placeholder="DD/MM/YYYY" required="1"/>
                         </div>
                         <div class="mb-3 col-md-4">
                             <label class="form-label">Graduation Date (DD/MM/YYYY) *</label>
-                            <input type="text" name="edu_end_date_" class="form-control s_website_form_datetime" placeholder="DD/MM/YYYY" required="1"/>
+                            <input type="text" name="edu_end_date_" class="form-control ahadu-datepicker" placeholder="DD/MM/YYYY" required="1"/>
                         </div>
                         <div class="mb-3 col-md-4"><label class="form-label">CGPA *</label><input type="number" step="0.01" name="edu_cgpa_" class="form-control" required="1"/></div>
                         <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG) *</label><input type="file" name="edu_certificate_" class="form-control" accept=".pdf,.png,.jpg,.jpeg" required="1"/></div>
@@ -871,33 +872,11 @@
                 });
 
                 document.addEventListener('DOMContentLoaded', function () {
-                   function initDatePickers() {
-                        // Target the class used in our inputs
-                        $(".s_website_form_datetime").datepicker({
-                            format: "dd/mm/yyyy",
-                            autoclose: true,
-                            todayHighlight: true,
-                            orientation: "bottom auto",
-                            container: 'body'
-                        });
-                    }
-
-                    // Initialize on page load
-                    initDatePickers();
-
-                    // Fix: Re-initialize when dynamic rows are added
+                    // Re-init Ahadu datepicker for dynamically added education rows
                     const originalAddEdu = window.addEducationRow;
                     window.addEducationRow = function(isUserAction) {
                         originalAddEdu(isUserAction);
-                        // Small timeout to ensure DOM is updated before applying picker
-                        setTimeout(initDatePickers, 50); 
-                    }
-                    
-                    // Similarly for others if they have dates
-                    const originalAddBank = window.addBankRow;
-                    window.addBankRow = function(isUserAction) {
-                        originalAddBank(isUserAction);
-                        setTimeout(initDatePickers, 50);
+                        setTimeout(function() { if (window.ahaduDatepickerInit) { window.ahaduDatepickerInit(document); } }, 50);
                     }
                 });
             </script>
@@ -959,13 +938,14 @@
                         <div class="row">
                             <div class="mb-3 col-md-6">
                                 <label class="form-label">Resignation Date *</label>
-                                <input type="date" name="resignation_date" class="form-control" 
-                                    required="1" t-att-value="datetime.date.today().strftime('%Y-%m-%d')"/>
+                                <input type="text" name="resignation_date" class="form-control ahadu-datepicker" 
+                                    required="1" placeholder="DD/MM/YYYY"
+                                    t-att-value="datetime.date.today().strftime('%d/%m/%Y')"/>
                             </div>
 
                             <div class="mb-3 col-md-6">
                                 <label class="form-label">Proposed Last Working Day *</label>
-                                <input type="date" name="last_day" class="form-control" required="1"/>
+                                <input type="text" name="last_day" class="form-control ahadu-datepicker" required="1" placeholder="DD/MM/YYYY"/>
                             </div>
                         </div>
 

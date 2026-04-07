@@ -232,11 +232,20 @@ class AhaduSelfServicePortal(CustomerPortal):
                 },
             )
 
+        try:
+            parsed_res_date = self._parse_portal_date(res_date)
+            parsed_last_day = self._parse_portal_date(last_day)
+        except Exception:
+            return request.render(
+                "ahadu_hr_self_service.submission_error",
+                {"error_message": "Invalid date format. Please use DD/MM/YYYY."},
+            )
+
         vals = {
             "employee_id": employee.id,
             "reason": kw.get("reason"),
-            "proposed_last_working_day": last_day,
-            "resignation_date": res_date,
+            "proposed_last_working_day": parsed_last_day,
+            "resignation_date": parsed_res_date,
         }
         res_req = request.env["hr.employee.resignation"].sudo().create(vals)
         res_req.sudo().action_submit()
