@@ -88,6 +88,14 @@ class HrEmployee(models.Model):
         ],
         string="Blood Group",
     )
+    marital = fields.Selection([
+        ('single', 'Single'),
+        ('married', 'Married'),
+        ('widower', 'Widower'),
+        ('divorced', 'Divorced')
+    ], string='Marital Status', tracking=True)
+    
+    wedding_date = fields.Date(string="Wedding Date", tracking=True)
     physical_challenge = fields.Selection(
         [("yes", "Yes"), ("no", "No")], string="Physical Challenge"
     )

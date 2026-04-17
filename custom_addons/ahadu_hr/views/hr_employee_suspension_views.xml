@@ -54,6 +54,9 @@
                     <notebook>
                         <page string="Reason">
                             <field name="reason" placeholder="Provide detailed reason..." readonly="state != 'draft'"/>
+                            <group string="Attachments">
+                        <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                    </group>
                         </page>
                         <page string="Approval History">
                             <field name="approval_line_ids" readonly="1">

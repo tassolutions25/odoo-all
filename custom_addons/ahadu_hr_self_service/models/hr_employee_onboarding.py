@@ -56,7 +56,6 @@ class HrEmployeeOnboarding(models.Model):
         [
             ("single", "Single"),
             ("married", "Married"),
-            ("cohabitant", "Legal Cohabitant"),
             ("widower", "Widower"),
             ("divorced", "Divorced"),
         ],

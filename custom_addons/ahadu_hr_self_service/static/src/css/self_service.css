@@ -4,7 +4,9 @@
 
 /* --- Dashboard Cards --- */
 .dashboard-card {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   border: 1px solid #dee2e6;
   border-radius: 0.5rem;
 }
@@ -53,7 +55,6 @@
   font-size: 0.9rem;
 }
 
-/* --- Date Input Icon --- */
 .ahadu-datepicker {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23860037' viewBox='0 0 16 16'%3E%3Cpath d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z'/%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -62,10 +63,6 @@
   cursor: pointer;
 }
 
-/* ============================================================
-   AHADU DATE PICKER POPUP
-   Styled to match Odoo 18 / Ahadu brand (maroon header)
-   ============================================================ */
 .ahadu-dp-popup {
   background: #fff;
   border: 1px solid #dee2e6;
@@ -78,7 +75,6 @@
   user-select: none;
 }
 
-/* Header row (month/year + arrows) */
 .ahadu-dp-header {
   display: flex;
   align-items: center;
@@ -92,6 +88,39 @@
   font-weight: 600;
   font-size: 1rem;
   letter-spacing: 0.02em;
+}
+
+.ahadu-dp-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 8px;
+  width: 100%;
+}
+
+.ahadu-dp-grid-cell {
+  width: 33.33%;
+  text-align: center;
+  padding: 12px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+
+.ahadu-dp-grid-cell:hover {
+  background-color: #f3d6e0;
+  color: #860037;
+}
+
+.ahadu-dp-grid-cell.ahadu-dp-selected {
+  background-color: #860037;
+  color: #fff;
+  font-weight: 700;
+}
+
+.ahadu-dp-grid-cell.text-muted {
+  color: #aaa;
 }
 
 .ahadu-dp-prev,
@@ -139,7 +168,9 @@
   padding: 5px 2px;
   cursor: pointer;
   border-radius: 50%;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
   width: 36px;
   height: 36px;
 }
@@ -167,7 +198,7 @@
 }
 
 .ahadu-dp-today::after {
-  content: '';
+  content: "";
   display: block;
   width: 4px;
   height: 4px;
@@ -188,4 +219,14 @@
 
 .ahadu-dp-selected::after {
   background: #fff !important;
+}
+
+.o_onboarding_form .form-control,
+.o_onboarding_form .form-select {
+  border: 1px solid #ced4da !important;
+  background-color: #fff !important;
+}
+
+.o_onboarding_form textarea.form-control {
+  height: auto !important;
 }

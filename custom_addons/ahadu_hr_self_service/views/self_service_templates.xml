@@ -336,10 +336,38 @@
                                                 placeholder="DD/MM/YYYY"
                                                 t-att-value="employee.wedding_date.strftime('%d/%m/%Y') if employee.wedding_date else ''"/>
                                         </div>
-                                        <div class="mb-3 col-md-4"><label for="language_ids" class="form-label">Languages Spoken *</label><select name="language_ids" class="form-select" multiple="multiple" required="1"><t t-foreach="languages" t-as="language_rec"><option t-att-value="language_rec.id" t-att-selected="language_rec in employee.language_ids or language_rec.code == 'en_US'" t-esc="language_rec.name"/></t></select></div>
+                                        <!-- <div class="mb-3 col-md-4"><label for="language_ids" class="form-label">Languages Spoken *</label><select name="language_ids" class="form-select" multiple="multiple" required="1"><t t-foreach="languages" t-as="language_rec"><option t-att-value="language_rec.id" t-att-selected="language_rec in employee.language_ids or language_rec.code == 'en_US'" t-esc="language_rec.name"/></t></select></div> -->
+                                        <div class="mb-3 col-md-4">
+                                            <label for="language_ids" class="form-label">Languages Spoken *</label>
+                                            <select name="language_ids" id="language_ids" class="form-select select2-multiple" multiple="multiple" required="1">
+                                                <t t-foreach="languages" t-as="language_rec">
+                                                    <option t-att-value="language_rec.id" 
+                                                            t-att-selected="language_rec.id in employee.language_ids.ids" 
+                                                            t-esc="language_rec.name"/>
+                                                </t>
+                                            </select>
+                                        </div>
                                         <div class="mb-3 col-md-4"><label for="blood_group" class="form-label">Blood Group</label><select name="blood_group" class="form-select"><option value="">...</option><option value="A+" t-att-selected="employee.blood_group == 'A+'">A+</option><option value="A-" t-att-selected="employee.blood_group == 'A-'">A-</option><option value="B+" t-att-selected="employee.blood_group == 'B+'">B+</option><option value="B-" t-att-selected="employee.blood_group == 'B-'">B-</option><option value="O+" t-att-selected="employee.blood_group == 'O+'">O+</option><option value="O-" t-att-selected="employee.blood_group == 'O-'">O-</option><option value="AB+" t-att-selected="employee.blood_group == 'AB+'">AB+</option><option value="AB-" t-att-selected="employee.blood_group == 'AB-'">AB-</option></select></div>
-                                        <div class="mb-3 col-md-4"><label for="physical_challenge" class="form-label">Physical Challenge</label><select name="physical_challenge" class="form-select" onchange="this.value == 'yes' ? document.getElementById('physical_challenge_detail_div').classList.remove('d-none') : document.getElementById('physical_challenge_detail_div').classList.add('d-none');"><option value="">...</option><option value="yes" t-att-selected="employee.physical_challenge == 'yes'">Yes</option><option value="no" t-att-selected="employee.physical_challenge == 'no'">No</option></select></div>
-                                        <div t-attf-class="mb-3 col-md-8 {{'d-none' if employee.physical_challenge != 'yes' else ''}}" id="physical_challenge_detail_div"><label for="physical_challenge_detail" class="form-label">Describe Challenge</label><textarea name="physical_challenge_detail" class="form-control" rows="2" t-esc="employee.physical_challenge_detail"/></div>
+                                        <!-- <div class="mb-3 col-md-4"><label for="physical_challenge" class="form-label">Physical Challenge</label><select name="physical_challenge" class="form-select" onchange="this.value == 'yes' ? document.getElementById('physical_challenge_detail_div').classList.remove('d-none') : document.getElementById('physical_challenge_detail_div').classList.add('d-none');"><option value="">...</option><option value="yes" t-att-selected="employee.physical_challenge == 'yes'">Yes</option><option value="no" t-att-selected="employee.physical_challenge == 'no'">No</option></select></div>
+                                        <div t-attf-class="mb-3 col-md-8 {{'d-none' if employee.physical_challenge != 'yes' else ''}}" id="physical_challenge_detail_div"><label for="physical_challenge_detail" class="form-label">Describe Challenge</label><textarea name="physical_challenge_detail" class="form-control" rows="2" t-esc="employee.physical_challenge_detail"/></div> -->
+                                        <div class="mb-3 col-md-4">
+                                            <label for="physical_challenge" class="form-label">Physical Challenge</label>
+                                            <select name="physical_challenge" id="physical_challenge_select" class="form-select">
+                                                <option value="">...</option>
+                                                <option value="yes" t-att-selected="employee.physical_challenge == 'yes'">Yes</option>
+                                                <option value="no" t-att-selected="employee.physical_challenge == 'no'">No</option>
+                                            </select>
+                                        </div>
+
+                                        <div t-attf-class="mb-3 col-md-8 {{'d-none' if employee.physical_challenge != 'yes' else ''}}" id="physical_challenge_detail_div">
+                                            <label for="physical_challenge_detail" class="form-label">Describe Challenge</label>
+                                            <textarea name="physical_challenge_detail" 
+                                                    id="physical_challenge_detail" 
+                                                    class="form-control" 
+                                                    style="min-height: 80px;" 
+                                                    rows="3" 
+                                                    placeholder="Please provide details about the physical challenge..."><t t-esc="employee.physical_challenge_detail or ''"/></textarea>
+                                        </div>
                                         <div class="mb-3 col-md-6"><label for="national_id_number" class="form-label">National ID Number</label><input type="text" name="national_id_number" class="form-control" t-att-value="employee.identification_id"/></div>
                                         <div class="mb-3 col-md-6"><label for="national_id_file" class="form-label">National ID (Photo)</label><input type="file" name="national_id_file" class="form-control"/></div>
                                         <div class="mb-3 col-md-6"><label for="kebele_id_number" class="form-label">Kebele ID Number</label><input type="text" name="kebele_id_number" class="form-control" t-att-value="employee.kebele_id"/></div>
@@ -670,6 +698,45 @@
                     const prefix = 'ahadu_onboarding_';
                     const form = document.getElementById('ahadu_onboarding_form');
 
+                    if ($.fn.select2) {
+                        $('.select2-multiple').select2({
+                            placeholder: "Select languages...",
+                            allowClear: true,
+                            closeOnSelect: false,
+                            theme: 'bootstrap-5' // If your theme supports it
+                        });
+                    }
+
+                    // Fix for data restoration: LocalStorage doesn't handle multi-select arrays well by default
+                    const langSelect = document.getElementById('language_ids');
+                    if (langSelect) {
+                        const savedLangs = localStorage.getItem('ahadu_onboarding_language_ids');
+                        if (savedLangs) {
+                            $(langSelect).val(savedLangs.split(',')).trigger('change');
+                        }
+                        
+                        $(langSelect).on('change', function() {
+                            localStorage.setItem('ahadu_onboarding_language_ids', $(this).val());
+                        });
+                    }
+                });
+
+                    function updateVisibilityToggles() {
+                        const pcSelect = document.getElementById('physical_challenge_select');
+                        const pcDiv = document.getElementById('physical_challenge_detail_div');
+                        
+                        if (pcSelect &amp;&amp; pcDiv) {
+                            if (pcSelect.value === 'yes') {
+                                pcDiv.classList.remove('d-none');
+                                // Ensure standard bootstrap classes are reapplied
+                                pcDiv.classList.add('d-block'); 
+                            } else {
+                                pcDiv.classList.add('d-none');
+                                pcDiv.classList.remove('d-block');
+                            }
+                        }
+                    }
+
                     // --- Dynamic Add Functions ---
                     window.addBankRow = function(isUserAction = true) {
                         const template = document.getElementById('bank_row_template').innerHTML;
@@ -731,6 +798,13 @@
                                 restoredCount++;
                             }
                         });
+
+                        updateVisibilityToggles();
+
+                        const pcSelect = document.getElementById('physical_challenge_select');
+                        if (pcSelect) {
+                            pcSelect.addEventListener('change', updateVisibilityToggles);
+                        }
 
                         // Show alert if data was restored
                         if (restoredCount > 0) {
@@ -869,6 +943,7 @@
                             });
                         });
                     }
+
                 });
 
                 document.addEventListener('DOMContentLoaded', function () {

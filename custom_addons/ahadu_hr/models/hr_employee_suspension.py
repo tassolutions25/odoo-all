@@ -51,6 +51,7 @@ class HrEmployeeSuspension(models.Model):
             self.employee_id = employee.id
 
     reason = fields.Text(string="Reason for Suspension", required=True)
+    attachment_ids = fields.Many2many("ir.attachment", string="Attachments")
     start_date = fields.Date(
         string="Suspension Start Date", default=fields.Date.today, required=True
     )

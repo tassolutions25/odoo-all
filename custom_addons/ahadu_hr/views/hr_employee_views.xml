@@ -115,9 +115,9 @@
                 <xpath expr="//field[@name='gender']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
-                <xpath expr="//field[@name='work_email']" position="after">
+                <!-- <xpath expr="//field[@name='work_email']" position="after">
                     <field name="private_email" widget="email" />
-                </xpath>
+                </xpath> -->
 
 
                 <xpath expr="//group[.//field[@name='job_id']]" position="after">
@@ -202,6 +202,9 @@
             <attribute name="invisible">1</attribute>
         </xpath>
         <xpath expr="//field[@name='private_street2']" position="attributes">
+            <attribute name="invisible">1</attribute>
+        </xpath>
+        <xpath expr="//field[@name='bank_account_id']" position="attributes">
             <attribute name="invisible">1</attribute>
         </xpath>
 
@@ -445,11 +448,17 @@
                     <field name="kebele_id_filename" invisible="1" />
                 </xpath>
 
-                <xpath expr="//field[@name='house_number']" position="after">
-                    <group string="Permanent Address">
+                <xpath expr="//field[@name='private_phone']" position="replace">
+                    <!-- <group string="Permanent Address"> -->
                         <field name="permanent_address_city" />
                         <field name="permanent_address_country_id" />
-                    </group>
+                    <!-- </group>                     -->
+                </xpath>
+                <xpath expr="//field[@name='blood_group']" position="after">
+                    <!-- <group string="Marital Status"> -->
+                        <field name="marital"/>
+                        <field name="wedding_date" invisible="marital != 'married'"/>
+                    <!-- </group> -->
                 </xpath>
 
                 <xpath expr="//group[@name='emergency']" position="replace">

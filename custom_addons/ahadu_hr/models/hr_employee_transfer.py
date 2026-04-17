@@ -13,77 +13,50 @@ class HrEmployeeTransfer(models.Model):
         string="Transfer Date", required=True, default=fields.Date.today
     )
 
+    # SNAPSHOT FIELDS (History) - Changed Manager fields to hr.employee
     current_branch_id = fields.Many2one(
-        "hr.branch",
-        string="Current Branch",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.branch", string="Previous Branch", readonly=True
     )
     current_department_id = fields.Many2one(
-        "hr.department",
-        string="Current Department",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.department", string="Previous Department", readonly=True
     )
     current_division_id = fields.Many2one(
-        "hr.division",
-        string="Current Division",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.division", string="Previous Division", readonly=True
     )
     current_cost_center_id = fields.Many2one(
-        "hr.cost.center",
-        string="Current Cost Center",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.cost.center", string="Previous Cost Center", readonly=True
     )
     current_manager_id = fields.Many2one(
-        "res.users",
-        string="Current Manager",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.employee", string="Previous Manager", readonly=True
     )
     current_job_id = fields.Many2one(
-        "hr.job",
-        string="Current Position",
-        compute="_compute_current_fields",
-        readonly=True,
-    )
-    current_transport_allowance_liters = fields.Float(
-        string="Current Transport Allowance (Liters)",
-        compute="_compute_current_fields",
-        readonly=True,
-    )
-    current_hardship_allowance_level_id = fields.Many2one(
-        "hr.hardship.allowance.level",
-        string="Current Hardship Allowance Level",
-        compute="_compute_current_fields",
-        readonly=True,
-    )
-    current_representation_allowance = fields.Float(
-        string="Current Representation Allowance (%)",
-        compute="_compute_current_fields",
-        readonly=True,
-    )
-    current_mobile_allowance = fields.Monetary(
-        string="Current Mobile Allowance",
-        compute="_compute_current_fields",
-        currency_field="currency_id",
-        readonly=True,
-    )
-    current_housing_allowance = fields.Monetary(
-        string="Current Housing Allowance",
-        compute="_compute_current_fields",
-        currency_field="currency_id",
-        readonly=True,
+        "hr.job", string="Previous Position", readonly=True
     )
 
+    current_transport_allowance_liters = fields.Float(
+        string="Previous Transport (Liters)", readonly=True
+    )
+    current_hardship_allowance_level_id = fields.Many2one(
+        "hr.hardship.allowance.level", string="Previous Hardship Level", readonly=True
+    )
+    current_representation_allowance = fields.Float(
+        string="Previous Representation (%)", readonly=True
+    )
+    current_mobile_allowance = fields.Monetary(
+        string="Previous Mobile Allowance", currency_field="currency_id", readonly=True
+    )
+    current_housing_allowance = fields.Monetary(
+        string="Previous Housing Allowance", currency_field="currency_id", readonly=True
+    )
+
+    # NEW INFORMATION
     new_branch_id = fields.Many2one("hr.branch", string="New Branch", required=True)
     new_department_id = fields.Many2one("hr.department", string="New Department")
     new_division_id = fields.Many2one("hr.division", string="New Division")
     new_cost_center_id = fields.Many2one("hr.cost.center", string="New Cost Center")
-    new_manager_id = fields.Many2one("res.users", string="New Manager")
+    new_manager_id = fields.Many2one("hr.employee", string="New Manager")
     new_job_id = fields.Many2one("hr.job", string="New Position")
+
     new_transport_allowance_liters = fields.Float(
         string="New Transport Allowance (Liters)", tracking=True
     )
@@ -104,11 +77,7 @@ class HrEmployeeTransfer(models.Model):
 
     currency_id = fields.Many2one(related="employee_id.currency_id")
     reason = fields.Text(string="Reason for Transfer")
-    attachment_ids = fields.Many2many(
-        "ir.attachment",
-        string="Attachments",
-        help="Upload supporting documents like notices, letters, or certificates.",
-    )
+    attachment_ids = fields.Many2many("ir.attachment", string="Attachments")
     activity_id = fields.Many2one(
         "hr.employee.activity", string="Activity Record", ondelete="set null"
     )
@@ -121,46 +90,6 @@ class HrEmployeeTransfer(models.Model):
                 if rec.employee_id
                 else _("New Transfer")
             )
-
-    @api.depends("employee_id")
-    def _compute_current_fields(self):
-        for rec in self:
-            if rec.employee_id:
-                employee = rec.employee_id
-                rec.current_branch_id = employee.branch_id.id
-                rec.current_department_id = employee.department_id.id
-                rec.current_division_id = employee.division_id.id
-                rec.current_cost_center_id = (
-                    employee.cost_center_id.id
-                    if hasattr(employee, "cost_center_id")
-                    else False
-                )
-                rec.current_job_id = employee.job_id.id
-                if employee.parent_id and employee.parent_id.user_id:
-                    rec.current_manager_id = employee.parent_id.user_id.id
-                else:
-                    rec.current_manager_id = False
-                rec.current_transport_allowance_liters = (
-                    employee.transport_allowance_liters
-                )
-                rec.current_hardship_allowance_level_id = (
-                    employee.hardship_allowance_level_id
-                )
-                rec.current_representation_allowance = employee.representation_allowance
-                rec.current_mobile_allowance = employee.mobile_allowance
-                rec.current_housing_allowance = employee.housing_allowance
-            else:
-                rec.current_branch_id = False
-                rec.current_department_id = False
-                rec.current_division_id = False
-                rec.current_cost_center_id = False
-                rec.current_manager_id = False
-                rec.current_job_id = False
-                rec.current_transport_allowance_liters = 0.0
-                rec.current_hardship_allowance_level_id = False
-                rec.current_representation_allowance = 0.0
-                rec.current_mobile_allowance = 0.0
-                rec.current_housing_allowance = 0.0
 
     employee_number_search = fields.Char(
         string="Employee ID",
@@ -197,44 +126,60 @@ class HrEmployeeTransfer(models.Model):
             self.employee_id = False
 
     @api.onchange("employee_id", "employee_number_search")
-    def _onchange_employee_allowances(self):
-        for rec in self:
-            if rec.employee_id:
-                rec.new_transport_allowance_liters = (
-                    rec.employee_id.transport_allowance_liters
-                )
-                rec.new_hardship_allowance_level_id = (
-                    rec.employee_id.hardship_allowance_level_id
-                )
-                rec.new_representation_allowance = (
-                    rec.employee_id.representation_allowance
-                )
-                rec.new_mobile_allowance = rec.employee_id.mobile_allowance
-                rec.new_housing_allowance = rec.employee_id.housing_allowance
+    def _onchange_employee_id_fetch_history(self):
+        """Instantly fetch all current data into the form view for history."""
+        if self.employee_id:
+            emp = self.employee_id
+            self.current_branch_id = emp.branch_id
+            self.current_department_id = emp.department_id
+            self.current_division_id = emp.division_id
+            self.current_cost_center_id = emp.cost_center_id
+            self.current_job_id = emp.job_id
+            self.current_manager_id = emp.parent_id
+
+            # Allowances
+            self.current_housing_allowance = emp.housing_allowance
+            self.current_mobile_allowance = emp.mobile_allowance
+            self.current_transport_allowance_liters = emp.transport_allowance_liters
+            self.current_representation_allowance = emp.representation_allowance
+            self.current_hardship_allowance_level_id = emp.hardship_allowance_level_id
+
+            # Pre-fill 'New' fields with current values to make editing easier
+            if not self.new_branch_id:
+                self.new_branch_id = emp.branch_id
+            if not self.new_department_id:
+                self.new_department_id = emp.department_id
+            if not self.new_job_id:
+                self.new_job_id = emp.job_id
+
+            # Pre-fill allowances in 'New' section
+            self.new_housing_allowance = emp.housing_allowance
+            self.new_mobile_allowance = emp.mobile_allowance
+            self.new_transport_allowance_liters = emp.transport_allowance_liters
+            self.new_representation_allowance = emp.representation_allowance
+            self.new_hardship_allowance_level_id = emp.hardship_allowance_level_id
 
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get("employee_id"):
                 employee = self.env["hr.employee"].browse(vals["employee_id"])
-                if "new_transport_allowance_liters" not in vals:
-                    vals["new_transport_allowance_liters"] = (
-                        employee.transport_allowance_liters
-                    )
-                if "new_hardship_allowance_level_id" not in vals:
-                    vals["new_hardship_allowance_level_id"] = (
-                        employee.hardship_allowance_level_id.id
-                        if employee.hardship_allowance_level_id
-                        else False
-                    )
-                if "new_representation_allowance" not in vals:
-                    vals["new_representation_allowance"] = (
-                        employee.representation_allowance
-                    )
-                if "new_mobile_allowance" not in vals:
-                    vals["new_mobile_allowance"] = employee.mobile_allowance
-                if "new_housing_allowance" not in vals:
-                    vals["new_housing_allowance"] = employee.housing_allowance
+                # SNAPSHOT: Permanently save current state into history fields
+                vals.update(
+                    {
+                        "current_branch_id": employee.branch_id.id,
+                        "current_department_id": employee.department_id.id,
+                        "current_division_id": employee.division_id.id,
+                        "current_cost_center_id": employee.cost_center_id.id,
+                        "current_job_id": employee.job_id.id,
+                        "current_manager_id": employee.parent_id.id,
+                        "current_housing_allowance": employee.housing_allowance,
+                        "current_mobile_allowance": employee.mobile_allowance,
+                        "current_transport_allowance_liters": employee.transport_allowance_liters,
+                        "current_representation_allowance": employee.representation_allowance,
+                        "current_hardship_allowance_level_id": employee.hardship_allowance_level_id.id,
+                    }
+                )
 
         transfers = super().create(vals_list)
         for transfer in transfers:
@@ -243,7 +188,7 @@ class HrEmployeeTransfer(models.Model):
                 "activity_type": "transfer",
                 "date": transfer.transfer_date,
                 "transfer_id": transfer.id,
-                "description": f"Transfer from {transfer.employee_id.branch_id.name or 'N/A'} to {transfer.new_branch_id.name}",
+                "description": f"Transfer from {transfer.current_branch_id.name or 'N/A'} to {transfer.new_branch_id.name}",
             }
             activity = self.env["hr.employee.activity"].create(activity_vals)
             transfer.activity_id = activity.id
@@ -267,9 +212,10 @@ class HrEmployeeTransfer(models.Model):
             update_vals["department_id"] = self.new_department_id.id
         if self.new_division_id:
             update_vals["division_id"] = self.new_division_id.id
-        if self.new_cost_center_id and hasattr(self.employee_id, "cost_center_id"):
+        if self.new_cost_center_id:
             update_vals["cost_center_id"] = self.new_cost_center_id.id
         if self.new_manager_id:
+            # FIX: Points to parent_id (hr.employee), not user_id
             update_vals["parent_id"] = self.new_manager_id.id
         if self.new_job_id:
             update_vals["job_id"] = self.new_job_id.id

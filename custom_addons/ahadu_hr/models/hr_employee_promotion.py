@@ -14,78 +14,46 @@ class HrEmployeePromotion(models.Model):
         string="Promotion Date", required=True, default=fields.Date.today
     )
 
-    # Current Fields
+    # CHANGED: These are now regular stored fields to preserve history snapshot
     current_job_id = fields.Many2one(
-        "hr.job",
-        string="Current Position",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.job", string="Previous Position", readonly=True
     )
     current_grade_id = fields.Many2one(
-        "hr.grade",
-        string="Current Grade",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.grade", string="Previous Grade", readonly=True
     )
     current_department_id = fields.Many2one(
-        "hr.department",
-        string="Current Department",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.department", string="Previous Department", readonly=True
     )
     current_division_id = fields.Many2one(
-        "hr.division",
-        string="Current Division",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.division", string="Previous Division", readonly=True
     )
     current_branch_id = fields.Many2one(
-        "hr.branch", string="Current Branch", compute="_compute_current_fields"
+        "hr.branch", string="Previous Branch", readonly=True
     )
     current_cost_center_id = fields.Many2one(
-        "hr.cost.center",
-        string="Current Cost Center",
-        compute="_compute_current_fields",
+        "hr.cost.center", string="Previous Cost Center", readonly=True
     )
     current_parent_id = fields.Many2one(
-        "hr.employee",
-        string="Current Manager",
-        related="employee_id.parent_id",
-        readonly=True,
+        "hr.employee", string="Previous Manager", readonly=True
     )
-    current_salary = fields.Float(
-        string="Current Salary", compute="_compute_current_fields"
-    )
+    current_salary = fields.Float(string="Previous Salary", readonly=True)
+
     current_transport_allowance_liters = fields.Float(
-        string="Current Transport Allowance (Liters)",
-        compute="_compute_current_fields",
-        readonly=True,
+        string="Previous Transport (Liters)", readonly=True
     )
     current_hardship_allowance_level_id = fields.Many2one(
-        "hr.hardship.allowance.level",
-        string="Current Hardship Allowance Level",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.hardship.allowance.level", string="Previous Hardship Level", readonly=True
     )
     current_representation_allowance = fields.Float(
-        string="Current Representation Allowance (%)",
-        compute="_compute_current_fields",
-        readonly=True,
+        string="Previous Representation (%)", readonly=True
     )
     current_mobile_allowance = fields.Monetary(
-        string="Current Mobile Allowance",
-        compute="_compute_current_fields",
-        currency_field="currency_id",
-        readonly=True,
+        string="Previous Mobile Allowance", currency_field="currency_id", readonly=True
     )
     current_housing_allowance = fields.Monetary(
-        string="Current Housing Allowance",
-        compute="_compute_current_fields",
-        currency_field="currency_id",
-        readonly=True,
+        string="Previous Housing Allowance", currency_field="currency_id", readonly=True
     )
 
-    # New Fields
     new_job_id = fields.Many2one("hr.job", string="New Position", required=True)
     new_grade_id = fields.Many2one("hr.grade", string="New Grade", required=True)
     new_department_id = fields.Many2one("hr.department", string="New Department")
@@ -93,8 +61,8 @@ class HrEmployeePromotion(models.Model):
     new_branch_id = fields.Many2one("hr.branch", string="New Branch")
     new_cost_center_id = fields.Many2one("hr.cost.center", string="New Cost Center")
     new_parent_id = fields.Many2one("hr.employee", string="New Manager")
-
     new_salary = fields.Float(string="New Salary", tracking=True)
+
     new_transport_allowance_liters = fields.Float(
         string="New Transport Allowance (Liters)", tracking=True
     )
@@ -115,14 +83,33 @@ class HrEmployeePromotion(models.Model):
 
     currency_id = fields.Many2one(related="employee_id.currency_id")
     reason = fields.Text(string="Reason for Promotion")
-    attachment_ids = fields.Many2many(
-        "ir.attachment",
-        string="Attachments",
-        help="Upload supporting documents like notices, letters, or certificates.",
-    )
+    attachment_ids = fields.Many2many("ir.attachment", string="Attachments")
     activity_id = fields.Many2one(
         "hr.employee.activity", string="Activity Record", ondelete="set null"
     )
+
+    @api.onchange("employee_id")
+    def _onchange_employee_id_fetch_history(self):
+        if self.employee_id:
+            emp = self.employee_id
+            # Structure
+            self.current_job_id = emp.job_id
+            self.current_grade_id = emp.grade_id
+            self.current_department_id = emp.department_id
+            self.current_division_id = (
+                emp.division_id if hasattr(emp, "division_id") else False
+            )
+            self.current_branch_id = emp.branch_id
+            self.current_cost_center_id = emp.cost_center_id
+            self.current_parent_id = emp.parent_id
+            self.current_salary = emp.emp_wage
+
+            # SNAPSHOT ALLOWANCES
+            self.current_housing_allowance = emp.housing_allowance
+            self.current_mobile_allowance = emp.mobile_allowance
+            self.current_transport_allowance_liters = emp.transport_allowance_liters
+            self.current_representation_allowance = emp.representation_allowance
+            self.current_hardship_allowance_level_id = emp.hardship_allowance_level_id
 
     @api.depends("employee_id")
     def _compute_name(self):
@@ -132,46 +119,6 @@ class HrEmployeePromotion(models.Model):
                 if rec.employee_id
                 else _("New Promotion")
             )
-
-    @api.depends("employee_id")
-    def _compute_current_fields(self):
-        for rec in self:
-            if rec.employee_id:
-                employee = rec.employee_id
-                rec.current_job_id = employee.job_id.id
-                rec.current_department_id = employee.department_id.id
-                rec.current_grade_id = employee.grade_id.id
-                rec.current_division_id = (
-                    employee.division_id.id
-                    if hasattr(employee, "division_id")
-                    else False
-                )
-                rec.current_branch_id = employee.branch_id.id
-                rec.current_cost_center_id = employee.cost_center_id.id
-                rec.current_parent_id = employee.parent_id.id
-                rec.current_salary = employee.emp_wage
-                rec.current_transport_allowance_liters = (
-                    employee.transport_allowance_liters
-                )
-                rec.current_hardship_allowance_level_id = (
-                    employee.hardship_allowance_level_id
-                )
-                rec.current_representation_allowance = employee.representation_allowance
-                rec.current_mobile_allowance = employee.mobile_allowance
-                rec.current_housing_allowance = employee.housing_allowance
-            else:
-                rec.current_job_id = False
-                rec.current_department_id = False
-                rec.current_grade_id = False
-                rec.current_division_id = False
-                rec.current_branch_id = False
-                rec.current_cost_center_id = False
-                rec.current_salary = 0.0
-                rec.current_transport_allowance_liters = 0.0
-                rec.current_hardship_allowance_level_id = False
-                rec.current_representation_allowance = 0.0
-                rec.current_mobile_allowance = 0.0
-                rec.current_housing_allowance = 0.0
 
     employee_number_search = fields.Char(
         string="Employee ID",
@@ -184,7 +131,6 @@ class HrEmployeePromotion(models.Model):
     @api.depends("employee_id")
     def _compute_employee_number_search(self):
         for rec in self:
-            # Name -> ID: Update search field when employee is selected
             if rec.employee_id:
                 rec.employee_number_search = rec.employee_id.employee_id
 
@@ -193,14 +139,7 @@ class HrEmployeePromotion(models.Model):
             if rec.employee_number_search:
                 rec._sync_employee_data()
 
-    @api.onchange("employee_number_search")
-    def _onchange_employee_number_search(self):
-        # ID -> Name: Instant UI sync when typing ID
-        if self.employee_number_search:
-            self._sync_employee_data()
-
     def _sync_employee_data(self):
-        """Helper to find employee by ID string"""
         employee = (
             self.env["hr.employee"]
             .sudo()
@@ -213,27 +152,35 @@ class HrEmployeePromotion(models.Model):
         if employee:
             self.employee_id = employee.id
 
-    # @api.onchange("employee_id", "employee_number_search")
-    # def _onchange_employee_allowances(self):
-    #     for rec in self:
-    #         if rec.employee_id:
-    #             rec.new_transport_allowance_liters = (
-    #                 rec.employee_id.transport_allowance_liters
-    #             )
-    #             rec.new_hardship_allowance_level_id = (
-    #                 rec.employee_id.hardship_allowance_level_id
-    #             )
-    #             rec.new_representation_allowance = (
-    #                 rec.employee_id.representation_allowance
-    #             )
-    #             rec.new_mobile_allowance = rec.employee_id.mobile_allowance
-    #             rec.new_housing_allowance = rec.employee_id.housing_allowance
-
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get("employee_id"):
                 employee = self.env["hr.employee"].browse(vals["employee_id"])
+
+                # SNAPSHOT: Capture current state into history fields
+                vals.update(
+                    {
+                        "current_job_id": employee.job_id.id,
+                        "current_department_id": employee.department_id.id,
+                        "current_grade_id": employee.grade_id.id,
+                        "current_branch_id": employee.branch_id.id,
+                        "current_division_id": (
+                            employee.division_id.id
+                            if hasattr(employee, "division_id")
+                            else False
+                        ),
+                        "current_cost_center_id": employee.cost_center_id.id,
+                        "current_parent_id": employee.parent_id.id,
+                        "current_salary": employee.emp_wage,
+                        "current_transport_allowance_liters": employee.transport_allowance_liters,
+                        "current_hardship_allowance_level_id": employee.hardship_allowance_level_id.id,
+                        "current_representation_allowance": employee.representation_allowance,
+                        "current_mobile_allowance": employee.mobile_allowance,
+                        "current_housing_allowance": employee.housing_allowance,
+                    }
+                )
+
                 if "new_transport_allowance_liters" not in vals:
                     vals["new_transport_allowance_liters"] = (
                         employee.transport_allowance_liters
@@ -283,7 +230,7 @@ class HrEmployeePromotion(models.Model):
         }
         if self.new_department_id:
             update_vals["department_id"] = self.new_department_id.id
-        if self.new_division_id and hasattr(self.employee_id, "division_id"):
+        if self.new_division_id:
             update_vals["division_id"] = self.new_division_id.id
         if self.new_branch_id:
             update_vals["branch_id"] = self.new_branch_id.id

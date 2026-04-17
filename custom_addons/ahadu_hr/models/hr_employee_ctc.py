@@ -14,56 +14,33 @@ class HrEmployeeCtc(models.Model):
         string="Effective Date", required=True, default=fields.Date.today
     )
 
+    # CHANGED: These are now regular stored fields to preserve history
     current_job_id = fields.Many2one(
-        "hr.job",
-        string="Current Position",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.job", string="Previous Position", readonly=True
     )
     current_grade_id = fields.Many2one(
-        "hr.grade",
-        string="Current Grade",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.grade", string="Previous Grade", readonly=True
     )
     current_department_id = fields.Many2one(
-        "hr.department",
-        string="Current Department",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.department", string="Previous Department", readonly=True
     )
     current_wage = fields.Monetary(
-        string="Current Base Salary",
-        compute="_compute_current_fields",
-        currency_field="currency_id",
+        string="Previous Base Salary", currency_field="currency_id", readonly=True
     )
     current_transport_allowance_liters = fields.Float(
-        string="Current Transport Allowance (Liters)",
-        compute="_compute_current_fields",
-        readonly=True,
+        string="Previous Transport (Liters)", readonly=True
     )
     current_hardship_allowance_level_id = fields.Many2one(
-        "hr.hardship.allowance.level",
-        string="Current Hardship Allowance Level",
-        compute="_compute_current_fields",
-        readonly=True,
+        "hr.hardship.allowance.level", string="Previous Hardship Level", readonly=True
     )
     current_representation_allowance = fields.Float(
-        string="Current Representation Allowance (%)",
-        compute="_compute_current_fields",
-        readonly=True,
+        string="Previous Representation (%)", readonly=True
     )
     current_mobile_allowance = fields.Monetary(
-        string="Current Mobile Allowance",
-        compute="_compute_current_fields",
-        currency_field="currency_id",
-        readonly=True,
+        string="Previous Mobile Allowance", currency_field="currency_id", readonly=True
     )
     current_housing_allowance = fields.Monetary(
-        string="Current Housing Allowance",
-        compute="_compute_current_fields",
-        currency_field="currency_id",
-        readonly=True,
+        string="Previous Housing Allowance", currency_field="currency_id", readonly=True
     )
 
     new_wage = fields.Monetary(
@@ -104,6 +81,22 @@ class HrEmployeeCtc(models.Model):
     activity_id = fields.Many2one(
         "hr.employee.activity", string="Activity Record", ondelete="set null"
     )
+    
+    @api.onchange("employee_id")
+    def _onchange_employee_id_fetch_history(self):
+        if self.employee_id:
+            emp = self.employee_id
+            self.current_wage = emp.emp_wage
+            self.current_job_id = emp.job_id
+            self.current_grade_id = emp.grade_id
+            
+            # SNAPSHOT ALLOWANCES
+            self.current_housing_allowance = emp.housing_allowance
+            self.current_mobile_allowance = emp.mobile_allowance
+            self.current_transport_allowance_liters = emp.transport_allowance_liters
+            self.current_representation_allowance = emp.representation_allowance
+            self.current_hardship_allowance_level_id = emp.hardship_allowance_level_id
+
 
     @api.depends("employee_id")
     def _compute_name(self):
@@ -113,37 +106,6 @@ class HrEmployeeCtc(models.Model):
                 if rec.employee_id
                 else _("New CTC Adjustment")
             )
-
-    @api.depends("employee_id")
-    def _compute_current_fields(self):
-        for rec in self:
-            if rec.employee_id:
-                employee = rec.employee_id
-                rec.current_job_id = employee.job_id.id
-                rec.current_department_id = employee.department_id.id
-                rec.current_grade_id = (
-                    employee.grade_id.id if employee.grade_id else False
-                )
-                rec.current_wage = employee.emp_wage
-                rec.current_transport_allowance_liters = (
-                    employee.transport_allowance_liters
-                )
-                rec.current_hardship_allowance_level_id = (
-                    employee.hardship_allowance_level_id
-                )
-                rec.current_representation_allowance = employee.representation_allowance
-                rec.current_mobile_allowance = employee.mobile_allowance
-                rec.current_housing_allowance = employee.housing_allowance
-            else:
-                rec.current_job_id = False
-                rec.current_department_id = False
-                rec.current_grade_id = False
-                rec.current_wage = 0.0
-                rec.current_transport_allowance_liters = 0.0
-                rec.current_hardship_allowance_level_id = False
-                rec.current_representation_allowance = 0.0
-                rec.current_mobile_allowance = 0.0
-                rec.current_housing_allowance = 0.0
 
     employee_number_search = fields.Char(
         string="Employee ID",
@@ -205,6 +167,22 @@ class HrEmployeeCtc(models.Model):
         for vals in vals_list:
             if vals.get("employee_id"):
                 employee = self.env["hr.employee"].browse(vals["employee_id"])
+
+                # SNAPSHOT: Capture current information before any changes
+                vals.update(
+                    {
+                        "current_job_id": employee.job_id.id,
+                        "current_department_id": employee.department_id.id,
+                        "current_grade_id": employee.grade_id.id,
+                        "current_wage": employee.emp_wage,
+                        "current_transport_allowance_liters": employee.transport_allowance_liters,
+                        "current_hardship_allowance_level_id": employee.hardship_allowance_level_id.id,
+                        "current_representation_allowance": employee.representation_allowance,
+                        "current_mobile_allowance": employee.mobile_allowance,
+                        "current_housing_allowance": employee.housing_allowance,
+                    }
+                )
+
                 if "new_transport_allowance_liters" not in vals:
                     vals["new_transport_allowance_liters"] = (
                         employee.transport_allowance_liters

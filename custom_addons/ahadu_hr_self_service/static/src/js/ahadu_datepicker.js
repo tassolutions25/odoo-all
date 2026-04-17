@@ -1,8 +1,3 @@
-/**
- * Ahadu Date Picker
- * A lightweight, standalone date picker for the Ahadu HR Self-Service portal.
- * Displays in DD/MM/YYYY format and renders a calendar matching Ahadu's brand (dark maroon).
- */
 (function () {
     'use strict';
 
@@ -68,54 +63,113 @@
 
     function renderPicker(picker) {
         var dp = picker._dp;
+        if (!dp.mode) dp.mode = 'days';
         var year = dp.viewYear;
         var month = dp.viewMonth;
         var today = new Date();
         var selected = dp.selectedDate;
 
-        var bodyRows = buildCalendar(picker, year, month, selected, today);
-
-        var dayHeaders = DAYS_SHORT.map(function (d) {
-            return '<th>' + d + '</th>';
-        }).join('');
-
-        dp.popup.innerHTML =
+        var headerHtml =
             '<div class="ahadu-dp-header">' +
             '<button type="button" class="ahadu-dp-prev">&#8249;</button>' +
-            '<span class="ahadu-dp-title">' + MONTHS[month] + ' ' + year + '</span>' +
-            '<button type="button" class="ahadu-dp-next">&#8250;</button>' +
-            '</div>' +
-            '<table class="ahadu-dp-table">' +
-            '<thead><tr><th class="ahadu-dp-week-hd">#</th>' + dayHeaders + '</tr></thead>' +
-            '<tbody>' + bodyRows + '</tbody>' +
-            '</table>';
+            '<span class="ahadu-dp-title" style="cursor:pointer; border-radius:4px; padding:2px 8px;">';
+
+        var bodyHtml = '';
+
+        if (dp.mode === 'days') {
+            headerHtml += MONTHS[month] + ' ' + year + '</span>' +
+                '<button type="button" class="ahadu-dp-next">&#8250;</button></div>';
+
+            var dayHeaders = DAYS_SHORT.map(function (d) { return '<th>' + d + '</th>'; }).join('');
+            bodyHtml = '<table class="ahadu-dp-table">' +
+                '<thead><tr><th class="ahadu-dp-week-hd">#</th>' + dayHeaders + '</tr></thead>' +
+                '<tbody>' + buildCalendar(picker, year, month, selected, today) + '</tbody>' +
+                '</table>';
+
+        } else if (dp.mode === 'months') {
+            headerHtml += year + '</span>' +
+                '<button type="button" class="ahadu-dp-next">&#8250;</button></div>';
+
+            bodyHtml = '<div class="ahadu-dp-grid">';
+            for (var i = 0; i < 12; i++) {
+                var cls = 'ahadu-dp-grid-cell' + (i === dp.viewMonth ? ' ahadu-dp-selected' : '');
+                bodyHtml += '<div class="' + cls + '" data-type="month" data-val="' + i + '">' + MONTHS[i].substring(0, 3) + '</div>';
+            }
+            bodyHtml += '</div>';
+
+        } else if (dp.mode === 'years') {
+            var startYear = Math.floor(year / 10) * 10;
+            headerHtml += startYear + ' - ' + (startYear + 9) + '</span>' +
+                '<button type="button" class="ahadu-dp-next">&#8250;</button></div>';
+
+            bodyHtml = '<div class="ahadu-dp-grid">';
+            for (var i = startYear - 1; i <= startYear + 10; i++) {
+                var cls = 'ahadu-dp-grid-cell' + (i === dp.viewYear ? ' ahadu-dp-selected' : '') + (i < startYear || i > startYear + 9 ? ' text-muted' : '');
+                bodyHtml += '<div class="' + cls + '" data-type="year" data-val="' + i + '">' + i + '</div>';
+            }
+            bodyHtml += '</div>';
+        }
+
+        dp.popup.innerHTML = headerHtml + bodyHtml;
+
+        // Bind title click
+        var titleElem = dp.popup.querySelector('.ahadu-dp-title');
+        if (titleElem) {
+            titleElem.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                if (dp.mode === 'days') dp.mode = 'months';
+                else if (dp.mode === 'months') dp.mode = 'years';
+                else dp.mode = 'days';
+                renderPicker(picker);
+            });
+            titleElem.addEventListener('mouseover', function () { this.style.backgroundColor = 'rgba(255,255,255,0.2)'; });
+            titleElem.addEventListener('mouseout', function () { this.style.backgroundColor = 'transparent'; });
+        }
 
         // Bind navigation
         dp.popup.querySelector('.ahadu-dp-prev').addEventListener('mousedown', function (e) {
             e.preventDefault();
-            dp.viewMonth--;
-            if (dp.viewMonth < 0) { dp.viewMonth = 11; dp.viewYear--; }
+            if (dp.mode === 'days') { dp.viewMonth--; if (dp.viewMonth < 0) { dp.viewMonth = 11; dp.viewYear--; } }
+            else if (dp.mode === 'months') { dp.viewYear--; }
+            else if (dp.mode === 'years') { dp.viewYear -= 10; }
             renderPicker(picker);
         });
         dp.popup.querySelector('.ahadu-dp-next').addEventListener('mousedown', function (e) {
             e.preventDefault();
-            dp.viewMonth++;
-            if (dp.viewMonth > 11) { dp.viewMonth = 0; dp.viewYear++; }
+            if (dp.mode === 'days') { dp.viewMonth++; if (dp.viewMonth > 11) { dp.viewMonth = 0; dp.viewYear++; } }
+            else if (dp.mode === 'months') { dp.viewYear++; }
+            else if (dp.mode === 'years') { dp.viewYear += 10; }
             renderPicker(picker);
         });
 
-        // Bind day clicks
-        dp.popup.querySelectorAll('.ahadu-dp-day').forEach(function (cell) {
-            cell.addEventListener('mousedown', function (e) {
-                e.preventDefault();
-                var d = parseInt(this.getAttribute('data-day'), 10);
-                dp.selectedDate = new Date(year, month, d);
-                picker.value = formatDate(dp.selectedDate);
-                // Trigger change event for draft saving
-                picker.dispatchEvent(new Event('change', { bubbles: true }));
-                hidePicker(picker);
+        if (dp.mode === 'days') {
+            dp.popup.querySelectorAll('.ahadu-dp-day').forEach(function (cell) {
+                cell.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    var d = parseInt(this.getAttribute('data-day'), 10);
+                    dp.selectedDate = new Date(year, month, d);
+                    picker.value = formatDate(dp.selectedDate);
+                    picker.dispatchEvent(new Event('change', { bubbles: true }));
+                    hidePicker(picker);
+                });
             });
-        });
+        } else {
+            dp.popup.querySelectorAll('.ahadu-dp-grid-cell').forEach(function (cell) {
+                cell.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    var type = this.getAttribute('data-type');
+                    var val = parseInt(this.getAttribute('data-val'), 10);
+                    if (type === 'month') {
+                        dp.viewMonth = val;
+                        dp.mode = 'days';
+                    } else if (type === 'year') {
+                        dp.viewYear = val;
+                        dp.mode = 'months';
+                    }
+                    renderPicker(picker);
+                });
+            });
+        }
     }
 
     function showPicker(input) {
