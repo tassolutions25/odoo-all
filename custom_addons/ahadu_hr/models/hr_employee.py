@@ -88,13 +88,17 @@ class HrEmployee(models.Model):
         ],
         string="Blood Group",
     )
-    marital = fields.Selection([
-        ('single', 'Single'),
-        ('married', 'Married'),
-        ('widower', 'Widower'),
-        ('divorced', 'Divorced')
-    ], string='Marital Status', tracking=True)
-    
+    marital = fields.Selection(
+        [
+            ("single", "Single"),
+            ("married", "Married"),
+            ("widower", "Widower"),
+            ("divorced", "Divorced"),
+        ],
+        string="Marital Status",
+        tracking=True,
+    )
+
     wedding_date = fields.Date(string="Wedding Date", tracking=True)
     physical_challenge = fields.Selection(
         [("yes", "Yes"), ("no", "No")], string="Physical Challenge"
@@ -235,6 +239,11 @@ class HrEmployee(models.Model):
     )
     representation_allowance = fields.Float(
         string="Representation Allowance (%)", tracking=True
+    )
+    representation_allowance_fixed = fields.Monetary(
+        string="Representation Allowance (Fixed)",
+        tracking=True,
+        help="Fixed amount for representation allowance.",
     )
     hardship_allowance_level_id = fields.Many2one(
         "hr.hardship.allowance.level", string="Hardship Allowance Level", tracking=True
