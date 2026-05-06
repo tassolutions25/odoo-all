@@ -70,5 +70,6 @@
         name="Taxation Rules &amp; Fuel Rate"
         parent="menu_ahadu_reports_root"
         action="action_ahadu_payroll_tax_config"
+        groups="ahadu_payroll.group_branch_payroll,ahadu_payroll.group_branch_payroll_manager,ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
         sequence="110" />
 </odoo>

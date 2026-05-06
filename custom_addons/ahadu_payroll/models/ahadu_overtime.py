@@ -6,10 +6,11 @@ import pytz
 class AhaduOvertimeRule(models.Model):
     _name = 'ahadu.overtime.rule'
     _description = 'Dynamic Overtime Rule'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'sequence, id'
 
-    name = fields.Char(string="Name", required=True)
-    sequence = fields.Integer(string="Sequence", default=10)
+    name = fields.Char(string="Name", required=True, tracking=True)
+    sequence = fields.Integer(string="Sequence", default=10, tracking=True)
     dayofweek = fields.Selection([
         ('0', 'Monday'),
         ('1', 'Tuesday'),
@@ -18,18 +19,42 @@ class AhaduOvertimeRule(models.Model):
         ('4', 'Friday'),
         ('5', 'Saturday'),
         ('6', 'Sunday'),
-    ], string="Day of Week", required=True)
+    ], string="Day of Week", required=True, tracking=True)
     
-    time_start = fields.Float(string="Start Time", required=True, help="e.g. 17.5 for 5:30 PM")
-    time_end = fields.Float(string="End Time", required=True, help="e.g. 6.0 for 6:00 AM (next day if < Start)")
+    time_start = fields.Float(string="Start Time", required=True, help="e.g. 17.5 for 5:30 PM", tracking=True)
+    time_end = fields.Float(string="End Time", required=True, help="e.g. 6.0 for 6:00 AM (next day if < Start)", tracking=True)
     
     type = fields.Selection([
         ('normal', 'Normal'),
         ('night', 'Night'),
         ('weekend', 'Weekend'),
-    ], string="Overtime Type", required=True, default='normal')
+        ('holiday', 'Holiday'),
+    ], string="Overtime Type", required=True, default='normal', tracking=True)
     
-    active = fields.Boolean(default=True)
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('approved', 'Approved'),
+    ], string="Status", default='draft', tracking=True, required=True)
+    
+    active = fields.Boolean(default=True, tracking=True)
+
+    def action_submit(self):
+        self.write({'state': 'submitted'})
+
+    def action_approve(self):
+        if not self.env.user.has_group('ahadu_payroll.group_ahadu_payroll_finance_manager'):
+            raise UserError(_("Only HR Finance Managers can approve these rules."))
+        self.write({'state': 'approved'})
+
+    def action_draft(self):
+        self.write({'state': 'draft'})
+
+    def write(self, vals):
+        for rec in self:
+            if rec.state == 'approved' and not self.env.user.has_group('ahadu_payroll.group_ahadu_payroll_finance_manager'):
+                raise UserError(_("You cannot modify an approved rule. Please contact an HR Finance Manager to reset it to draft."))
+        return super(AhaduOvertimeRule, self).write(vals)
 
 class AhaduOvertimeTracking(models.Model):
     _name = 'ahadu.overtime.tracking'
@@ -101,6 +126,8 @@ class AhaduOvertimeTracking(models.Model):
         self.write({'state': 'cancel'})
 
     def action_draft(self):
+        if any(rec.state in ('approved', 'done') for rec in self):
+            raise UserError(_("This overtime tracking is already Approved or Done. You cannot reset it to Draft."))
         self.write({'state': 'draft'})
 
 
@@ -534,6 +561,8 @@ class AhaduOvertime(models.Model):
         self.write({'state': 'done'})
     
     def action_draft(self):
+        if any(rec.state in ('approved', 'done') for rec in self):
+            raise UserError(_("This overtime calculation is already Approved or Done. You cannot reset it to Draft."))
         self.write({'state': 'draft'})
 
 

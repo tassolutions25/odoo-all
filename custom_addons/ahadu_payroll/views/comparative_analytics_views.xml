@@ -18,7 +18,10 @@
                             <field name="date_from"/>
                             <field name="date_to"/>
                             <field name="is_head_office" invisible="1"/>
-                            <field name="branch_id" options="{'no_create': True}" invisible="not is_head_office"/>
+                            <field name="branch_id" options="{'no_create': True}"/>
+                            <field name="department_id" options="{'no_create': True}"/>
+                            <field name="region_id" options="{'no_create': True}"/>
+                            <field name="pay_group_id" options="{'no_create': True}"/>
                         </group>
                     </group>
 
@@ -79,15 +82,26 @@
                             </group>
                         </group>
                     </div>
+                    <div class="o_row" invisible="not detail_ids">
+                        <group col="4">
+                            <!-- Suspensions -->
+                            <group string="Suspensions" col="1">
+                                <field name="suspensions_cur" string="Current"/>
+                                <field name="suspensions_prev" string="Previous"/>
+                                <field name="suspensions_var" string="Variance" decoration-bf="1" decoration-danger="suspensions_var &gt; 0" decoration-success="suspensions_var &lt; 0"/>
+                            </group>
+                        </group>
+                    </div>
 
                     <notebook invisible="not detail_ids">
-                        <page string="Consolidated Changes (Odoo View)">
+                        <page string="Consolidated Changes">
                             <field name="detail_ids" readonly="1">
                                 <list decoration-info="change_type in ['addition', 'acting', 'temporary']" 
                                       decoration-success="change_type == 'promotion'" 
-                                      decoration-warning="change_type in ['transfer', 'demotion']" 
+                                      decoration-warning="change_type in ['transfer', 'demotion', 'suspension']" 
                                       decoration-danger="change_type == 'termination'">
                                     <field name="employee_id"/>
+                                    <field name="to_branch_id" string="Branch"/>
                                     <field name="change_type" widget="badge"/>
                                     <field name="change_date"/>
                                     <field name="description"/>
@@ -121,5 +135,6 @@
         name="Comparative Analytics"
         parent="menu_ahadu_reports_root"
         action="action_ahadu_comparative_analytics"
+        groups="ahadu_payroll.group_branch_payroll,ahadu_payroll.group_branch_payroll_manager,ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
         sequence="120" />
 </odoo>

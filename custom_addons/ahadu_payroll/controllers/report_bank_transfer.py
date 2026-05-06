@@ -168,25 +168,59 @@ class BankTransferReport(AhaduReportCommon):
                 ('state', '=', 'approved'),
                 ('date_start', '<=', batch.date_end),
             ])
+            
+            adv_actual = sum(slip.line_ids.filtered(lambda l: l.code == 'ADV_LOAN').mapped('total'))
+            pers_actual = sum(slip.line_ids.filtered(lambda l: l.code == 'PERS_LOAN').mapped('total'))
+            other_actual = sum(slip.line_ids.filtered(lambda l: l.code == 'OTHER_LOAN').mapped('total'))
+            
+            active_loans = []
             for loan in loans:
-                # Same check as in hr_payslip.py to ensure it's still active
-                if loan.paid_installments < loan.installment_months and batch.date_end >= loan.date_start:
-                    amt = round(loan.monthly_installment, 2)
-                    if amt > 0:
-                        ltype = loan.loan_type_id
-                        acc_type = ltype.bank_account_type or 'loan_settlement'
+                is_active = False
+                if getattr(loan, 'is_external', False):
+                    if loan.remaining_amount > 0:
+                        is_active = True
+                elif loan.paid_installments < loan.installment_months:
+                    if batch.date_end >= loan.date_start:
+                        is_active = True
                         
-                        # Funding GL mapping
-                        # Default to 1010202, use 1010203 for Personal loans
-                        funding_gl = '1010203' if 'personal' in (ltype.name or '').lower() else '1010202'
+                if is_active:
+                    active_loans.append(loan)
 
-                        # Priority 1: Use specific disbursement account from the loan
-                        # Priority 2: Use mapping based on loan type
-                        acc = loan.bank_account_id.account_number or self._get_bank_account(emp, acc_type) or 'N/A'
-                        
-                        file3_payments[(acc, funding_gl)]['amount'] += amt
-                        desc = f"{(ltype.name or 'loan').lower()} {month_year}"
-                        aggregated_upload[(acc, 'C', '', desc, branch_cc)] += amt
+            adv_types = ['Emergency/Salary Advance Loan']
+            pers_types = ['Personal Staff Loan']
+            
+            adv_target_total = sum(l.monthly_installment for l in active_loans if l.loan_type_id.name in adv_types)
+            pers_target_total = sum(l.monthly_installment for l in active_loans if l.loan_type_id.name in pers_types)
+            other_target_total = sum(l.monthly_installment for l in active_loans if l.loan_type_id.name not in adv_types and l.loan_type_id.name not in pers_types)
+            
+            for loan in active_loans:
+                target = loan.monthly_installment
+                if target <= 0:
+                    continue
+                
+                ltype = loan.loan_type_id.name
+                if ltype in adv_types:
+                    amt = round((target / adv_target_total) * adv_actual, 2) if adv_target_total else 0.0
+                elif ltype in pers_types:
+                    amt = round((target / pers_target_total) * pers_actual, 2) if pers_target_total else 0.0
+                else:
+                    amt = round((target / other_target_total) * other_actual, 2) if other_target_total else 0.0
+                
+                if amt > 0:
+                    ltype_obj = loan.loan_type_id
+                    acc_type = ltype_obj.bank_account_type or 'loan_settlement'
+                    
+                    # Funding GL mapping
+                    # Default to 1010202, use 1010203 for Personal loans
+                    funding_gl = '1010203' if 'personal' in (ltype_obj.name or '').lower() else '1010202'
+
+                    # Priority 1: Use specific disbursement account from the loan
+                    # Priority 2: Use mapping based on loan type
+                    acc = loan.bank_account_id.account_number or self._get_bank_account(emp, acc_type) or 'N/A'
+                    
+                    file3_payments[(acc, funding_gl)]['amount'] += amt
+                    desc = f"{(ltype_obj.name or 'loan').lower()} {month_year}"
+                    aggregated_upload[(acc, 'C', '', desc, branch_cc)] += amt
 
             # Cash Indemnity Distribution
             if slip.cash_indemnity_allowance > 0:
@@ -278,3 +312,168 @@ class BankTransferReport(AhaduReportCommon):
             ('Cache-Control', 'no-cache, no-store, must-revalidate'),
         ]
         return request.make_response(zip_buffer.getvalue(), headers=headers)
+
+    @http.route('/ahadu_payroll/backpay_bank_transfer/<int:batch_id>', type='http', auth='user')
+    def download_backpay_bank_transfer(self, batch_id, **kw):
+        _logger.info("=== Bank Transfer: download_backpay_bank_transfer called for batch %s ===", batch_id)
+        batch = request.env['ahadu.backpay.batch'].browse(batch_id)
+        
+        if not batch.exists() or batch.state != 'approved':
+            _logger.warning("=== Bank Transfer: Batch %s not approved or non-existent ===", batch_id)
+            raise UserError("You cannot generate the Bank Transfer File until the backpay batch is Approved.")
+
+        if batch.bank_transfer_done:
+            _logger.warning("=== Bank Transfer: Batch %s already processed ===", batch_id)
+            raise UserError("The Bank Transfer has already been processed for this batch. You cannot pay twice.")
+
+        aggregated_upload = defaultdict(float)
+        file3_payments = defaultdict(lambda: {'amount': 0.0, 'emp': []})
+        
+        month_label = dict(batch._fields['month'].selection).get(batch.month, '')
+        month_year = f"{month_label} {batch.year}"
+        
+        lines = batch.line_ids
+        if not lines:
+            _logger.warning("=== Bank Transfer: No lines found for batch %s ===", batch_id)
+            raise UserError("This backpay batch has no lines. Please click 'Generate Lines' and 'Calculate' before proceeding.")
+
+        for line in lines:
+            emp = line.employee_id
+            if not emp: continue
+
+            emp_type = emp.ahadu_employee_type_id.code or 'N/A'
+            emp_type_name = 'clerical staff' if emp_type == 'CL_STAFF' else 'non clerical staff'
+            
+            branch = emp.branch_id
+            branch_code = branch.cost_center_id.code if branch and branch.cost_center_id else '0000'
+            is_ho = (branch and branch.name == 'Head Office') or branch_code == '9999'
+            is_addis = self._is_addis_branch(branch)
+            
+            branch_prefix = '9999' if is_ho else branch_code
+            contract = emp.contract_id
+            dept_cc = contract.cost_center_id.code if contract and contract.cost_center_id else branch_prefix
+            branch_cc = branch_prefix
+
+            FUNDING_GL_SALARY = '5030101' if emp_type == 'CL_STAFF' else '5030102'
+
+            # Define differences mapping to rule codes
+            earnings = [
+                ('BASIC', round(line.new_basic - line.old_basic, 2)),
+                ('TRANS', round(line.new_transport - line.old_transport, 2)),
+                ('REP', round(line.new_representation - line.old_representation, 2)),
+                ('HOUSE', round(line.new_housing - line.old_housing, 2)),
+                ('MOBILE', round(line.new_mobile - line.old_mobile, 2)),
+                ('HARDSHIP', round(line.new_hardship - line.old_hardship, 2)),
+                ('OT', round(line.new_ot - line.old_ot, 2)),
+                ('PENSION_COMP', round(line.new_pension_comp - line.old_pension_comp, 2)),
+            ]
+            
+            deductions = [
+                ('TAX', round(line.new_income_tax - line.old_income_tax, 2)),
+                ('PENSION_EMP', round(line.new_pension_emp - line.old_pension_emp, 2)),
+                ('PENSION_COMP', round(line.new_pension_comp - line.old_pension_comp, 2)), # Credit side for liability
+                ('OTHER_DED', round(line.new_other_deductions - line.old_other_deductions, 2)),
+            ]
+
+            # Process Earnings (Debit)
+            for code, amount in earnings:
+                if amount > 0:
+                    gl = self._get_finance_gl(code, emp_type, side='D')
+                    reason = f"backpay {emp_type_name} {code.lower()} {month_year}"
+                    aggregated_upload[(f"{branch_prefix}-{gl}", 'D', dept_cc, reason, branch_cc)] += amount
+
+            # Process Deductions (Credit)
+            for code, amount in deductions:
+                if amount > 0:
+                    gl = self._get_finance_gl(code, emp_type, side='C')
+                    crediting_branch = branch_prefix
+                    if code in ['TAX', 'PENSION_EMP', 'PENSION_COMP'] and not is_ho and is_addis:
+                        crediting_branch = '9999'
+                    
+                    reason_map = {
+                        'TAX': 'backpay income tax',
+                        'PENSION_EMP': 'backpay pension pay staff 18 per',
+                        'PENSION_COMP': 'backpay pension pay staff 18 per',
+                    }
+                    reason = f"{reason_map.get(code, f'backpay {code.lower()}')} {'ho staffs' if crediting_branch == '9999' else ''} {month_year}"
+                    aggregated_upload[(f"{crediting_branch}-{gl}", 'C', '', reason, branch_cc if crediting_branch != '9999' else '')] += amount
+
+            # Net Salary Transfer
+            diff_net = round(line.new_net - line.old_net, 2)
+            if diff_net > 0:
+                acc = line.bank_account or self._get_bank_account(emp, 'salary') or 'N/A'
+                file3_payments[(acc, FUNDING_GL_SALARY)]['amount'] += diff_net
+                if emp.name not in file3_payments[(acc, FUNDING_GL_SALARY)]['emp']:
+                    file3_payments[(acc, FUNDING_GL_SALARY)]['emp'].append(emp.name)
+                aggregated_upload[(acc, 'C', '', f'backpay net salary {month_year}', branch_cc)] += diff_net
+
+        _logger.info("=== Bank Transfer: Aggregated %s entries for backpay ===", len(aggregated_upload))
+        if not aggregated_upload:
+             _logger.warning("=== Bank Transfer: No data to transfer for batch %s. Are calculations zero? ===", batch_id)
+
+        # --- Generate Excels ---
+        zip_buffer = io.BytesIO()
+        try:
+            with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                def get_workbook():
+                    out = io.BytesIO()
+                    wb = xlsxwriter.Workbook(out, {'in_memory': True})
+                    st_text = wb.add_format({'font_name': 'Times New Roman', 'font_size': 11})
+                    st_money = wb.add_format({'font_name': 'Times New Roman', 'font_size': 11, 'num_format': '#,##0.00'})
+                    return out, wb, st_text, st_money
+
+                safe_batch_name = f'Backpay_{batch.month}_{batch.year}_{batch.id}'
+
+                # FILE 1: Finance Upload
+                f_out, f_wb, f_st, f_curr = get_workbook()
+                f_ws = f_wb.add_worksheet('Finance Upload')
+                row = 0
+                sorted_keys = sorted(aggregated_upload.keys(), key=lambda x: (x[1] == 'C', x[0]))
+                for key in sorted_keys:
+                    amt = round(aggregated_upload[key], 2)
+                    f_ws.write(row, 0, key[0], f_st)
+                    f_ws.write(row, 1, key[1], f_st)
+                    f_ws.write(row, 2, amt, f_curr)
+                    f_ws.write(row, 3, key[2], f_st)
+                    f_ws.write(row, 4, key[3], f_st)
+                    f_ws.write(row, 5, key[4], f_st)
+                    row += 1
+                f_wb.close()
+                zip_file.writestr(f"1_Finance_Upload_{safe_batch_name}.xlsx", f_out.getvalue())
+
+                # FILE 2: Bank Transfer Details
+                f3_out, f3_wb, f3_st, f3_curr = get_workbook()
+                f3_ws = f3_wb.add_worksheet('Bank Transfer Details')
+                row = 0
+                for (acc, funding_gl), data in file3_payments.items():
+                    raw_id = f"BP-{batch.id}-{acc}-{funding_gl}"
+                    request_id = f"PAY-{uuid.uuid3(uuid.NAMESPACE_DNS, raw_id).hex[:10].upper()}"
+                    status = self._call_payroll_api(request_id, round(data['amount'], 2), acc, funding_gl)
+                    
+                    f3_ws.write(row, 0, acc, f3_st)
+                    f3_ws.write(row, 1, 'C', f3_st)
+                    f3_ws.write(row, 2, round(data['amount'], 2), f3_curr)
+                    desc = f"{', '.join(data['emp'][:3])}{'...' if len(data['emp']) > 3 else ''} Backpay"
+                    f3_ws.write(row, 3, desc, f3_st)
+                    f3_ws.write(row, 4, status, f3_st)
+                    row += 1
+                f3_wb.close()
+                zip_file.writestr(f"2_Bank_Transfer_Details_{safe_batch_name}.xlsx", f3_out.getvalue())
+
+            batch.sudo().write({'bank_transfer_done': True})
+            _logger.info("=== Bank Transfer: Successfully generated ZIP for backpay batch %s ===", batch_id)
+            
+        except Exception as e:
+            _logger.error(f"Backpay Bank Transfer Generation Failed for batch {batch_id}: {str(e)}")
+            raise UserError(f"Generation failed: {str(e)}")
+
+        zip_buffer.seek(0)
+        zip_filename = f"Bank_Transfer_Finance_{safe_batch_name}.zip"
+        quoted_filename = urllib.parse.quote(zip_filename)
+        headers = [
+            ('Content-Type', 'application/zip'),
+            ('Content-Disposition', f'attachment; filename*=UTF-8\'\'{quoted_filename}'),
+            ('Cache-Control', 'no-cache, no-store, must-revalidate'),
+        ]
+        return request.make_response(zip_buffer.getvalue(), headers=headers)
+

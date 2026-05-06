@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ -->
+    <!--  ATTENDANCE INHERIT: Add is_od to existing views               -->
+    <!-- ============================================================ -->
+
+    <!-- Extend Attendance List View to show On-Duty badge -->
+    <record id="view_hr_attendance_list_inherit_od" model="ir.ui.view">
+        <field name="name">hr.attendance.list.inherit.od</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <field name="attendance_status" position="after">
+                <field name="is_od" widget="boolean_toggle" optional="hide"/>
+            </field>
+        </field>
+    </record>
+</odoo>

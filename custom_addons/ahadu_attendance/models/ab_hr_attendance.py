@@ -43,8 +43,6 @@ class HrAttendance(models.Model):
     check_in_gps = fields.Char(string="Check-in Geolocation", readonly=True)
     check_out_gps = fields.Char(string="Check-out Geolocation", readonly=True)
     attendance_sheet_id = fields.Many2one('ab.hr.attendance.sheet', string="Attendance Sheet", ondelete='cascade')
-    overtime_request_id = fields.Many2one('ab.hr.overtime.request', string="Overtime Request", readonly=True, copy=False)
-    
     is_late = fields.Boolean(string="Is Late", compute="_compute_attendance_analysis", store=True)
     is_early = fields.Boolean(string="Is Early", compute="_compute_is_early", store=True)
     late_minutes = fields.Float(string="Late Minutes", compute="_compute_attendance_analysis", store=True)
@@ -73,6 +71,7 @@ class HrAttendance(models.Model):
         ('late_in_miss_out', 'Late-In & Miss-Out'),
         ('early_out_miss_in', 'Early-Out & Miss-In'), # For future use if needed
         ('on_time_miss_out', 'On-Time & Miss-Out'), # Added for when check-in is on-time but check-out is missed
+        ('on_duty', 'On-Duty'),
     ], string="Status", compute='_compute_attendance_analysis', store=True)
     
     # Flag to track if a miss-out has been system-handled to allow next day check-in
@@ -280,13 +279,7 @@ class HrAttendance(models.Model):
         now_local = pytz.utc.localize(now_utc).astimezone(employee_tz)
         current_time = now_local.time()
 
-        # Bank Policy: Lunch Out allowed from 12:00 PM onwards
-        if current_time < time(12, 0):
-           raise UserError(_("Lunch Out is only allowed from 12:00 PM onwards."))
-        
-        # Validate not too late (before 7:00 PM)
-        if current_time > time(19, 0):
-            raise UserError(_("Lunch Out recording is only allowed before 7:00 PM."))
+        # Lunch time allowed whenever the user clicks the button.
 
         # Check directly on self
         if self.lunch_out:
@@ -333,12 +326,7 @@ class HrAttendance(models.Model):
         now_local = pytz.utc.localize(now_utc).astimezone(employee_tz)
         current_time = now_local.time()
 
-        # Bank Policy: Lunch recording allowed from 12:00 PM to 1:10 PM
-        if current_time < time(12, 0):
-            raise UserError(_("Lunch In is only allowed from 12:00 PM onwards."))
-        
-        if current_time > time(13, 10):
-            raise UserError(_("Lunch In recording is only allowed before 1:10 PM."))
+        # Lunch recording allowed without time restriction.
 
         if not self.lunch_out:
             raise UserError(_("Lunch Out must be recorded before Lunch In."))
@@ -922,24 +910,25 @@ class HrAttendance(models.Model):
  
                     #  Continue creating new attendance (normal or lunch)
                
-                # --- 3. Leave and Duty Request checks (unchanged) ---
-                domain_leave = [
-                    ('employee_id', '=', employee.id),
-                    ('state', '=', 'validate'),
-                    ('date_from', '<=', check_in_dt),
-                    ('date_to', '>=', check_in_dt),
-                ]
-                if self.env['hr.leave'].search_count(domain_leave):
-                    raise ValidationError(_("Check-in failed for %s. The employee is on an approved leave.") % employee.name)
+                # --- 3. Leave and Duty Request checks (skip for OD-generated records) ---
+                if not vals.get('is_od'):
+                    domain_leave = [
+                        ('employee_id', '=', employee.id),
+                        ('state', '=', 'validate'),
+                        ('date_from', '<=', check_in_dt),
+                        ('date_to', '>=', check_in_dt),
+                    ]
+                    if self.env['hr.leave'].search_count(domain_leave):
+                        raise ValidationError(_("Check-in failed for %s. The employee is on an approved leave.") % employee.name)
 
-                domain_duty = [
-                    ('employee_id', '=', employee.id),
-                    ('state', '=', 'approved'),
-                    ('date_from', '<=', check_in_dt),
-                    ('date_to', '>=', check_in_dt),
-                ]
-                if self.env['ab.hr.duty.request'].search_count(domain_duty) > 0:
-                    raise ValidationError(_("Check-in failed for %s. The employee is on an approved duty request.") % employee.name)
+                    domain_duty = [
+                        ('employee_id', '=', employee.id),
+                        ('state', '=', 'approved'),
+                        ('date_from', '<=', check_in_dt),
+                        ('date_to', '>=', check_in_dt),
+                    ]
+                    if 'hr.on.duty' in self.env and self.env['hr.on.duty'].search_count(domain_duty) > 0:
+                        raise ValidationError(_("Check-in failed for %s. The employee is on an approved duty request.") % employee.name)
     
         # records = super().create(vals)
          # Call super to actually create records
@@ -958,7 +947,18 @@ class HrAttendance(models.Model):
         new_records |= record
 
         return new_records
-        
+        # records = super(HrAttendance, self).create(vals)
+
+        #  # recompute overtime/undertime if needed
+        # for record in records:
+        #     try:
+        #         # compute analysis and overtime after create
+        #         record._compute_attendance_analysis()
+        #         if record.check_in and record.check_out:
+        #             record._recompute_overtime_and_undertime()
+        #     except Exception as e:
+        #         _logger.exception("Failed to recompute after create for %s: %s", record.id, e)
+        # return records
     
     def write(self, vals):
         res = super(HrAttendance, self).write(vals)
@@ -976,7 +976,26 @@ class HrAttendance(models.Model):
                 _logger.exception("Failed to recompute overtime in write: %s", e)
         return res
 
-    
+    # def write(self, vals):
+    #     # Store original check_out value for early-out logic related to lunch
+    #     original_check_out = {rec.id: rec.check_out for rec in self} if 'check_out' in vals else {}
+
+    #     res = super().write(vals)
+        
+    #     for record in self:
+    #         if 'check_in' in vals or 'check_out' in vals or 'lunch_in' in vals or 'lunch_out' in vals:
+    #             # Recompute analysis for statuses
+    #             record._compute_attendance_analysis()
+
+    #             # Recompute overtime/undertime if main check_in/check_out changed
+    #             if 'check_in' in vals or 'check_out' in vals:
+    #                 try:
+    #                     record._recompute_overtime_and_undertime()
+    #                 except Exception as e:
+    #                     _logger.exception(f"Failed to recompute overtime after attendance write for {record.id}: {e}")
+    #     return res
+
+
 
     # ===================================================================
     #  4. BUSINESS LOGIC & CRON JOBS
@@ -1030,6 +1049,17 @@ class HrAttendance(models.Model):
                 else:
                     _logger.info("Employee %s has an open attendance from previous day %s", employee.name, open_check_date)
 
+            # if open_attendance:
+            #     # Check for existing open attendance for the same day (should not happen for normal check-in)
+            #     if pytz.utc.localize(open_attendance.check_in).astimezone(employee_tz).date() == now_local.date():
+            #         raise ValidationError(_("You are already checked in for today."))
+            #     else:
+            #         # Previous day open attendance - mark it as miss-out first.
+            #         # The `create` method already handles this scenario when a new check-in is made.
+            #         # So, we just proceed to create the new check-in.
+            #         _logger.info(f"Employee {employee.name} has an open attendance from a previous day ({open_attendance.check_in.date()}). "
+            #                      f"It will be handled as Miss-Out during the new check-in creation.")
+
             # Create new attendance record
             new_attendance_vals = {
                 'employee_id': employee.id,
@@ -1079,9 +1109,7 @@ class HrAttendance(models.Model):
             if open_att_check_in_local.date() != now_local.date():
                 raise ValidationError(_("Cannot punch lunch for a previous day's attendance."))
 
-            # Validate Lunch Out time: Must be after 12:00 PM
-            if now_local.time() < time(12, 0):
-                raise ValidationError(_("Lunch Out is only allowed from 12:00 PM onwards."))
+            # Removed Bank Policy validation: Lunch Out allowed from 12:00 PM onwards
             
             if open_attendance.lunch_out:
                 raise ValidationError(_("You are already on lunch or have already taken lunch out today."))
@@ -1102,10 +1130,7 @@ class HrAttendance(models.Model):
             if open_att_check_in_local.date() != now_local.date():
                 raise ValidationError(_("Cannot punch lunch for a previous day's attendance."))
 
-            # Validate Lunch In time: Must be before 7:00 PM (19:00)
-            # Bank Policy: Lunch punches are for reporting only, allowed until 7:00 PM
-            if now_local.time() > time(19, 0):
-                raise ValidationError(_("Lunch In recording is only allowed before 7:00 PM."))
+            # Removed Bank Policy validation: Lunch In allowed before 7:00 PM
             
             # Validate Lunch In is after Lunch Out
             lunch_out_local = pytz.utc.localize(open_attendance.lunch_out).astimezone(employee_tz)
@@ -1253,6 +1278,9 @@ class HrAttendance(models.Model):
         early_out_attendances = attendances_today.filtered(lambda a: a.early_out_minutes > 0)
         miss_out_attendances = attendances_today.filtered(lambda a: a.attendance_status in ['miss_out', 'late_in_miss_out', 'on_time_miss_out'])
         
+        # On-Duty Today
+        on_duty_today = attendances_today.filtered(lambda a: a.is_od)
+        
         # Lunch participation
         lunch_recorded = attendances_today.filtered(lambda a: a.lunch_out)
         lunch_participation_rate = (len(lunch_recorded) / len(attendances_today) * 100) if attendances_today else 0
@@ -1270,6 +1298,7 @@ class HrAttendance(models.Model):
             'late_today': len(late_attendances),
             'early_out_today': len(early_out_attendances),
             'miss_out_today': len(miss_out_attendances),
+            'on_duty_today': len(on_duty_today),
             'lunch_recorded_today': len(lunch_recorded),
             'lunch_participation_rate': round(lunch_participation_rate, 1),
             'overtime_hours_today': round(overtime_hours_today, 2),
@@ -1279,6 +1308,7 @@ class HrAttendance(models.Model):
             'domain_early_out': [('id', 'in', early_out_attendances.ids)],
             'domain_miss_out': [('id', 'in', miss_out_attendances.ids)],
             'domain_on_leave': [('id', 'in', leaves_today.ids)],
+            'domain_on_duty': [('id', 'in', on_duty_today.ids)],
         }
         
         chart_data = {}
@@ -1476,6 +1506,14 @@ class HrAttendance(models.Model):
                 ('request_date_to', '>=', month_start)
             ])
             
+            # Fetch On-Duty for heatmap coloring
+            all_month_ods = self.env['hr.on.duty'].search([
+                ('employee_id', '=', current_employee.id),
+                ('state', '=', 'approved'),
+                ('date_from', '<', next_month_start),
+                ('date_to', '>=', month_start)
+            ]) if 'hr.on.duty' in self.env else self.env['hr.on.duty'].browse()
+            
             # Holidays & Sundays List
             holidays_list = []
             total_sundays = 0
@@ -1671,6 +1709,13 @@ class HrAttendance(models.Model):
             # Percentage based on scheduled days
             attendance_perc = (present_days / scheduled_days * 100) if scheduled_days > 0 else 0
 
+            # Generate calendar heatmap
+            calendar_heatmap = []
+            month_iter_date = month_start
+            
+            # Count monthly OD days
+            on_duty_days = 0
+
             summary_data = {
                 'present_days': present_days,
                 'absent_days': absent_days_count,
@@ -1683,10 +1728,6 @@ class HrAttendance(models.Model):
                 'holidays': sorted(holidays_list, key=lambda x: x['date']),
                 'current_employee': {'id': current_employee.id, 'name': current_employee.name}
             }
-            
-            # Generate calendar heatmap
-            calendar_heatmap = []
-            month_iter_date = month_start
             while month_iter_date < next_month_start:
                 day_status = 'not-scheduled'
                 tooltip = ''
@@ -1695,6 +1736,9 @@ class HrAttendance(models.Model):
                 # Filter bulk data
                 day_att = all_month_attendances.filtered(lambda a: fields.Datetime.context_timestamp(self, a.check_in).date() == month_iter_date)
                 day_leave = all_month_leaves.filtered(lambda l: l.request_date_from <= month_iter_date <= l.request_date_to)
+                
+                # Check On Duty
+                day_od = all_month_ods.filtered(lambda od: od.date_from.date() <= month_iter_date <= od.date_to.date()) if all_month_ods else False
                 
                 # Check for holiday
                 is_holiday = month_iter_date in holiday_dates
@@ -1709,6 +1753,10 @@ class HrAttendance(models.Model):
                 elif day_leave:
                     day_status = 'on-leave'
                     tooltip = f"On Leave ({day_leave[0].holiday_status_id.name})"
+                elif day_od:
+                    day_status = 'on_duty'
+                    tooltip = f"On Duty ({day_od[0].od_type})"
+                    on_duty_days += 1
                 elif day_att:
                     att = day_att[0]
                     if att.attendance_status in ['miss_out', 'late_in_miss_out', 'on_time_miss_out']:
@@ -1741,7 +1789,8 @@ class HrAttendance(models.Model):
                 'calendar_heatmap': calendar_heatmap,
                 'month_name': month_start.strftime('%B %Y'),
                 'month_start_weekday': month_start.weekday(),
-                'today_date': today.strftime('%Y-%m-%d')
+                'today_date': today.strftime('%Y-%m-%d'),
+                'on_duty_days': on_duty_days,
             })
 
         return {'kpi_data': kpi_data, 'chart_data': chart_data, 'realtime_logs': log_list, 'summary_data': summary_data, 'uid': self.env.user.id}

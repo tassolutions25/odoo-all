@@ -57,6 +57,21 @@
         </field>
     </record>
 
+    <!-- ========================================== -->
+    <!-- 2. ACTIONS FOR CUSTOM CONFIG MODELS        -->
+    <!-- ========================================== -->
+    <record id="action_ahadu_account" model="ir.actions.act_window">
+        <field name="name">Payroll Accounts</field>
+        <field name="res_model">ahadu.account</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_ahadu_pay_group" model="ir.actions.act_window">
+        <field name="name">Pay Groups</field>
+        <field name="res_model">ahadu.pay.group</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
     <!-- Region Fuel Tax Deduction Config Views -->
     <record id="view_ahadu_payroll_region_config_tree" model="ir.ui.view">
         <field name="name">ahadu.payroll.region.config.list</field>
@@ -88,27 +103,14 @@
         </field>
     </record>
 
-    <!-- ========================================== -->
-    <!-- 2. ACTIONS FOR CUSTOM CONFIG MODELS        -->
-    <!-- ========================================== -->
-    <record id="action_ahadu_account" model="ir.actions.act_window">
-        <field name="name">Payroll Accounts</field>
-        <field name="res_model">ahadu.account</field>
-        <field name="view_mode">list,form</field>
-    </record>
-
-    <record id="action_ahadu_pay_group" model="ir.actions.act_window">
-        <field name="name">Pay Groups</field>
-        <field name="res_model">ahadu.pay.group</field>
-        <field name="view_mode">list,form</field>
-    </record>
-
     <record id="action_ahadu_payroll_region_config" model="ir.actions.act_window">
         <field name="name">Region Fuel Tax Deduction Config</field>
         <field name="res_model">ahadu.payroll.region.config</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Configure region-specific payroll rules</p>
+            <p class="o_view_nocontent_smiling_face">
+                Configure region-specific payroll rules
+            </p>
             <p>Define transport allowance exemptions for each region.</p>
         </field>
     </record>
@@ -116,6 +118,8 @@
     <!-- ========================================== -->
     <!-- 3. ACTIONS FOR STANDARD PAYROLL MODELS     -->
     <!-- ========================================== -->
+
+    <!-- Configuration Actions -->
     <record id="action_ahadu_structure_standard" model="ir.actions.act_window">
         <field name="name">Salary Structures</field>
         <field name="res_model">hr.payroll.structure</field>
@@ -128,6 +132,7 @@
         <field name="view_mode">list,form</field>
     </record>
 
+    <!-- Operational Actions (Payslips & Batches) -->
     <record id="action_ahadu_payslip" model="ir.actions.act_window">
         <field name="name">Employee Payslips</field>
         <field name="res_model">hr.payslip</field>
@@ -140,13 +145,15 @@
         <field name="view_mode">list,form</field>
     </record>
 
+
     <!-- ========================================== -->
     <!-- 4. ROOT MENUS                              -->
     <!-- ========================================== -->
+    <!-- Visible to both Officer and Manager -->
     <menuitem
         id="menu_ahadu_root"
         name="Ahadu Payroll"
-        groups="payroll.group_payroll_user"
+        groups="payroll.group_payroll_user,payroll.group_payroll_manager,ahadu_payroll.group_attendance_officer,ahadu_payroll.group_attendance_manager,ahadu_payroll.group_branch_attendance_officer,ahadu_payroll.group_branch_attendance_manager"
         sequence="10" />
 
     <menuitem
@@ -157,13 +164,6 @@
         sequence="10" />
 
     <menuitem
-        id="menu_ahadu_reports_root"
-        name="Reports"
-        parent="menu_ahadu_root"
-        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
-        sequence="20" />
-
-    <menuitem
         id="menu_ahadu_config_root"
         name="Configuration"
         parent="menu_ahadu_root"
@@ -171,19 +171,216 @@
         sequence="100" />
 
     <!-- ========================================== -->
-    <!-- 5. SUB MENUS (For actions in this file)    -->
+    <!-- 5. SUB MENUS                               -->
     <!-- ========================================== -->
-    <menuitem id="menu_ahadu_payslip_run" name="Payslip Batches" parent="menu_ahadu_operations" action="action_ahadu_payslip_run" sequence="10" />
-    <menuitem id="menu_ahadu_payslip" name="Employee Payslips" parent="menu_ahadu_operations" action="action_ahadu_payslip" sequence="20" />
 
-    <menuitem id="menu_ahadu_department" name="Departments" parent="menu_ahadu_config_root" action="hr.hr_department_tree_action" sequence="5" />
-    <menuitem id="menu_ahadu_branch" name="Branches" parent="menu_ahadu_config_root" action="ahadu_hr.action_hr_branch" sequence="6" />
-    <menuitem id="menu_ahadu_cost_center" name="Cost Centers" parent="menu_ahadu_config_root" action="ahadu_hr.action_hr_cost_center" sequence="7" />
-    
-    <menuitem id="menu_ahadu_account" name="Payroll Accounts" parent="menu_ahadu_config_root" action="action_ahadu_account" sequence="10" />
-    <menuitem id="menu_ahadu_pay_group" name="Pay Groups" parent="menu_ahadu_config_root" action="action_ahadu_pay_group" sequence="25" />
-    <menuitem id="menu_ahadu_payroll_region_config" name="Region Fuel Tax Deduction Config" parent="menu_ahadu_config_root" action="action_ahadu_payroll_region_config" sequence="26" />
-    <menuitem id="menu_ahadu_salary_structure" name="Salary Structures" parent="menu_ahadu_config_root" action="action_ahadu_structure_standard" sequence="30" />
-    <menuitem id="menu_ahadu_salary_rules" name="Salary Rules" parent="menu_ahadu_config_root" action="action_ahadu_rule_standard" sequence="40" />
+    <!-- Operations -->
+    <menuitem
+        id="menu_ahadu_payslip_run"
+        name="Payslip Batches"
+        parent="menu_ahadu_operations"
+        action="action_ahadu_payslip_run"
+        sequence="10" />
+
+    <menuitem
+        id="menu_ahadu_payslip"
+        name="Employee Payslips"
+        parent="menu_ahadu_operations"
+        action="action_ahadu_payslip"
+        sequence="20" />
+
+    <!-- NEW: Add Journal Entries here explicitly if it was missing -->
+    <menuitem
+        id="menu_ahadu_journal_entry"
+        name="Journal Entries"
+        parent="menu_ahadu_operations"
+        action="action_ahadu_journal_entry"
+        sequence="30" />
+
+    <!-- Configuration items -->
+    <menuitem
+        id="menu_ahadu_department"
+        name="Departments"
+        parent="menu_ahadu_config_root"
+        action="hr.hr_department_tree_action"
+        groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+        sequence="5" />
+
+    <menuitem
+        id="menu_ahadu_branch"
+        name="Branches"
+        parent="menu_ahadu_config_root"
+        action="ahadu_hr.action_hr_branch"
+        groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+        sequence="6" />
+
+    <menuitem
+        id="menu_ahadu_cost_center"
+        name="Cost Centers"
+        parent="menu_ahadu_config_root"
+        action="ahadu_hr.action_hr_cost_center"
+        groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+        sequence="7" />
+
+    <menuitem
+        id="menu_ahadu_account"
+        name="Payroll Accounts"
+        parent="menu_ahadu_config_root"
+        action="action_ahadu_account"
+        groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+        sequence="10" />
+
+    <menuitem
+        id="menu_ahadu_pay_group"
+        name="Pay Groups"
+        parent="menu_ahadu_config_root"
+        action="action_ahadu_pay_group"
+        groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+        sequence="25" />
+
+    <menuitem
+        id="menu_ahadu_payroll_region_config"
+        name="Region Fuel Tax Deduction Config"
+        parent="menu_ahadu_config_root"
+        action="action_ahadu_payroll_region_config"
+        groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+        sequence="26" />
+
+    <menuitem
+        id="menu_ahadu_salary_structure"
+        name="Salary Structures"
+        parent="menu_ahadu_config_root"
+        action="action_ahadu_structure_standard"
+        groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+        sequence="30" />
+
+    <menuitem
+        id="menu_ahadu_salary_rules"
+        name="Salary Rules"
+        parent="menu_ahadu_config_root"
+        action="action_ahadu_rule_standard"
+        groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+        sequence="40" />
+
+     <menuitem id="menu_hr_employee_deduction"
+        name="Deductions"
+        parent="menu_ahadu_config_root"
+        action="hr_employee_deduction_action"
+        groups="ahadu_payroll.group_ahadu_payroll_finance_officer,base.group_system"
+        sequence="50"/>
+
+     <menuitem
+        id="menu_ahadu_journal_entry"
+        name="Journal Entries"
+        parent="menu_ahadu_operations"
+        action="action_ahadu_journal_entry"
+        sequence="30" />
+
+        <!-- MENU STRUCTURE -->
+
+    <!-- Main Reports Menu -->
+    <menuitem
+        id="menu_ahadu_reports_root"
+        name="Reports"
+        parent="menu_ahadu_root"
+        groups="ahadu_payroll.group_branch_payroll,ahadu_payroll.group_branch_payroll_manager,ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="20" />
+
+    <!-- Sub-menus -->
+    <!-- <menuitem
+        id="menu_report_newly_updated_employee"
+        name="Newly Updated Employees"
+        parent="menu_ahadu_reports_root"
+        action="action_report_newly_updated_employee"
+        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="10" /> -->
+
+    <!-- <menuitem
+        id="menu_report_employee_termination"
+        name="Resignation/Termination"
+        parent="menu_ahadu_reports_root"
+        action="action_report_employee_termination"
+        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="20" />
+
+    <menuitem
+        id="menu_report_employee_transfer"
+        name="Transfer"
+        parent="menu_ahadu_reports_root"
+        action="action_report_employee_transfer"
+        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="30" />
+
+    <menuitem
+        id="menu_report_custom_payroll"
+        name="Custom Payroll Report"
+        parent="menu_ahadu_reports_root"
+        action="action_ahadu_payroll_custom_report_wizard"
+        groups="ahadu_payroll.group_branch_payroll,ahadu_payroll.group_branch_payroll_manager,ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="40" /> -->
+
+    <!-- <menuitem
+        id="menu_report_employee_promotion"
+        name="Promotion"
+        parent="menu_ahadu_reports_root"
+        action="action_report_employee_promotion"
+        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="40" />
+
+    <menuitem
+        id="menu_report_employee_demotion"
+        name="Demotion"
+        parent="menu_ahadu_reports_root"
+        action="action_report_employee_demotion"
+        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="45" />
+
+    <menuitem
+        id="menu_report_employee_acting"
+        name="Acting Assignment"
+        parent="menu_ahadu_reports_root"
+        action="action_report_employee_acting"
+        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="50" />
+
+    <menuitem
+        id="menu_report_employee_temporary_assignment"
+        name="Temporary Assignment"
+        parent="menu_ahadu_reports_root"
+        action="action_report_employee_temporary_assignment"
+        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="60" />
+
+    <menuitem
+        id="menu_report_employee_disciplinary"
+        name="Staff Penalization (Penalty)"
+        parent="menu_ahadu_reports_root"
+        action="action_report_employee_disciplinary"
+        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="70" />
+
+    <menuitem
+        id="menu_report_benefit_package"
+        name="Benefit Package"
+        parent="menu_ahadu_reports_root"
+        action="action_report_benefit_package"
+        groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="80" />
+
+    <menuitem
+        id="menu_report_contractual_payroll"
+        name="Contractual Staff Payroll"
+        parent="menu_ahadu_reports_root"
+        action="action_report_contractual_payroll"
+        groups="ahadu_payroll.group_branch_payroll,ahadu_payroll.group_branch_payroll_manager,ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
+        sequence="90" /> -->
+
+    <!-- <menuitem
+        id="menu_report_overtime_payment"
+        name="Overtime Payment"
+        parent="menu_ahadu_reports_root"
+        action="action_report_overtime_payment"
+        sequence="100" /> -->
+
 
 </odoo>

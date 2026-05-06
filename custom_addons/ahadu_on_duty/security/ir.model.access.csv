@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_on_duty_employee,hr.on.duty.employee,model_hr_on_duty,ahadu_attendance.group_ahadu_attendance_employee,1,1,1,1
+access_hr_on_duty_manager,hr.on.duty.manager,model_hr_on_duty,ahadu_attendance.group_ahadu_attendance_manager,1,1,1,1
+access_hr_on_duty_hr_admin,hr.on.duty.hr_admin,model_hr_on_duty,ahadu_attendance.group_ahadu_attendance_hr_admin,1,1,1,1

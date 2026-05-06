@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ -->
+    <!--  MENU ITEMS: App Switcher Root & Under Attendance root          -->
+    <!-- ============================================================ -->
+
+    <!-- Main App Switcher Root Menu (visible to all attendance groups) -->
+    <menuitem
+        id="menu_ahadu_on_duty_root"
+        name="Ahadu On Duty"
+        web_icon="ahadu_on_duty,static/description/icon.png"
+        groups="ahadu_attendance.group_ahadu_attendance_employee,ahadu_attendance.group_ahadu_attendance_manager,ahadu_attendance.group_ahadu_attendance_hr_admin,base.group_system"
+        sequence="50"/>
+
+    <!-- My Requests → On Duty (for all employees) -->
+    <menuitem
+        id="menu_hr_on_duty_my"
+        name="My On Duty Requests"
+        parent="menu_ahadu_on_duty_root"
+        action="ahadu_on_duty.action_hr_on_duty_my"
+        groups="ahadu_attendance.group_ahadu_attendance_employee,ahadu_attendance.group_ahadu_attendance_manager,ahadu_attendance.group_ahadu_attendance_hr_admin,base.group_system"
+        sequence="1"/>
+
+    <!-- Management → All On-Duty (Manager/HR/Admin) -->
+    <menuitem
+        id="menu_hr_on_duty_all"
+        name="All On-Duty Requests"
+        parent="menu_ahadu_on_duty_root"
+        action="ahadu_on_duty.action_hr_on_duty_all"
+        sequence="2"
+        groups="ahadu_attendance.group_ahadu_attendance_manager,ahadu_attendance.group_ahadu_attendance_hr_admin,base.group_system"/>
+
+    <!-- Management → Pending Approvals (Manager/HR/Admin) -->
+    <menuitem
+        id="menu_hr_on_duty_pending"
+        name="Pending OD Approvals"
+        parent="menu_ahadu_on_duty_root"
+        action="ahadu_on_duty.action_hr_on_duty_pending"
+        sequence="3"
+        groups="ahadu_attendance.group_ahadu_attendance_manager,ahadu_attendance.group_ahadu_attendance_hr_admin,base.group_system"/>
+</odoo>

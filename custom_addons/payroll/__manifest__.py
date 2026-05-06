@@ -4,7 +4,6 @@
     "name": "Payroll",
     "version": "18.0.1.1.3",
     "category": "Payroll",
-    "website": "",
     "sequence": 38,
     "summary": "Manage your employee payroll records",
     "license": "LGPL-3",

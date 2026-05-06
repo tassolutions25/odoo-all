@@ -31,5 +31,33 @@
             <field name="category_id" ref="module_category_ahadu_hr"/>
             <field name="implied_ids" eval="[(4, ref('group_ahadu_attendance_manager'))]"/>
         </record>
+
+        <!-- ============================================================ -->
+        <!--  RECORD RULES: Unplanned Absence (UPA)                       -->
+        <!-- ============================================================ -->
+
+        <!-- Rule: Employees see only their own UPA records -->
+        <record id="rule_upa_employee_own" model="ir.rule">
+            <field name="name">UPA: Employee Own Records</field>
+            <field name="model_id" ref="model_ab_hr_unplanned_absence"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('ahadu_attendance.group_ahadu_attendance_employee'))]"/>
+        </record>
+
+        <!-- Rule: Managers see their department's UPA records -->
+        <record id="rule_upa_manager_department" model="ir.rule">
+            <field name="name">UPA: Manager Department Records</field>
+            <field name="model_id" ref="model_ab_hr_unplanned_absence"/>
+            <field name="domain_force">['|', ('employee_id.user_id', '=', user.id), ('manager_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('ahadu_attendance.group_ahadu_attendance_manager'))]"/>
+        </record>
+
+        <!-- Rule: HR Admin sees all UPA records -->
+        <record id="rule_upa_hr_admin_all" model="ir.rule">
+            <field name="name">UPA: HR Admin All Records</field>
+            <field name="model_id" ref="model_ab_hr_unplanned_absence"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('ahadu_attendance.group_ahadu_attendance_hr_admin'))]"/>
+        </record>
     </data>
 </odoo>

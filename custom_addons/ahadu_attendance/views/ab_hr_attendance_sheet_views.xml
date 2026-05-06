@@ -82,7 +82,7 @@
                                     <field name="check_in"/>
                                     <field name="check_out"/>
                                     <field name="worked_hours" widget="float_time"/>
-                                    <field name="attendance_status" widget="badge" decoration-success="attendance_status == 'on_time'" decoration-warning="attendance_status in ('late_in', 'early_out')" decoration-danger="attendance_status == 'late_in_early_out'"/>
+                                    <field name="attendance_status" widget="badge" decoration-success="attendance_status == 'on_time'" decoration-warning="attendance_status in ('late_in', 'early_out')" decoration-danger="attendance_status == 'late_in_early_out'" decoration-info="attendance_status == 'on_duty'"/>
                                     <field name="late_minutes"/>
                                 </list>
                             </field>
@@ -111,4 +111,19 @@
             </p>
         </field>
     </record>
+
+    <!-- Menu items should be in a dedicated menu file, but keeping it here for completeness of your original file -->
+    <!-- <menuitem 
+        id="menu_hr_attendance_management_root"
+        name="Management"
+        parent="hr_attendance.menu_hr_attendance_root"
+        sequence="30"
+        groups="ahadu_attendance.group_ahadu_attendance_manager"/>
+
+    <menuitem
+        id="menu_hr_attendance_sheet"
+        name="Attendance Sheets"
+        parent="menu_hr_attendance_management_root"
+        action="action_ab_hr_attendance_sheet"
+        sequence="10"/> -->
 </odoo>

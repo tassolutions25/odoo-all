@@ -30,7 +30,7 @@
 
                 <!-- Bank Transfer File -->
                 <button name="action_print_bank_transfer" type="object" string="Bank Transfer File"
-                    invisible="state == 'draft'" class="oe_highlight" />
+                    invisible="state != 'close'"  class="oe_highlight" />
 
                 <button name="action_print_pension_report" type="object" string="Pension Report"
                     invisible="state == 'draft'" />
@@ -48,6 +48,9 @@
 
                 <button name="action_print_cash_indemnity_report" type="object" string="Cash Indemnity Report"
                     invisible="state == 'draft'" class="oe_highlight" />
+
+                <button name="action_batch_upload" type="object" string="Batch Upload"
+                    invisible="state != 'close'" class="oe_highlight" />
             </xpath>
 
             <!-- Add the Status Bar -->
@@ -98,6 +101,16 @@
                                 decoration-info="state == 'draft'"
                                 decoration-warning="state == 'verify'"
                                 decoration-success="state == 'done'" />
+                        </list>
+                    </field>
+                </group>
+
+                <!-- Generation Logs -->
+                <group string="Generation Logs" invisible="not missed_reason_ids">
+                    <field name="missed_reason_ids" nolabel="1" colspan="2" readonly="1">
+                        <list>
+                            <field name="employee_id" />
+                            <field name="reason" />
                         </list>
                     </field>
                 </group>

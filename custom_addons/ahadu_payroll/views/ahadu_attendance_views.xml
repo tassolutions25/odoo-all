@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Attendance Sheet Line list View -->
+    <record id="view_ahadu_attendance_sheet_line_list" model="ir.ui.view">
+        <field name="name">ahadu.attendance.sheet.line.list</field>
+        <field name="model">ahadu.attendance.sheet.line</field>
+        <field name="arch" type="xml">
+            <list string="Absent Days" editable="bottom">
+                <field name="date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Attendance Sheet list View -->
+    <record id="view_ahadu_attendance_sheet_list" model="ir.ui.view">
+        <field name="name">ahadu.attendance.sheet.list</field>
+        <field name="model">ahadu.attendance.sheet</field>
+        <field name="arch" type="xml">
+            <list string="Attendance Sheets">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="branch_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'verified'" decoration-success="state == 'approved'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Attendance Sheet Form View -->
+    <record id="view_ahadu_attendance_sheet_form" model="ir.ui.view">
+        <field name="name">ahadu.attendance.sheet.form</field>
+        <field name="model">ahadu.attendance.sheet</field>
+        <field name="arch" type="xml">
+            <form string="Attendance Sheet">
+                <header>
+                    <button name="action_verify" string="Verify" type="object" class="oe_highlight" invisible="state != 'draft'" groups="ahadu_payroll.group_attendance_officer,ahadu_payroll.group_branch_attendance_officer"/>
+                    <button name="action_approve" string="Approve" type="object" class="oe_highlight" invisible="state != 'verified'" groups="ahadu_payroll.group_attendance_manager,ahadu_payroll.group_branch_attendance_manager"/>
+                    <button name="action_draft" string="Set to Draft" type="object" invisible="state not in ('verified', 'cancel')" groups="ahadu_payroll.group_attendance_officer,ahadu_payroll.group_branch_attendance_officer"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state not in ('draft', 'verified')" groups="ahadu_payroll.group_attendance_officer,ahadu_payroll.group_branch_attendance_officer"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,verified,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id_code" readonly="state != 'draft'"/>
+                            <field name="employee_id" readonly="state != 'draft'" domain="[('branch_id', '=', branch_id)] if branch_id else []"/>
+                            <field name="branch_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="date_from" readonly="state != 'draft'"/>
+                            <field name="date_to" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Absent Days" name="absent_days">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                </list>
+                            </field>
+                            <div class="oe_grey">
+                                <p>Note: Please only track days of <b>unauthorized absence</b> or non-leave related absences here. Working days (Mon-Fri) outside of approved leaves will be assumed as "Present" unless recorded here.</p>
+                            </div>
+                        </page>
+                    </notebook>
+                    
+                    <group string="Signatures &amp; Accountability">
+                        <group>
+                            <field name="prepared_by_id"/>
+                            <field name="prepared_on"/>
+                        </group>
+                        <group>
+                            <field name="verified_by_id" invisible="not verified_by_id"/>
+                            <field name="verified_on" invisible="not verified_on"/>
+                        </group>
+                        <group>
+                            <field name="approved_by_id" invisible="not approved_by_id"/>
+                            <field name="approved_on" invisible="not approved_on"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Attendance Sheet Action -->
+    <record id="action_ahadu_attendance_sheet" model="ir.actions.act_window">
+        <field name="name">Attendance Sheets</field>
+        <field name="res_model">ahadu.attendance.sheet</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new attendance sheet!
+            </p>
+            <p>
+                Track manual absenteeism for employees. Makers (Officers) fill the sheets and Checkers (Managers) approve them.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="menu_ahadu_attendance_root" name="Attendance Tracking" parent="menu_ahadu_root" sequence="15" groups="ahadu_payroll.group_attendance_officer,ahadu_payroll.group_attendance_manager,ahadu_payroll.group_branch_attendance_officer,ahadu_payroll.group_branch_attendance_manager"/>
+    
+    <menuitem id="menu_ahadu_attendance_sheet" name="Manual Attendance Sheets" parent="menu_ahadu_attendance_root" action="action_ahadu_attendance_sheet" sequence="10"/>
+
+</odoo>

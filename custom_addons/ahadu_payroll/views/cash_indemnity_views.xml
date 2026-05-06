@@ -6,18 +6,54 @@
         <field name="name">cash.indemnity.type.list</field>
         <field name="model">cash.indemnity.type</field>
         <field name="arch" type="xml">
-            <list editable="bottom">
+            <list string="Cash Indemnity Rules">
                 <field name="name"/>
                 <field name="amount"/>
-                <field name="active"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'submitted'" decoration-success="state == 'approved'"/>
+                <field name="active" widget="boolean_toggle"/>
             </list>
+        </field>
+    </record>
+
+    <record id="view_cash_indemnity_type_form" model="ir.ui.view">
+        <field name="name">cash.indemnity.type.form</field>
+        <field name="model">cash.indemnity.type</field>
+        <field name="arch" type="xml">
+            <form string="Cash Indemnity Rule">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                    <button name="action_approve" string="Approve" type="object" invisible="state != 'submitted'" class="oe_highlight" groups="ahadu_payroll.group_ahadu_payroll_finance_manager"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state == 'draft'" groups="ahadu_payroll.group_ahadu_payroll_finance_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Rule Name e.g. Teller CIA"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="amount"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
         </field>
     </record>
 
     <record id="action_cash_indemnity_type" model="ir.actions.act_window">
         <field name="name">Cash Indemnity Rules</field>
         <field name="res_model">cash.indemnity.type</field>
-        <field name="view_mode">list</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <!-- 2. Cash Indemnity Tracking Views -->
@@ -28,7 +64,9 @@
             <form string="Cash Indemnity Tracking">
                 <header>
                     <button name="action_verify" invisible="state != 'draft'" string="Verify" type="object" class="oe_highlight"/>
+                    <button name="action_open_range_wizard" invisible="state != 'draft'" string="Add Range" type="object" class="oe_highlight" icon="fa-plus-square"/>
                     <button name="action_approve" invisible="state != 'verified'" string="Approve" type="object" class="oe_highlight"/>
+
                     <button name="action_done" invisible="state != 'approved'" string="Mark as Done" type="object" class="oe_highlight"/>
                     <button name="action_draft" invisible="state != 'cancel'" string="Set to Draft" type="object"/>
                     <button name="action_cancel" invisible="state in ('done', 'cancel')" string="Cancel" type="object"/>
@@ -44,13 +82,19 @@
                         <field name="employee_id"/>
                         <field name="date_from" widget="daterange" options='{"related_end_date": "date_to"}' string="Period From"/>
                         <field name="date_to" widget="daterange" options='{"related_start_date": "date_from"}' string="Period To"/>
+                        <!-- <field name="date_to" widget="daterange" options="{'datepicker': {'minDate': 'now'}}" string="Period To"/> -->
                     </group>
                     <notebook>
                         <page string="Daily Lines">
+                            <div class="oe_button_box" name="line_button_box" style="margin-bottom: 10px;">
+                                <button name="action_export_daily_lines" string="Export Lines" type="object" class="btn-secondary" icon="fa-download" invisible="not line_ids"/>
+                                <button name="action_import_daily_lines" string="Import Lines" type="object" class="btn-secondary" icon="fa-upload" invisible="state != 'draft'"/>
+                            </div>
                             <field name="line_ids">
                                 <list editable="bottom">
                                     <field name="date"/>
                                     <field name="indemnity_type_id"/>
+
                                 </list>
                             </field>
                         </page>
@@ -185,7 +229,8 @@
     <menuitem id="menu_cash_indemnity_root"
               name="Cash Indemnity"
               parent="ahadu_payroll.menu_ahadu_root"
-              sequence="25"/>
+              sequence="25"
+              groups="ahadu_payroll.group_attendance_officer,ahadu_payroll.group_attendance_manager,ahadu_payroll.group_branch_attendance_officer,ahadu_payroll.group_branch_attendance_manager"/>
               
     <menuitem id="menu_cash_indemnity_tracking"
               name="Cash Indemnity Tracking"
@@ -203,6 +248,57 @@
               name="Cash Indemnity Rules"
               parent="menu_cash_indemnity_root"
               action="action_cash_indemnity_type"
-              sequence="30"/>
+              sequence="30"
+              groups="ahadu_payroll.group_ahadu_payroll_finance_officer"/>
+
+    <!-- WIZARD -->
+    <record id="view_cash_indemnity_range_wizard_form" model="ir.ui.view">
+        <field name="name">cash.indemnity.range.wizard.form</field>
+        <field name="model">cash.indemnity.range.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Add Range of Indemnity Days">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="tracking_id" readonly="1" invisible="1"/>
+                            <field name="indemnity_type_id"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="skip_sundays"/>
+                            <field name="skip_holidays"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="action_apply" string="Apply" type="object" class="oe_highlight"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- IMPORT WIZARD -->
+    <record id="view_cash_indemnity_import_wizard_form" model="ir.ui.view">
+        <field name="name">cash.indemnity.import.wizard.form</field>
+        <field name="model">cash.indemnity.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Daily Lines from Excel">
+                <sheet>
+                    <group>
+                        <field name="tracking_id" readonly="1" invisible="1"/>
+                        <field name="file" filename="filename"/>
+                        <field name="filename" invisible="1"/>
+                    </group>
+                    <footer>
+                        <button name="action_import" string="Import" type="object" class="oe_highlight"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
     
 </odoo>
+

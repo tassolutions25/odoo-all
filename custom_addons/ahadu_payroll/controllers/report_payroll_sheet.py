@@ -110,22 +110,50 @@ class PayrollSheetReport(AhaduReportCommon):
             filter_info = "Error in header generation"
             # Do NOT call merge_range here to avoid OverlappingRange error
 
-        # Headers (now starting at row 6, index 5)
-        headers = [
+        # Identify all unique loan types present in this batch
+        # Robust identification: Include any loan type marked for payroll deduction 
+        # that has an active approved loan for any employee in this batch.
+        batch_slips = self._get_payslip_lines(batch)
+        employee_ids = batch_slips.mapped('employee_id').ids
+        loan_types = set()
+        if employee_ids:
+            loans = request.env['hr.loan'].search([
+                ('employee_id', 'in', employee_ids),
+                ('state', '=', 'approved'),
+                ('loan_type_id.is_payroll_deduction', '=', True),
+                ('date_start', '<=', batch.date_end)
+            ])
+            loan_types.update(loans.mapped('loan_type_id.name'))
+        
+        sorted_loan_types = sorted(list(loan_types))
+
+
+        # Dynamic Headers
+        base_headers = [
             'SN', 'Employee Name', 'Dept / Branch', 'Emp ID', 'Joining Date', 'TIN', 
             'Basic Salary', 'Liter', 'Fuel Rate', 'Trans. Allow.', 'Taxable Trans.', 
             'Representation', 'Hardship', 'Housing', 'Mobile', 
             'Cash Indemnity', 'Cash Indemnity to Cash Ind A/C', 'Cash Indemnity to S/A', 
             'OT', 'Gross Salary & Ben.', 'Taxable Income', 
-            'Pension (11%)', 'Income Tax', 'Pension (7%)', 
-            'Adv. Loan', 'Pers. Loan', 'Other Loans', 'Other Ded.', 'Cost Sharing', 'Penalty', 'Loss of Pay', 
-            'Total Ded.', 'Net Income', 
-            'Bank Account', 'Adv Loan Acc', 'Pers Loan Acc', 'Cash Ind Acc'
+            'Pension (11%)', 'Income Tax', 'Pension (7%)'
         ]
+        
+        # Append dynamic loan columns
+        headers = base_headers + sorted_loan_types
+        
+        # Append remaining standard columns
+        headers += ['Other Ded.', 'Cost Sharing', 'Penalty', 'Loss of Pay', 'Total Ded.', 'Net Income']
+        
+        # Append bank accounts
+        headers.append('Bank Account')
+        for lt in sorted_loan_types:
+            headers.append(f"{lt} Acc")
+        headers.append('Cash Ind Acc')
+
         
         group_header_title_fmt = workbook.add_format({'bold': True, 'font_size': 12, 'align': 'center', 'valign': 'vcenter', 'color': '#840036', 'underline': True})
         
-        fuel_price_global = float(request.env['ir.config_parameter'].sudo().get_param('ahadu_hr.fuel_price_per_liter', 0.0))
+        # Sections
         
         all_slips = list(self._get_payslip_lines(batch))
         clerical_slips = [s for s in all_slips if s.employee_id.ahadu_employee_type_id.code == 'CL_STAFF']
@@ -137,8 +165,9 @@ class PayrollSheetReport(AhaduReportCommon):
                 return start_row, start_seq
 
             # 1. Section Title (Centered Outside Table)
-            worksheet.merge_range(start_row, 0, start_row, 36, title, group_header_title_fmt)
+            worksheet.merge_range(start_row, 0, start_row, len(headers) - 1, title, group_header_title_fmt)
             start_row += 1
+
 
             # 2. Table Headers
             for col, h in enumerate(headers): 
@@ -147,7 +176,8 @@ class PayrollSheetReport(AhaduReportCommon):
             start_row += 1
 
             # 3. Initialize Section Sums
-            section_sums = {k: 0.0 for k in sums.keys()}
+            section_sums = {k: 0.0 for k in sums.keys() if k != 'loans'}
+            section_sums['loans'] = {lt: 0.0 for lt in sorted_loan_types}
 
             # 4. Write Data Rows
             # Reuse write_slips logic but specialized here to avoid complexity of passing too many args if we extracted it fully.
@@ -157,39 +187,15 @@ class PayrollSheetReport(AhaduReportCommon):
             
             for slip in slips:
                 employee = slip.employee_id
-                fuel_rate = fuel_price_global
+                fuel_rate = slip._get_weighted_fuel_rate()
+                loan_details = slip._get_loan_details_by_type()
+
                 
                 # Bank Accounts
                 bank_accounts = request.env['hr.employee.bank.account'].sudo().search([('employee_id', '=', employee.id)])
                 salary_acc = bank_accounts.filtered(lambda a: a.account_type == 'salary')[:1].account_number or ''
                 ci_acc = bank_accounts.filtered(lambda a: a.account_type == 'cash_indemnity')[:1].account_number or ''
-                
-                # Loan account(s)
-                active_loans_adv = request.env['hr.loan'].sudo().search([
-                    ('employee_id', '=', employee.id),
-                    ('state', '=', 'approved'),
-                    ('date_start', '<=', slip.date_to),
-                    ('loan_type_id.name', '=', 'Emergency/Salary Advance Loan')
-                ])
-                active_loans_pers = request.env['hr.loan'].sudo().search([
-                    ('employee_id', '=', employee.id),
-                    ('state', '=', 'approved'),
-                    ('date_start', '<=', slip.date_to),
-                    ('loan_type_id.name', '=', 'Personal Staff Loan')
-                ])
-                
-                adv_loan_acc = active_loans_adv[0].bank_account_id.account_number if active_loans_adv and active_loans_adv[0].bank_account_id else ''
-                pers_loan_acc = active_loans_pers[0].bank_account_id.account_number if active_loans_pers and active_loans_pers[0].bank_account_id else ''
-                
-                # Fallbacks if none found
-                if not adv_loan_acc and not pers_loan_acc:
-                    # Generic fallback if no specific loan accounts found
-                    gen_loan_acc = bank_accounts.filtered(lambda a: a.account_type == 'loan_settlement')[:1].account_number or ''
-                    # If we don't have specific ones, maybe one of them is the generic one? 
-                    # For now just leave as is or assign to pers?
-                    pass
-                
-                
+
                 
                 trans_amt = self._get_rule_total(slip, 'TRANS')
                 vals = {
@@ -212,19 +218,21 @@ class PayrollSheetReport(AhaduReportCommon):
                     'gross': self._get_rule_total(slip, 'GROSS'), 
                     't_income': slip._get_ahadu_taxable_gross(), 
                     'p_comp': self._get_rule_total(slip, 'PENSION_COMP'), 
-                    'tax': self._get_rule_total(slip, 'TAX') + slip.cash_indemnity_tax, 
+                    'tax': self._get_rule_total(slip, 'TAX'), 
                     'p_emp': self._get_rule_total(slip, 'PENSION_EMP'), 
-                    'adv_loan': slip._get_ahadu_advance_loan_deduction(), 
-                    'pers_loan': slip._get_ahadu_personal_loan_deduction(), 
-                    'other_loan': slip._get_ahadu_other_loan_deduction(), 
-                    'savings': self._get_rule_total(slip, 'SAVINGS'), 
-                    'credit_assoc': self._get_rule_total(slip, 'CREDIT_ASSOC'), 
-                    'penalty': abs(self._get_rule_total(slip, 'PENALTY')), 
-                    'lop_leave': self._get_rule_total(slip, 'LOP_LEAVE'), 
+                    # Dynamic loans
+                    'loans': {lt: loan_details.get(lt, {}).get('amount', 0.0) for lt in sorted_loan_types},
+                    'loan_accounts': {lt: loan_details.get(lt, {}).get('account', '') for lt in sorted_loan_types},
+                    'savings': self._get_rule_total(slip, 'SAVINGS'),
+                    'credit_assoc': self._get_rule_total(slip, 'CREDIT_ASSOC'),
                     'other_ded': self._get_rule_total(slip, 'OTHER_DED'), 
                     'c_sharing': self._get_rule_total(slip, 'COST_SHARING'),
+                    'penalty': abs(self._get_rule_total(slip, 'PENALTY')), 
+                    'lop_leave': self._get_rule_total(slip, 'LOP_LEAVE'), 
                     'total_ded': sum(slip.line_ids.filtered(lambda r: r.category_id.code == 'DED').mapped('total')), 
-                    'net': self._get_rule_total(slip, 'NET')
+                    'net': self._get_rule_total(slip, 'NET'),
+                    'salary_acc': salary_acc,
+                    'ci_acc': ci_acc
                 }
                 
                 worksheet.write(current_row, 0, current_seq, data_fmt)
@@ -240,8 +248,10 @@ class PayrollSheetReport(AhaduReportCommon):
                 worksheet.write(current_row, 3, employee.employee_id or '', data_fmt)
                 worksheet.write(current_row, 4, slip.contract_id.date_start.strftime('%Y-%m-%d') if slip.contract_id.date_start else '', data_fmt)
                 worksheet.write(current_row, 5, employee.tin_number or '', data_fmt)
+                
+                # Fixed Columns up to index 23 (Pension 7%)
                 worksheet.write(current_row, 6, vals['basic'], money_fmt)
-                worksheet.write(current_row, 7, employee.transport_allowance_liters, data_fmt)
+                worksheet.write(current_row, 7, slip._get_ahadu_prorated_fuel_liters(), data_fmt)
                 worksheet.write(current_row, 8, fuel_rate, money_fmt)
                 worksheet.write(current_row, 9, vals['trans'], money_fmt)
                 worksheet.write(current_row, 10, vals['tax_trans'], money_fmt)
@@ -258,24 +268,39 @@ class PayrollSheetReport(AhaduReportCommon):
                 worksheet.write(current_row, 21, vals['p_comp'], money_fmt)
                 worksheet.write(current_row, 22, vals['tax'], money_fmt)
                 worksheet.write(current_row, 23, vals['p_emp'], money_fmt)
-                worksheet.write(current_row, 24, vals['adv_loan'], money_fmt)
-                worksheet.write(current_row, 25, vals['pers_loan'], money_fmt)
-                worksheet.write(current_row, 26, vals['other_loan'], money_fmt)
-                worksheet.write(current_row, 27, vals['other_ded'], money_fmt)
-                worksheet.write(current_row, 28, vals['c_sharing'], money_fmt)
-                worksheet.write(current_row, 29, vals['penalty'], money_fmt)
-                worksheet.write(current_row, 30, vals['lop_leave'], money_fmt)
-                worksheet.write(current_row, 31, vals['total_ded'], money_fmt)
-                worksheet.write(current_row, 32, vals['net'], money_fmt)
-                worksheet.write(current_row, 33, salary_acc, data_fmt)
-                worksheet.write(current_row, 34, adv_loan_acc, data_fmt)
-                worksheet.write(current_row, 35, pers_loan_acc, data_fmt)
-                worksheet.write(current_row, 36, ci_acc, data_fmt)
+                
+                curr_col = 24
+                # Dynamic Loan Columns
+                for lt in sorted_loan_types:
+                    amt = vals['loans'][lt]
+                    worksheet.write(current_row, curr_col, amt, money_fmt)
+                    curr_col += 1
+                
+                # Remaining Deductions
+                worksheet.write(current_row, curr_col, vals['other_ded'], money_fmt); curr_col += 1
+                worksheet.write(current_row, curr_col, vals['c_sharing'], money_fmt); curr_col += 1
+                worksheet.write(current_row, curr_col, vals['penalty'], money_fmt); curr_col += 1
+                worksheet.write(current_row, curr_col, vals['lop_leave'], money_fmt); curr_col += 1
+                worksheet.write(current_row, curr_col, vals['total_ded'], money_fmt); curr_col += 1
+                worksheet.write(current_row, curr_col, vals['net'], money_fmt); curr_col += 1
+                
+                # Bank Accounts
+                worksheet.write(current_row, curr_col, vals['salary_acc'], data_fmt); curr_col += 1
+                for lt in sorted_loan_types:
+                    worksheet.write(current_row, curr_col, vals['loan_accounts'][lt], data_fmt)
+                    curr_col += 1
+                worksheet.write(current_row, curr_col, vals['ci_acc'], data_fmt)
+
                 
                 for k in section_sums: 
-                    section_sums[k] += vals[k]
+                    if k == 'loans':
+                        for lt in sorted_loan_types:
+                            section_sums['loans'][lt] += vals['loans'].get(lt, 0.0)
+                    elif k in vals:
+                        section_sums[k] += vals[k]
                     
                 current_row += 1; current_seq += 1
+
 
             # 5. Write Section Totals
             worksheet.merge_range(current_row, 0, current_row, 5, 'SECTION TOTALS:', total_header_fmt)
@@ -297,28 +322,39 @@ class PayrollSheetReport(AhaduReportCommon):
             worksheet.write(current_row, 21, section_sums['p_comp'], total_money_fmt)
             worksheet.write(current_row, 22, section_sums['tax'], total_money_fmt)
             worksheet.write(current_row, 23, section_sums['p_emp'], total_money_fmt)
-            worksheet.write(current_row, 24, section_sums['adv_loan'], total_money_fmt)
-            worksheet.write(current_row, 25, section_sums['pers_loan'], total_money_fmt)
-            worksheet.write(current_row, 26, section_sums['other_loan'], total_money_fmt)
-            worksheet.write(current_row, 27, section_sums['other_ded'], total_money_fmt)
-            worksheet.write(current_row, 28, section_sums['c_sharing'], total_money_fmt)
-            worksheet.write(current_row, 29, section_sums['penalty'], total_money_fmt)
-            worksheet.write(current_row, 30, section_sums['lop_leave'], total_money_fmt)
-            worksheet.write(current_row, 31, section_sums['total_ded'], total_money_fmt)
-            worksheet.write(current_row, 32, section_sums['net'], total_money_fmt)
-            worksheet.merge_range(current_row, 33, current_row, 36, '', total_money_fmt)
+            
+            curr_col = 24
+            for lt in sorted_loan_types:
+                amt = section_sums.get('loans', {}).get(lt, 0.0)
+                worksheet.write(current_row, curr_col, amt, total_money_fmt)
+                global_sums.setdefault('loans', {}).setdefault(lt, 0.0)
+                global_sums['loans'][lt] += amt
+                curr_col += 1
+            
+            worksheet.write(current_row, curr_col, section_sums['other_ded'], total_money_fmt); curr_col += 1
+            worksheet.write(current_row, curr_col, section_sums['c_sharing'], total_money_fmt); curr_col += 1
+            worksheet.write(current_row, curr_col, section_sums['penalty'], total_money_fmt); curr_col += 1
+            worksheet.write(current_row, curr_col, section_sums['lop_leave'], total_money_fmt); curr_col += 1
+            worksheet.write(current_row, curr_col, section_sums['total_ded'], total_money_fmt); curr_col += 1
+            worksheet.write(current_row, curr_col, section_sums['net'], total_money_fmt); curr_col += 1
+            
+            worksheet.merge_range(current_row, curr_col, current_row, len(headers)-1, '', total_money_fmt)
 
-            # Accumulate Global Sums
+            # Accumulate Global Sums (except dynamic loans which are handled above)
             for k in global_sums:
-                global_sums[k] += section_sums[k]
+                if k != 'loans':
+                    global_sums[k] += section_sums.get(k, 0.0)
 
             # 6. Spacing
             current_row += 3 # 1 for total + 2 for spacing
+
             return current_row, current_seq
 
         # Process each section
         row = 7; seq = 1
-        sums = {k: 0.0 for k in ['full_basic', 'basic', 'trans', 'tax_trans', 'rep', 'house', 'hardship', 'cash_ind', 'ci_gross', 'ci_tax', 'ci_to_bal', 'ci_to_sal', 'mobile', 'other_alw', 'lop_adj', 'ot', 'gross', 't_income', 'p_comp', 'tax', 'p_emp', 'adv_loan', 'pers_loan', 'other_loan', 'savings', 'credit_assoc', 'penalty', 'lop_leave', 'other_ded', 'c_sharing', 'total_ded', 'net']}
+        sums = {k: 0.0 for k in ['full_basic', 'basic', 'trans', 'tax_trans', 'rep', 'house', 'hardship', 'cash_ind', 'ci_gross', 'ci_tax', 'ci_to_bal', 'ci_to_sal', 'mobile', 'other_alw', 'lop_adj', 'ot', 'gross', 't_income', 'p_comp', 'tax', 'p_emp', 'savings', 'credit_assoc', 'penalty', 'lop_leave', 'other_ded', 'c_sharing', 'total_ded', 'net']}
+        sums['loans'] = {lt: 0.0 for lt in sorted_loan_types}
+
 
         row, seq = write_section("PAYMENT OF SALARY FOR CLERICAL STAFFS", clerical_slips, row, seq, sums)
         row, seq = write_section("PAYMENT OF SALARY FOR NON CLERICAL STAFFS", non_clerical_slips, row, seq, sums)
@@ -332,30 +368,33 @@ class PayrollSheetReport(AhaduReportCommon):
         worksheet.write(row, 9, sums['trans'], total_money_fmt)
         worksheet.write(row, 10, sums['tax_trans'], total_money_fmt)
         worksheet.write(row, 11, sums['rep'], total_money_fmt)
-        worksheet.write(row, 12, sums['hardship'], total_money_fmt)  # NEW: Hardship total
+        worksheet.write(row, 12, sums['hardship'], total_money_fmt)
         worksheet.write(row, 13, sums['house'], total_money_fmt)
         worksheet.write(row, 14, sums['mobile'], total_money_fmt)
-        # Cash Indemnity totals (15-17)
         worksheet.write(row, 15, sums['ci_gross'], total_money_fmt)
         worksheet.write(row, 16, sums['ci_to_bal'], total_money_fmt)
         worksheet.write(row, 17, sums['ci_to_sal'], total_money_fmt)
-        # All subsequent columns shifted by +1 for hardship
         worksheet.write(row, 18, sums['ot'], total_money_fmt)
         worksheet.write(row, 19, sums['gross'], total_money_fmt)
         worksheet.write(row, 20, sums['t_income'], total_money_fmt)
         worksheet.write(row, 21, sums['p_comp'], total_money_fmt)
         worksheet.write(row, 22, sums['tax'], total_money_fmt)
         worksheet.write(row, 23, sums['p_emp'], total_money_fmt)
-        worksheet.write(row, 24, sums['adv_loan'], total_money_fmt)
-        worksheet.write(row, 25, sums['pers_loan'], total_money_fmt)
-        worksheet.write(row, 26, sums['other_loan'], total_money_fmt)
-        worksheet.write(row, 27, sums['other_ded'], total_money_fmt)
-        worksheet.write(row, 28, sums['c_sharing'], total_money_fmt)
-        worksheet.write(row, 29, sums['penalty'], total_money_fmt)
-        worksheet.write(row, 30, sums['lop_leave'], total_money_fmt)
-        worksheet.write(row, 31, sums['total_ded'], total_money_fmt)
-        worksheet.write(row, 32, sums['net'], total_money_fmt)
-        worksheet.merge_range(row, 33, row, 36, '', total_money_fmt)
+        
+        curr_col = 24
+        for lt in sorted_loan_types:
+            amt = sums.get('loans', {}).get(lt, 0.0)
+            worksheet.write(row, curr_col, amt, total_money_fmt)
+            curr_col += 1
+            
+        worksheet.write(row, curr_col, sums['other_ded'], total_money_fmt); curr_col += 1
+        worksheet.write(row, curr_col, sums['c_sharing'], total_money_fmt); curr_col += 1
+        worksheet.write(row, curr_col, sums['penalty'], total_money_fmt); curr_col += 1
+        worksheet.write(row, curr_col, sums['lop_leave'], total_money_fmt); curr_col += 1
+        worksheet.write(row, curr_col, sums['total_ded'], total_money_fmt); curr_col += 1
+        worksheet.write(row, curr_col, sums['net'], total_money_fmt); curr_col += 1
+        worksheet.merge_range(row, curr_col, row, len(headers)-1, '', total_money_fmt)
+
 
         # Analysis Sections
         row += 3
@@ -396,21 +435,29 @@ class PayrollSheetReport(AhaduReportCommon):
         worksheet.write(row + 1, 8, 'Amount', summary_title_fmt)
         
         credits = [
-            ('Income Tax', self._get_gl_codes(['TAX', 'CI_TAX'], 'credit'), sums['tax']), 
+            ('Income Tax', self._get_gl_codes(['TAX'], 'credit'), sums['tax']), 
             ('Pension Payable (18%)', self._get_gl_codes(['PENSION_EMP', 'PENSION_COMP'], 'credit'), sums['p_emp'] + sums['p_comp']), 
-            ('Net Salary Payable', self._get_gl_codes('NET', 'credit'), sums['net'] - (sums['ci_to_bal'] + sums['ci_to_sal'])), 
+            ('Net Salary Payable', self._get_gl_codes('NET', 'credit'), sums['net'] - sums['ci_to_sal']), 
             ('Cost Sharing Payable', self._get_gl_codes('COST_SHARING', 'credit'), sums['c_sharing']), 
             ('Cash Indemnity Staff Account', self._get_gl_codes('CASH_IND', 'credit'), sums['ci_to_bal']), 
             ('Cash Indemnity to Salary Account', self._get_gl_codes('NET', 'credit'), sums['ci_to_sal']), 
-            ('Staff Loan Settlement Account (Adv)', self._get_gl_codes('LOAN', 'credit'), sums['adv_loan']), 
-            ('Staff Loan Settlement Account (Pers)', self._get_gl_codes('LOAN', 'credit'), sums['pers_loan']), 
-            ('Other Loan Repayment', self._get_gl_codes('LOAN', 'credit'), sums['other_loan']), 
+        ]
+        
+        # Add dynamic loans to credit analysis
+        dynamic_loans = sums.get('loans', {})
+        for lt_name, lt_total in dynamic_loans.items():
+            if lt_total > 0:
+                gl = '1010203' if 'personal' in lt_name.lower() else '1010202'
+                credits.append((f"Staff Loan Settlement ({lt_name})", gl, lt_total))
+
+        credits += [
             ('Savings Payable', self._get_gl_codes('SAVINGS', 'credit'), sums['savings']), 
             ('Credit Association Payable', self._get_gl_codes('CREDIT_ASSOC', 'credit'), sums['credit_assoc']), 
             ('Penalty Deduction', self._get_gl_codes('PENALTY', 'credit'), sums['penalty']), 
             ('Loss of Pay (LOP)', self._get_gl_codes('LOP_LEAVE', 'credit'), sums['lop_leave']), 
             ('Other Payable Account', self._get_gl_codes('OTHER_DED', 'credit'), sums['other_ded'])
         ]
+
         
         c_row = row + 2; c_sum = 0
         for desc, gl, val in credits:
@@ -535,11 +582,12 @@ class PayrollSheetReport(AhaduReportCommon):
                     emp_name, f"{ci_acc_num}/{sal_acc_num or 'N/A'}", 
                     allowance, slip)
                 
-                # Ticket 2: Credit Ticket (Tax)
-                t_row = draw_ticket(t_row, "Credit Ticket", False, 
-                    "cash indemnity allowance", acc_allowance, 
-                    "income tax payable", acc_tax, 
-                    tax, slip)
+                # Ticket 2: Credit Ticket (Tax) - Skip if tax is 0 (now handled by general income tax)
+                if tax > 0:
+                    t_row = draw_ticket(t_row, "Credit Ticket", False, 
+                        "cash indemnity allowance", acc_allowance, 
+                        "income tax payable", acc_tax, 
+                        tax, slip)
 
                 # Ticket 3: Credit Ticket (Net CI)
                 if net_ci > 0:

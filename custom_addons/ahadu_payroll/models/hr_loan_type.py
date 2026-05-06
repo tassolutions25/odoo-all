@@ -22,6 +22,8 @@ class HrLoanType(models.Model):
         help="Maximum allows months for repayment."
     )
     is_credit_committee_required = fields.Boolean(string='Credit Committee Approval Required', default=True)
+    is_payroll_deduction = fields.Boolean(string='Is Payroll Deduction?', default=False, help="If checked, loans of this type will be deducted from payslips.")
+
     
     bank_account_type = fields.Selection([
         ('salary_advance', 'Salary Advance Account'),
@@ -29,6 +31,8 @@ class HrLoanType(models.Model):
         ('saving', 'Saving Account'),
         ('other', 'Other Account')
     ], string='Bank Account Type', default='loan_settlement', required=True)
+
+    api_product_code = fields.Char(string='API Product Code', help="Match the 'loanProduct' field from the external API.")
 
     active = fields.Boolean(default=True)
 

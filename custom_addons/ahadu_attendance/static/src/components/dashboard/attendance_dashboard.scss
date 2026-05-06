@@ -73,6 +73,13 @@
             }
         }
 
+        &.on-duty {
+            .kpi-icon {
+                background: linear-gradient(135deg, #6366f1, #4f46e5);
+                /* Indigo/Purple */
+            }
+        }
+
         &.late {
             .kpi-icon {
                 background: linear-gradient(135deg, #8A0037, #8A0037);
@@ -240,6 +247,31 @@
                 }
             }
 
+            &.stat-on-leave {
+                background: #f1f5f9;
+
+                .stat-icon {
+                    background: #e2e8f0;
+                }
+
+                .stat-value {
+                    color: var(--ahadu-accent);
+                }
+            }
+
+            &.stat-on-duty {
+                background: #eef2ff;
+
+                .stat-icon {
+                    background: #e0e7ff;
+                    color: #4f46e5;
+                }
+
+                .stat-value {
+                    color: #4f46e5;
+                }
+            }
+
             .stat-label {
                 flex-grow: 1;
                 font-size: 0.8rem;
@@ -359,6 +391,12 @@
                         border: 1px dashed #1565c0 !important;
                     }
 
+                    &.on_duty {
+                        background-color: #eef2ff !important;
+                        color: #4f46e5;
+                        border: 1px solid #6366f1 !important;
+                    }
+
                     &.weekend,
                     &.not-scheduled {
                         background-color: #f1f5f9 !important;
@@ -414,6 +452,11 @@
                     &.on-leave {
                         background-color: #e3f2fd;
                         border: 1px solid #1565c0;
+                    }
+
+                    &.on_duty {
+                        background-color: #eef2ff;
+                        border: 1px solid #6366f1;
                     }
                 }
             }

@@ -3,7 +3,6 @@
     "name": "Payroll Accounting",
     "version": "18.0.1.0.2",
     "category": "Payroll",
-    "website": "",
     "license": "LGPL-3",
     "summary": "Manage your payroll to accounting",
     "author": "Odoo SA, Odoo Community Association (OCA)",

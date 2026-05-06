@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- ============================================================ -->
+        <!--  Template 1: Notify Manager for Approval                      -->
+        <!-- ============================================================ -->
+        <record id="email_template_od_manager_approval" model="mail.template">
+            <field name="name">On-Duty: Request for Manager Approval</field>
+            <field name="model_id" ref="ahadu_on_duty.model_hr_on_duty"/>
+            <field name="subject">On-Duty Request from {{ object.employee_id.name }} requires your approval</field>
+            <field name="email_to">{{ object.manager_id.work_email }}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; font-size: 14px; max-width: 600px; margin: auto;">
+    <div style="background: linear-gradient(135deg, #8A0037, #B91C5C); padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0;">On-Duty Request</h2>
+        <p style="color: rgba(255,255,255,0.8); margin: 5px 0 0;">Awaiting Your Approval</p>
+    </div>
+    <div style="padding: 25px; background: #ffffff; border: 1px solid #e5e7eb;">
+        <p>Dear <t t-out="object.manager_id.name or 'Manager'">Manager</t>,</p>
+        <p>An On-Duty request has been submitted and requires your approval:</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Employee</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.employee_id.name or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Reference</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.name or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Type</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.od_type or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>From</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.date_from or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>To</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.date_to or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Reason</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.reason_type or ''"/></td></tr>
+        </table>
+        <div style="text-align: center; margin: 25px 0;">
+            <a t-attf-href="{{ object.get_base_url() }}/web#id={{ object.id }}&amp;model=hr.on.duty&amp;view_type=form"
+               style="background-color: #8A0037; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                Review &amp; Approve
+            </a>
+        </div>
+    </div>
+    <div style="background: #f9fafb; padding: 15px; border-radius: 0 0 10px 10px; text-align: center; border: 1px solid #e5e7eb; border-top: none;">
+        <p style="margin: 0; color: #9ca3af; font-size: 12px;">Ahadu Bank HR System</p>
+    </div>
+</div>
+            ]]></field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Template 2: Notify HR for Approval                           -->
+        <!-- ============================================================ -->
+        <record id="email_template_od_hr_approval" model="mail.template">
+            <field name="name">On-Duty: Request for HR Approval</field>
+            <field name="model_id" ref="ahadu_on_duty.model_hr_on_duty"/>
+            <field name="subject">On-Duty Request {{ object.name }} - HR Approval Required</field>
+            <field name="email_to">{{ (object.company_id.hr_email or '') }}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; font-size: 14px; max-width: 600px; margin: auto;">
+    <div style="background: linear-gradient(135deg, #8A0037, #B91C5C); padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0;">On-Duty Request</h2>
+        <p style="color: rgba(255,255,255,0.8); margin: 5px 0 0;">Manager Approved — HR Review Required</p>
+    </div>
+    <div style="padding: 25px; background: #ffffff; border: 1px solid #e5e7eb;">
+        <p>Dear HR Team,</p>
+        <p>The following On-Duty request has been approved by the employee's manager and now requires HR review for banking compliance:</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Employee</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.employee_id.name or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Department</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.department_id.name or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Type</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.od_type or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>From - To</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.date_from or ''"/> – <t t-out="object.date_to or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Reason</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.reason_type or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Manager</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.manager_approved_by.name or ''"/> (Approved: <t t-out="object.manager_approved_date or ''"/>)</td></tr>
+        </table>
+        <div style="text-align: center; margin: 25px 0;">
+            <a t-attf-href="{{ object.get_base_url() }}/web#id={{ object.id }}&amp;model=hr.on.duty&amp;view_type=form"
+               style="background-color: #8A0037; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                Review &amp; Approve
+            </a>
+        </div>
+    </div>
+    <div style="background: #f9fafb; padding: 15px; border-radius: 0 0 10px 10px; text-align: center; border: 1px solid #e5e7eb; border-top: none;">
+        <p style="margin: 0; color: #9ca3af; font-size: 12px;">Ahadu Bank HR System</p>
+    </div>
+</div>
+            ]]></field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Template 3: Notify Employee on Approval / Rejection          -->
+        <!-- ============================================================ -->
+        <record id="email_template_od_status_update" model="mail.template">
+            <field name="name">On-Duty: Status Update</field>
+            <field name="model_id" ref="ahadu_on_duty.model_hr_on_duty"/>
+            <field name="subject">Your On-Duty Request {{ object.name }} has been {{ object.state }}</field>
+            <field name="email_to">{{ object.employee_id.work_email }}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; font-size: 14px; max-width: 600px; margin: auto;">
+    <div style="background: linear-gradient(135deg, #8A0037, #B91C5C); padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0;">On-Duty Request Update</h2>
+    </div>
+    <div style="padding: 25px; background: #ffffff; border: 1px solid #e5e7eb;">
+        <p>Dear <t t-out="object.employee_id.name or 'Employee'">Employee</t>,</p>
+        <p>Your On-Duty request <strong><t t-out="object.name or ''"/></strong> has been updated:</p>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <t t-if="object.state == 'approved'">
+                <span style="background: #10B981; color: #fff; padding: 10px 25px; border-radius: 20px; font-weight: bold; font-size: 16px;">✓ APPROVED</span>
+                <p style="color: #6b7280; margin-top: 10px;">Virtual attendance records have been created automatically.</p>
+            </t>
+            <t t-if="object.state == 'rejected'">
+                <span style="background: #EF4444; color: #fff; padding: 10px 25px; border-radius: 20px; font-weight: bold; font-size: 16px;">✗ REJECTED</span>
+                <t t-if="object.rejection_reason">
+                    <p style="color: #6b7280; margin-top: 10px;"><strong>Reason:</strong> <t t-out="object.rejection_reason or ''"/></p>
+                </t>
+            </t>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Type</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.od_type or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Period</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="object.date_from or ''"/> – <t t-out="object.date_to or ''"/></td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #6b7280;"><strong>Total Hours</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><t t-out="'%.2f' % object.total_hours"/> hrs</td></tr>
+        </table>
+        <div style="text-align: center; margin: 25px 0;">
+            <a t-attf-href="{{ object.get_base_url() }}/web#id={{ object.id }}&amp;model=hr.on.duty&amp;view_type=form"
+               style="background-color: #8A0037; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                View Request
+            </a>
+        </div>
+    </div>
+    <div style="background: #f9fafb; padding: 15px; border-radius: 0 0 10px 10px; text-align: center; border: 1px solid #e5e7eb; border-top: none;">
+        <p style="margin: 0; color: #9ca3af; font-size: 12px;">Ahadu Bank HR System</p>
+    </div>
+</div>
+            ]]></field>
+        </record>
+    </data>
+</odoo>

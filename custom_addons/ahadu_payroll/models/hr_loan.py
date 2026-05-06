@@ -16,9 +16,16 @@ class HrLoan(models.Model):
     principal_amount = fields.Monetary(string='Requested Amount', required=True, tracking=True)
     interest_rate = fields.Float(string='Interest Rate (%)', related='loan_type_id.interest_rate', readonly=False, store=True)
     installment_months = fields.Integer(string='Installment Period (Months)', required=True, tracking=True)
-    monthly_installment = fields.Monetary(string='Monthly Installment', compute='_compute_installment', store=True)
-    total_repayment = fields.Monetary(string='Total Repayment', compute='_compute_installment', store=True)
-    total_interest = fields.Monetary(string='Total Interest', compute='_compute_installment', store=True)
+    monthly_installment = fields.Monetary(string='Monthly Installment', compute='_compute_installment', store=True, readonly=False)
+    total_repayment = fields.Monetary(string='Total Repayment', compute='_compute_installment', store=True, readonly=False)
+    total_interest = fields.Monetary(string='Total Interest', compute='_compute_installment', store=True, readonly=False)
+
+    # External Loan Fields
+    external_ref = fields.Char(string='External Reference', copy=False, readonly=True)
+    is_external = fields.Boolean(string='Is External', default=False, readonly=True)
+    api_status = fields.Char(string='External Status', readonly=True)
+    api_remaining_amount = fields.Monetary(string='API Remaining Amount', readonly=True)
+    api_account_number = fields.Char(string='API Account Number', readonly=True)
 
     date_request = fields.Date(string='Request Date', default=fields.Date.context_today, readonly=True)
     date_start = fields.Date(string='Payment Start Date', required=True, tracking=True)
@@ -88,9 +95,12 @@ class HrLoan(models.Model):
                 rec.retirement_date = False
                 rec.max_settlement_date = False
 
-    @api.depends('principal_amount', 'interest_rate', 'installment_months')
+    @api.depends('principal_amount', 'interest_rate', 'installment_months', 'is_external')
     def _compute_installment(self):
         for rec in self:
+            if rec.is_external:
+                # Installment is set directly from API, don't recompute
+                continue
             if rec.principal_amount and rec.installment_months > 0:
                 # Flat rate: Total Interest = Principal * rate/100 * (months/12)
                 total_interest = rec.principal_amount * (rec.interest_rate / 100.0) * (rec.installment_months / 12.0)
@@ -108,10 +118,13 @@ class HrLoan(models.Model):
         for rec in self:
             rec.spouse_income_deposit_required = rec.is_spouse_income_used
 
-    @api.depends('total_repayment', 'paid_installments', 'monthly_installment')
+    @api.depends('total_repayment', 'paid_installments', 'monthly_installment', 'is_external', 'api_remaining_amount')
     def _compute_remaining(self):
         for rec in self:
-            rec.remaining_amount = max(0, rec.total_repayment - (rec.paid_installments * rec.monthly_installment))
+            if rec.is_external:
+                rec.remaining_amount = rec.api_remaining_amount
+            else:
+                rec.remaining_amount = max(0, rec.total_repayment - (rec.paid_installments * rec.monthly_installment))
 
     def increment_paid_installment(self):
         for rec in self:
@@ -125,6 +138,9 @@ class HrLoan(models.Model):
                      self.env.user.has_group('ahadu_payroll.group_head_office_payroll') or \
                      self.env.user.has_group('base.group_system')
         for rec in self:
+            if rec.is_external:
+                rec.is_editable = False
+                continue
             if not rec.state or rec.state == 'draft':
                 rec.is_editable = True
             elif rec.state == 'approved' and is_manager:
@@ -133,6 +149,7 @@ class HrLoan(models.Model):
                 rec.is_editable = False
 
     def action_submit(self):
+        self._check_manager_restriction()
         self._check_loan_validation()
         self._check_mandatory_documents()
         for rec in self:
@@ -142,7 +159,23 @@ class HrLoan(models.Model):
                 rec.write({'state': 'approved'})
 
     def action_committee_approve(self):
+        # Allow Credit Committee group or Payroll Manager
+        if not (self.env.user.has_group('ahadu_payroll.group_loan_credit_committee') or 
+                self.env.user.has_group('payroll.group_payroll_manager')):
+             raise UserError(_("Only Credit Committee members or Payroll Managers can approve loans."))
         self.write({'state': 'approved'})
+
+    def action_approve(self):
+        if not self.env.user.has_group('payroll.group_payroll_manager'):
+             raise UserError(_("Only Payroll Managers can approve loans."))
+        self.write({'state': 'approved'})
+
+    def _check_manager_restriction(self):
+        """Helper to block Managers from Maker actions."""
+        if self.env.user.has_group('payroll.group_payroll_manager'):
+            if not self.env.user.has_group('base.group_system'):
+                from odoo.exceptions import AccessError
+                raise AccessError(_("Payroll Managers are restricted from this action (Create/Edit/Submit). This action is reserved for Payroll Officers."))
 
     def action_refuse(self):
         return {
@@ -166,6 +199,8 @@ class HrLoan(models.Model):
 
     def _check_loan_validation(self):
         for rec in self:
+            if rec.is_external:
+                continue
             # 1. Eligibility Months from DOJ
             if rec.employee_id.date_of_joining:
                 diff = relativedelta(date.today(), rec.employee_id.date_of_joining)
@@ -207,15 +242,28 @@ class HrLoan(models.Model):
     @api.constrains('installment_months', 'loan_type_id')
     def _check_max_installment(self):
         for rec in self:
+            if rec.is_external:
+                continue
             if rec.loan_type_id and rec.installment_months > rec.loan_type_id.max_installment_months:
                 raise ValidationError(_("Installment period cannot be greater than max installment for that loan type"))
 
     @api.model_create_multi
     def create(self, vals_list):
+        self._check_manager_restriction()
         for vals in vals_list:
             if vals.get('name', 'New') == 'New':
                 vals['name'] = self.env['ir.sequence'].next_by_code('hr.loan') or 'New'
         return super().create(vals_list)
+
+    def write(self, vals):
+        if any(rec.state == 'draft' for rec in self):
+            if not all(k in ['state', 'message_follower_ids', 'activity_ids', 'message_ids'] for k in vals.keys()):
+                self._check_manager_restriction()
+        return super().write(vals)
+
+    def unlink(self):
+        self._check_manager_restriction()
+        return super().unlink()
 
 class HrLoanDocument(models.Model):
     _name = 'hr.loan.document'

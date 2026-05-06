@@ -150,12 +150,21 @@ class CostSharingReport(AhaduReportCommon):
         
         for slip in self._get_payslip_lines(batch):
             # Form 1103 logic
+            cost_share = self._get_rule_total(slip, 'COST_SHARING')
+            
+            # --- FILTERING LOGIC ---
+            # Include: 
+            # 1. Employees who PAID cost sharing (amount > 0)
+            # 2. Employees with 0 but status is still 'unpaid'
+            # Exclude: status != 'unpaid' AND amount == 0
+            if not (cost_share > 0 or slip.employee_id.cost_sharing_status == 'unpaid'):
+                continue
+            
             basic = self._get_rule_total(slip, 'BASIC')
             trans = self._get_rule_total(slip, 'TRANS')
             tax_trans = slip._get_ahadu_taxable_transport()
             total_taxable = slip._get_ahadu_taxable_gross()
             tax = self._get_rule_total(slip, 'TAX')
-            cost_share = self._get_rule_total(slip, 'COST_SHARING')
             net = self._get_rule_total(slip, 'NET')
             
             fullname = slip.employee_id.name

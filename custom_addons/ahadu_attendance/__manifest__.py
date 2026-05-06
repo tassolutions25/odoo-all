@@ -31,7 +31,7 @@
         'data/ir_sequence_data.xml',
         'data/ir_cron_data.xml',
         'data/email_template_data.xml',
-        # 'data/biotime_cron.xml',
+        'data/biotime_cron.xml',
         'data/hr_salary_rule_data.xml',#new
 
         # 'views/hr_employee_views.xml',
@@ -48,8 +48,6 @@
         'views/ab_hr_unplanned_absence_views.xml',
         'views/ab_hr_attendance_sheet_views.xml',
         'views/ab_hr_disciplinary_note_views.xml',
-        'views/ab_hr_duty_request_views.xml',
-        'views/ab_hr_overtime_policy_views.xml', 
         'views/ab_hr_attendance_lateness_reason_views.xml',
         'views/ab_attendance_dashboard_views.xml',
 
@@ -57,9 +55,8 @@
         'views/ab_hr_shift_type_views.xml', 
         'views/ab_hr_shift_schedule_views.xml', 
         'views/ab_hr_shift_swap_views.xml',
-        'views/ab_hr_overtime_request_views.xml', # Modified
+        'views/user_manual_views.xml', # New User Manual view
         'views/ahadu_attendance_menus.xml',
-
          # Reports
         'reports/ab_attendance_reports.xml',
         'reports/ab_attendance_report_templates.xml',
@@ -82,6 +79,10 @@
             'ahadu_attendance/static/src/components/dashboard/attendance_dashboard.xml',
             'ahadu_attendance/static/src/components/dashboard/attendance_dashboard.scss',
             'ahadu_attendance/static/src/css/ot_request.scss',
+            
+            # 4. User Manual Viewer
+            'ahadu_attendance/static/src/components/user_manual/user_manual.js',
+            'ahadu_attendance/static/src/components/user_manual/user_manual.xml',
         ],
     },
     'external_dependencies': {'python': ['requests']},

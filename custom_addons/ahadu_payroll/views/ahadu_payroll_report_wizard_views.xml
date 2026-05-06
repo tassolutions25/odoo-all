@@ -30,11 +30,4 @@
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
-
-    <!-- Menu for custom wizard -->
-    <menuitem id="menu_report_custom_payroll" 
-              name="Custom Payroll Report" 
-              parent="ahadu_payroll.menu_ahadu_reports_root" 
-              action="action_ahadu_payroll_custom_report_wizard" 
-              sequence="40" />
 </odoo>

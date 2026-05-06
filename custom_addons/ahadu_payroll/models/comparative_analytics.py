@@ -10,6 +10,9 @@ class AhaduComparativeAnalytics(models.TransientModel):
     date_from = fields.Date(string='Date From', required=True, default=lambda self: date.today().replace(day=1))
     date_to = fields.Date(string='Date To', required=True, default=lambda self: (date.today().replace(day=1) + relativedelta(months=1)) - timedelta(days=1))
     branch_id = fields.Many2one('hr.branch', string='Branch', help="Select branch to filter analytics. Leave empty for all (HO only).")
+    department_id = fields.Many2one('hr.department', string='Department', help="Select department to filter analytics. Leave empty for all.")
+    region_id = fields.Many2one('hr.region', string='Region', help="Select region to filter analytics. Leave empty for all.")
+    pay_group_id = fields.Many2one('ahadu.pay.group', string='Pay Group', help="Select pay group to filter analytics. Leave empty for all.")
     is_head_office = fields.Boolean(compute='_compute_is_head_office')
 
     # Summary Counts - Current Period
@@ -21,6 +24,7 @@ class AhaduComparativeAnalytics(models.TransientModel):
     demotions_cur = fields.Integer(string='Demotions (Current)')
     acting_cur = fields.Integer(string='Acting Assignments (Current)')
     temporary_cur = fields.Integer(string='Temporary Assignments (Current)')
+    suspensions_cur = fields.Integer(string='Suspensions (Current)')
 
     # Summary Counts - Previous Period
     additions_prev = fields.Integer(string='New Additions (Previous)')
@@ -31,6 +35,7 @@ class AhaduComparativeAnalytics(models.TransientModel):
     demotions_prev = fields.Integer(string='Demotions (Previous)')
     acting_prev = fields.Integer(string='Acting Assignments (Previous)')
     temporary_prev = fields.Integer(string='Temporary Assignments (Previous)')
+    suspensions_prev = fields.Integer(string='Suspensions (Previous)')
 
     # Variances
     additions_var = fields.Integer(string='Additions Variance', compute='_compute_variances')
@@ -41,13 +46,15 @@ class AhaduComparativeAnalytics(models.TransientModel):
     demotions_var = fields.Integer(string='Demotions Variance', compute='_compute_variances')
     acting_var = fields.Integer(string='Acting Variance', compute='_compute_variances')
     temporary_var = fields.Integer(string='Temporary Variance', compute='_compute_variances')
+    suspensions_var = fields.Integer(string='Suspensions Variance', compute='_compute_variances')
 
     detail_ids = fields.One2many('ahadu.comparative.analytics.detail', 'analytics_id', string='Detailed Changes')
 
     @api.depends('additions_cur', 'additions_prev', 'promotions_cur', 'promotions_prev', 
                  'transfers_cur', 'transfers_prev', 'terminations_cur', 'terminations_prev',
                  'salary_cur', 'salary_prev', 'demotions_cur', 'demotions_prev',
-                 'acting_cur', 'acting_prev', 'temporary_cur', 'temporary_prev')
+                 'acting_cur', 'acting_prev', 'temporary_cur', 'temporary_prev',
+                 'suspensions_cur', 'suspensions_prev')
     def _compute_variances(self):
         for rec in self:
             rec.additions_var = rec.additions_cur - rec.additions_prev
@@ -58,6 +65,7 @@ class AhaduComparativeAnalytics(models.TransientModel):
             rec.demotions_var = rec.demotions_cur - rec.demotions_prev
             rec.acting_var = rec.acting_cur - rec.acting_prev
             rec.temporary_var = rec.temporary_cur - rec.temporary_prev
+            rec.suspensions_var = rec.suspensions_cur - rec.suspensions_prev
 
     def _compute_is_head_office(self):
         is_ho = self.env.user.has_group('ahadu_payroll.group_head_office_payroll_officer') or \
@@ -89,6 +97,12 @@ class AhaduComparativeAnalytics(models.TransientModel):
             dom = [(date_field, '>=', start), (date_field, '<=', end)] + extra
             if self.branch_id:
                 dom += [('employee_id.branch_id', '=', self.branch_id.id)]
+            if self.department_id:
+                dom += [('employee_id.department_id', '=', self.department_id.id)]
+            if self.region_id:
+                dom += [('employee_id.region_id', '=', self.region_id.id)]
+            if self.pay_group_id:
+                dom += [('employee_id.contract_id.pay_group_id', '=', self.pay_group_id.id)]
             return dom
 
         def get_emp_domain(date_field, start, end):
@@ -96,6 +110,12 @@ class AhaduComparativeAnalytics(models.TransientModel):
             dom = [(date_field, '>=', start), (date_field, '<=', end)]
             if self.branch_id:
                 dom += [('branch_id', '=', self.branch_id.id)]
+            if self.department_id:
+                dom += [('department_id', '=', self.department_id.id)]
+            if self.region_id:
+                dom += [('region_id', '=', self.region_id.id)]
+            if self.pay_group_id:
+                dom += [('contract_id.pay_group_id', '=', self.pay_group_id.id)]
             return dom
 
 
@@ -108,6 +128,7 @@ class AhaduComparativeAnalytics(models.TransientModel):
         self.demotions_cur = self.env['hr.employee.demotion'].search_count(get_domain('demotion_date', start_date, end_date, [('state', '=', 'approved')]))
         self.acting_cur = self.env['hr.employee.acting'].search_count(get_domain('start_date', start_date, end_date, [('state', '=', 'approved')]))
         self.temporary_cur = self.env['hr.employee.temporary.assignment'].search_count(get_domain('start_date', start_date, end_date, [('state', '=', 'approved')]))
+        self.suspensions_cur = self.env['hr.employee.suspension'].search_count(get_domain('start_date', start_date, end_date, [('state', 'in', ['approved', 'Approved'])]))
 
         # Previous Period Data
         self.additions_prev = self.env['hr.employee'].search_count(get_emp_domain('date_of_joining', prev_start, prev_end))
@@ -118,6 +139,7 @@ class AhaduComparativeAnalytics(models.TransientModel):
         self.demotions_prev = self.env['hr.employee.demotion'].search_count(get_domain('demotion_date', prev_start, prev_end, [('state', '=', 'approved')]))
         self.acting_prev = self.env['hr.employee.acting'].search_count(get_domain('start_date', prev_start, prev_end, [('state', '=', 'approved')]))
         self.temporary_prev = self.env['hr.employee.temporary.assignment'].search_count(get_domain('start_date', prev_start, prev_end, [('state', '=', 'approved')]))
+        self.suspensions_prev = self.env['hr.employee.suspension'].search_count(get_domain('start_date', prev_start, prev_end, [('state', 'in', ['approved', 'Approved'])]))
 
         # Clear and rebuild details
         self.detail_ids.unlink()
@@ -224,7 +246,17 @@ class AhaduComparativeAnalytics(models.TransientModel):
                 'employee_id': term.employee_id.id,
                 'change_type': 'termination',
                 'change_date': term.termination_date,
+                'to_branch_id': term.employee_id.branch_id.id,
                 'description': term.reason or _('Termination')
+            }))
+
+        # 8. Suspensions Details
+        for susp in self.env['hr.employee.suspension'].search(get_domain('start_date', start_date, end_date, [('state', 'in', ['approved', 'Approved'])])):
+            details.append((0, 0, {
+                'employee_id': susp.employee_id.id,
+                'change_type': 'suspension',
+                'change_date': susp.start_date,
+                'description': _('Suspended until %s') % susp.end_date
             }))
 
         self.detail_ids = details
@@ -258,7 +290,8 @@ class AhaduComparativeAnalyticsDetail(models.TransientModel):
         ('acting', 'Acting Assignment'),
         ('temporary', 'Temporary Assignment'),
         ('termination', 'Termination'),
-        ('salary', 'Salary Adjustment')
+        ('salary', 'Salary Adjustment'),
+        ('suspension', 'Suspension')
     ], string='Change Type')
     change_date = fields.Date(string='Date')
     old_salary = fields.Float(string='Old Salary')

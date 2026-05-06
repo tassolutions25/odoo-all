@@ -1,37 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- ============================================================ -->
+    <!--  LIST VIEW                                                    -->
+    <!-- ============================================================ -->
     <record id="view_ab_hr_unplanned_absence_tree" model="ir.ui.view">
         <field name="name">ab.hr.unplanned.absence.tree</field>
         <field name="model">ab.hr.unplanned.absence</field>
         <field name="arch" type="xml">
-            <list decoration-warning="state=='detected'" string="Unplanned Absences">
+            <list string="Unauthorized Absences">
                 <field name="employee_id"/>
-                <field name="date"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
                 <field name="manager_id"/>
-                <field name="state" widget="badge" decoration-info="state == 'excused'" decoration-success="state == 'confirmed'"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'submitted'"
+                       decoration-warning="state == 'detected' or state == 'waiting_justification'"
+                       decoration-danger="state == 'confirmed'"
+                       decoration-success="state == 'excused'"/>
             </list>
         </field>
     </record>
 
+    <!-- ============================================================ -->
+    <!--  FORM VIEW                                                    -->
+    <!-- ============================================================ -->
     <record id="view_ab_hr_unplanned_absence_form" model="ir.ui.view">
         <field name="name">ab.hr.unplanned.absence.form</field>
         <field name="model">ab.hr.unplanned.absence</field>
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_confirm" string="Confirm Absence" type="object" class="btn-primary" invisible="state != 'detected'"/>
-                    <button name="action_excuse" string="Mark as Excused" type="object" invisible="state != 'detected'"/>
-                    <field name="state" widget="statusbar" statusbar_visible="detected,confirmed,excused"/>
+                    <!-- Employee: Submit button on their own draft/detected record -->
+                    <button name="action_submit" string="Submit to Manager" type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_submit_justification" string="Submit Justification" type="object"
+                            class="btn-primary"
+                            invisible="state != 'waiting_justification'"/>
+
+                    <!-- Manager/HR Buttons -->
+                    <button name="action_request_justification" string="Request Justification" type="object"
+                            invisible="state != 'detected' and state != 'submitted'"
+                            groups="ahadu_attendance.group_ahadu_attendance_manager"/>
+                    <button name="action_excuse" string="Excuse Absence" type="object"
+                            class="btn-success"
+                            invisible="state != 'detected' and state != 'submitted' and state != 'waiting_justification'"
+                            groups="ahadu_attendance.group_ahadu_attendance_manager"/>
+                    <button name="action_confirm" string="Confirm Unexcused" type="object"
+                            class="btn-danger"
+                            invisible="state != 'detected' and state != 'submitted' and state != 'waiting_justification'"
+                            groups="ahadu_attendance.group_ahadu_attendance_manager"/>
+
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,submitted,confirmed,excused"/>
                 </header>
                 <sheet>
                     <group>
-                        <field name="employee_id"/>
-                        <field name="date"/>
-                        <field name="manager_id"/>
+                        <group>
+                            <!-- Editable only in draft; locked after submission -->
+                            <field name="employee_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="date_from"
+                                   readonly="state != 'draft'"/>
+                            <field name="date_to"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="manager_id" readonly="1"/>
+                        </group>
                     </group>
                     <notebook>
-                        <page string="Manager Notes">
-                            <field name="notes" placeholder="e.g., Employee called in sick, reason provided..."/>
+                        <page string="Justification">
+                            <field name="justification"
+                                   placeholder="Please explain the reason for this absence..."
+                                   readonly="state not in ('draft','waiting_justification')"/>
+                        </page>
+                        <page string="Manager Notes"
+                              groups="ahadu_attendance.group_ahadu_attendance_manager">
+                            <field name="notes"
+                                   placeholder="e.g., Employee called in sick, reason provided..."/>
                         </page>
                     </notebook>
                 </sheet>
@@ -44,16 +92,67 @@
         </field>
     </record>
 
-    <record id="action_ab_hr_unplanned_absence" model="ir.actions.act_window">
-        <field name="name">Unplanned Absences</field>
+    <!-- ============================================================ -->
+    <!--  ACTIONS                                                      -->
+    <!-- ============================================================ -->
+
+    <!-- Employee: My own unauthorized absences (can create new) -->
+    <record id="action_ab_hr_unplanned_absence_my" model="ir.actions.act_window">
+        <field name="name">My Unauthorized Absences</field>
+        <field name="res_model">ab.hr.unplanned.absence</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="context">{'default_employee_id': uid}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Report an unauthorized absence
+            </p>
+            <p>
+                Click <strong>New</strong> to report an absence, provide your justification, and submit it to your manager for review.
+            </p>
+        </field>
+    </record>
+
+    <!-- Manager: Team pending review -->
+    <record id="action_ab_hr_unplanned_absence_team" model="ir.actions.act_window">
+        <field name="name">Team Absences To Review</field>
+        <field name="res_model">ab.hr.unplanned.absence</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('manager_id.user_id', '=', uid), ('state', 'in', ('submitted','detected','waiting_justification'))]</field>
+    </record>
+
+    <!-- HR Admin: All unauthorized absences -->
+    <record id="action_ab_hr_unplanned_absence_all" model="ir.actions.act_window">
+        <field name="name">All Unauthorized Absences</field>
         <field name="res_model">ab.hr.unplanned.absence</field>
         <field name="view_mode">list,form</field>
     </record>
 
-    <!-- <menuitem
-        id="menu_ab_hr_unplanned_absence"
-        name="Unplanned Absences"
-        parent="ahadu_attendance.menu_ahadu_management_root"
-        action="action_ab_hr_unplanned_absence"
-        sequence="70"/> -->
+    <!-- ============================================================ -->
+    <!--  MENUS                                                        -->
+    <!-- ============================================================ -->
+    <menuitem id="menu_ab_hr_unplanned_absence_root"
+              name="Unauthorized Absences"
+              parent="ahadu_attendance.menu_ahadu_management_root"
+              sequence="70"/>
+
+    <menuitem id="menu_ab_hr_unplanned_absence_my"
+              name="My Absences"
+              parent="menu_ab_hr_unplanned_absence_root"
+              action="action_ab_hr_unplanned_absence_my"
+              sequence="10"/>
+
+    <menuitem id="menu_ab_hr_unplanned_absence_team"
+              name="Team Absences To Review"
+              parent="menu_ab_hr_unplanned_absence_root"
+              action="action_ab_hr_unplanned_absence_team"
+              sequence="20"
+              groups="ahadu_attendance.group_ahadu_attendance_manager"/>
+
+    <menuitem id="menu_ab_hr_unplanned_absence_all"
+              name="All Unauthorized Absences"
+              parent="menu_ab_hr_unplanned_absence_root"
+              action="action_ab_hr_unplanned_absence_all"
+              sequence="30"
+              groups="ahadu_attendance.group_ahadu_attendance_hr_admin"/>
 </odoo>

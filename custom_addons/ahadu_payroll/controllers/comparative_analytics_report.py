@@ -30,7 +30,18 @@ class ComparativeAnalyticsReport(AhaduReportCommon):
         if analytics.branch_id:
             sheet_summary.merge_range('A3:D3', 'Branch: %s' % analytics.branch_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
         
-        row = 4
+        row_f = 4
+        if analytics.department_id:
+            sheet_summary.merge_range(row_f, 0, row_f, 3, 'Department: %s' % analytics.department_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
+            row_f += 1
+        if analytics.region_id:
+            sheet_summary.merge_range(row_f, 0, row_f, 3, 'Region: %s' % analytics.region_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
+            row_f += 1
+        if analytics.pay_group_id:
+            sheet_summary.merge_range(row_f, 0, row_f, 3, 'Pay Group: %s' % analytics.pay_group_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
+            row_f += 1
+        
+        row = row_f + 1
         sheet_summary.write(row, 0, 'Category', header_fmt)
         sheet_summary.write(row, 1, 'Current Period', header_fmt)
         sheet_summary.write(row, 2, 'Previous Period', header_fmt)

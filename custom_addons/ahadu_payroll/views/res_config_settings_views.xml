@@ -9,8 +9,8 @@
             <xpath expr="//form" position="inside">
                 <app data-string="Ahadu Payroll" string="Ahadu Payroll" name="ahadu_payroll">
                     <block title="Payroll Calculations" name="payroll_calculations">
-                        <setting id="attendance_based_payroll_setting" help="Enable this to calculate payroll based on actual attendance records (check-in/out).">
-                            <field name="attendance_based_payroll"/>
+                        <setting id="attendance_based_payroll_setting" help="Select how employee attendance is tracked for payroll calculation.">
+                            <field name="payroll_attendance_mode" widget="radio"/>
                         </setting>
                     </block>
                     <block title="Overtime Rates" name="overtime_rates">
@@ -36,9 +36,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </setting>
-                         <setting id="ci_tax_rate_setting" help="Set the tax rate for Cash Indemnity allowance (Default 35%)." groups="ahadu_payroll.group_ahadu_payroll_finance_officer">
-                            <field name="cash_indemnity_tax_rate"/>
                         </setting>
                     </block>
                 </app>

@@ -110,36 +110,37 @@ class TaxReport(AhaduReportCommon):
             # 8. Cost Sharing
             c_share = self._get_rule_total(slip, 'COST_SHARING')
             
-            # Witing Data
-            worksheet.write(row, 0, slip.employee_id.tin_number or '', border_fmt) # TIN
-            worksheet.write(row, 1, slip.employee_id.name, border_fmt)
-            
-            start_date = slip.contract_id.date_start
-            end_date = slip.contract_id.date_end
-            
-            worksheet.write(row, 2, start_date.strftime('%d/%m/%Y') if start_date else '', date_fmt)
-            worksheet.write(row, 3, end_date.strftime('%d/%m/%Y') if end_date else '', date_fmt)
-            
-            worksheet.write(row, 4, basic, money_fmt)
-            worksheet.write(row, 5, trans, money_fmt)
-            worksheet.write(row, 6, tax_trans, money_fmt)
-            worksheet.write(row, 7, ot, money_fmt)
-            worksheet.write(row, 8, other_taxable, money_fmt)
-            worksheet.write(row, 9, total_taxable, money_fmt)
-            worksheet.write(row, 10, tax, money_fmt)
-            worksheet.write(row, 11, c_share, money_fmt)
-            
-            # Aggregate Totals
-            totals['basic'] += basic
-            totals['trans'] += trans
-            totals['tax_trans'] += tax_trans
-            totals['ot'] += ot
-            totals['other_taxable'] += other_taxable
-            totals['total_taxable'] += total_taxable
-            totals['tax'] += tax
-            totals['cost_sharing'] += c_share
-            
-            row += 1
+            if total_taxable > 0:
+                # Witing Data
+                worksheet.write(row, 0, slip.employee_id.tin_number or '', border_fmt) # TIN
+                worksheet.write(row, 1, slip.employee_id.name, border_fmt)
+                
+                start_date = slip.contract_id.date_start
+                end_date = slip.contract_id.date_end
+                
+                worksheet.write(row, 2, start_date.strftime('%d/%m/%Y') if start_date else '', date_fmt)
+                worksheet.write(row, 3, end_date.strftime('%d/%m/%Y') if end_date else '', date_fmt)
+                
+                worksheet.write(row, 4, basic, money_fmt)
+                worksheet.write(row, 5, trans, money_fmt)
+                worksheet.write(row, 6, tax_trans, money_fmt)
+                worksheet.write(row, 7, ot, money_fmt)
+                worksheet.write(row, 8, other_taxable, money_fmt)
+                worksheet.write(row, 9, total_taxable, money_fmt)
+                worksheet.write(row, 10, tax, money_fmt)
+                worksheet.write(row, 11, c_share, money_fmt)
+                
+                # Aggregate Totals
+                totals['basic'] += basic
+                totals['trans'] += trans
+                totals['tax_trans'] += tax_trans
+                totals['ot'] += ot
+                totals['other_taxable'] += other_taxable
+                totals['total_taxable'] += total_taxable
+                totals['tax'] += tax
+                totals['cost_sharing'] += c_share
+                
+                row += 1
 
         # --- Totals Row ---
         worksheet.merge_range(row, 0, row, 3, 'Total', workbook.add_format({'bold': True, 'align': 'right', 'border': 1}))

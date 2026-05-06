@@ -119,7 +119,7 @@ class TerminationReport(AhaduReportCommon):
             # In main.py I saw: `tax_1 = run.slip_ids._calculate_tax_old(slip.wage + val_per_month)`
             # This looks risky if slip_ids is empty or has multiple.
             # Better to call on `slip`.
-            tax_1 = slip._calculate_tax_old(slip.wage + val_per_month)
+            tax_1 = slip._calculate_dynamic_tax(slip.wage + val_per_month)
             worksheet.write(row, 0, "Less: Tax", label_fmt)
             worksheet.write(row, 4, f"({tax_1:,.2f})", yellow_money_fmt) 
             row += 1
@@ -130,7 +130,7 @@ class TerminationReport(AhaduReportCommon):
             row += 1
             
             # Less: Tax (Second Highlight)
-            tax_2 = slip._calculate_tax_new(slip.wage)
+            tax_2 = slip._calculate_dynamic_tax(slip.wage)
             worksheet.write(row, 0, "Less: Tax", label_bold_fmt) 
             worksheet.write(row, 3, "Less: Tax", label_bold_fmt) 
             worksheet.write(row, 4, f"({tax_2:,.2f})", yellow_money_fmt)

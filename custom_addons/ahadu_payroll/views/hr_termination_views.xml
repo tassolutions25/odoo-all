@@ -34,9 +34,11 @@
                     </div>
                     <group>
                         <group>
-                            <field name="employee_id"/>
+                            <field name="employee_id" context="{'active_test': False}"/>
                             <field name="termination_date"/>
                             <field name="run_id"/>
+                            <field name="prepared_by_id"/>
+                            <field name="approved_by_id"/>
                         </group>
                         <group>
                             <field name="wage"/>
@@ -120,8 +122,10 @@
                 <header>
                     <button name="action_compute_sheet" string="Compute All" type="object" class="oe_highlight" invisible="state != 'draft'"/>
                     <button name="action_confirm" string="Confirm All" type="object" class="oe_highlight" invisible="state != 'calculated'" groups="payroll.group_payroll_manager"/>
+                    <button name="action_print_bank_transfer" string="Bank Transfer" type="object" class="oe_highlight" invisible="state not in ['calculated', 'done']"/>
+                    <button name="action_generate_payslips" string="Generate Payslips" type="object" invisible="state != 'draft'"/>
                     <button name="action_print_excel" string="Print Report" type="object" icon="fa-download" invisible="state == 'draft'"/>
-                    <button name="action_draft" string="Set to Draft" type="object" invisible="state == 'draft'"/>
+                    <button name="action_draft" string="Set to Draft" type="object" invisible="state in ('draft', 'done')"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -133,14 +137,19 @@
                         <group>
                             <field name="date_start"/>
                             <field name="date_end"/>
-                            <field name="branch_id" readonly="1" groups="base.group_user"/>
+                            <field name="branch_id" readonly="state != 'draft'" groups="base.group_user"/>
+                        </group>
+                        <group>
+                            <field name="prepared_by_id"/>
+                            <field name="approved_by_id"/>
+                            <field name="bank_transfer_done"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Payslips">
                             <field name="slip_ids">
                                 <list editable="bottom">
-                                    <field name="employee_id"/>
+                                    <field name="employee_id" context="{'active_test': False}"/>
                                     <field name="termination_date" readonly="1" force_save="1"/>
                                     <field name="wage" optional="show"/>
                                     <field name="leave_days" optional="show"/>

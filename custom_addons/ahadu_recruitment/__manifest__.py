@@ -9,7 +9,6 @@
         customizations specific to Ahadu's needs.
     """,
     'author': 'Your Name',
-    'website': '',
     'depends': [
         'base',
         'hr',
@@ -17,7 +16,7 @@
         'hr_contract',
         'utm',
         'hr_skills',
-        'website',], # This is crucial for inheriting
+        'website',],
     'data': [
         'security/ir.model.access.csv',
         'views/recruitment_views_inherit.xml',

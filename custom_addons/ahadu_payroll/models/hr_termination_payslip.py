@@ -21,6 +21,19 @@ class HrTerminationPayslip(models.Model):
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
     currency_id = fields.Many2one('res.currency', related='company_id.currency_id')
 
+    prepared_by_id = fields.Many2one(
+        'res.users', 
+        string='Prepared By', 
+        readonly=True, 
+        tracking=True
+    )
+    approved_by_id = fields.Many2one(
+        'res.users', 
+        string='Approved By', 
+        readonly=True, 
+        tracking=True
+    )
+
     # --- Leave Pay Fields ---
     wage = fields.Monetary(string='Basic Salary')
     leave_days = fields.Float(string='Unutilized Annual Leave', digits=(16, 2))
@@ -103,6 +116,7 @@ class HrTerminationPayslip(models.Model):
 
     def compute_sheet(self):
         for rec in self:
+            rec.prepared_by_id = self.env.user.id
             rec._compute_values()
             rec.state = 'calculated'
 
@@ -132,7 +146,7 @@ class HrTerminationPayslip(models.Model):
         # "base salary (wage) divided by number of working days of the month multiplied by annual leave balance"
         # Standard working days is usually 30 in Ethiopia for payroll, or 26.
         # User said "working days of the month". Odoo standard is 30 for monthly.
-        DAYS_IN_MONTH = 30
+        DAYS_IN_MONTH = 26
         
         daily_wage = self.wage / DAYS_IN_MONTH
         leave_pay_gross = daily_wage * self.leave_days
@@ -148,13 +162,11 @@ class HrTerminationPayslip(models.Model):
         tax_included_annual = self.wage + leave_pay_per_month
         
         # 6. Less Tax = Tax on (Tax Included Annual)
-        # STEP 6 USES OLD TAX TABLE (0-600 Exempt)
-        less_tax_1 = self._calculate_tax_old(tax_included_annual)
+        less_tax_1 = self._calculate_dynamic_tax(tax_included_annual)
         
         # 7. Tax Excluded Annual Tax = Basic Salary
         # 8. Less: Tax = Tax on (Basic Salary)
-        # STEP 8 USES NEW TAX TABLE (0-2000 Exempt per formula provided)
-        less_tax_2 = self._calculate_tax_new(self.wage)
+        less_tax_2 = self._calculate_dynamic_tax(self.wage)
         
         # 9. Tax Difference
         tax_difference = less_tax_1 - less_tax_2
@@ -200,27 +212,22 @@ class HrTerminationPayslip(models.Model):
         trans_allowance = getattr(self.employee_id, 'transport_allowance_amount', 0.0)
         self.unpaid_transport = round(trans_allowance * ratio, 2)
         
-        # 13. Representation Allowance
-        # "representation_allowance multiplied by basic salary, divided by ... * present"
-        # Note: Rep allowance can be % on employee.
-        rep_percent = getattr(self.employee_id, 'representation_allowance', 0.0)
-        rep_amount = 0.0
-        if rep_percent:
-             rep_amount = (self.wage * rep_percent / 100.0) * ratio
+        # 13. Representation Allowance (Percentage from employee profile or Fixed)
+        # Formula: (percentage / 100.0) * wage
+        rep_fixed = getattr(self.employee_id, 'representation_allowance_fixed', 0.0)
+        if rep_fixed > 0:
+            rep_amount = rep_fixed
+        else:
+            rep_percentage = self.employee_id.representation_allowance or 0.0
+            rep_amount = (rep_percentage / 100.0) * self.wage
+        self.representation_allowance = round(rep_amount * ratio, 2)
         
-        # Also check Benefit Package for fixed rep allowance?
-        # The user formula specifically mentioned "representation_allowance multiplied by basic salary" which implies %.
-        # But for consistency with payslip, we should check package too.
-        # But let's stick to the prompt strict steps: "Representation Allowance = representation_allowance multiplied by basic salary..."
-        self.representation_allowance = round(rep_amount, 2)
-        
-        # 14. Unpaid Housing Allowance
-        # Fetch from Benefit Package
-        housing_base = self._get_benefit_amount(['HOUSING', 'HOUSE', 'HOUSING_ALLOWANCE'])
+        # 14. Unpaid Housing Allowance (from employee profile)
+        housing_base = self.employee_id.housing_allowance or 0.0
         self.unpaid_housing = round(housing_base * ratio, 2)
         
-        # 15. Unpaid Mobile Allowance
-        mobile_base = self._get_benefit_amount(['MOBILE', 'MOB', 'CELL', 'MOBILE_ALLOWANCE'])
+        # 15. Unpaid Mobile Allowance (from employee profile)
+        mobile_base = self.employee_id.mobile_allowance or 0.0
         self.unpaid_mobile = round(mobile_base * ratio, 2)
         
         # 16. Gross amount
@@ -241,8 +248,7 @@ class HrTerminationPayslip(models.Model):
         self.taxable_amount = max(0.0, self.gross_amount - 600.0)
         
         # 18. Less:Tax (Salary)
-        # STEP 18 USES NEW TAX TABLE (Matches Step 8 formula)
-        self.tax_salary = self._calculate_tax_new(self.taxable_amount)
+        self.tax_salary = self._calculate_dynamic_tax(self.taxable_amount)
         
         # 19. Grand Tax
         # "Tax To Paid for Leave plus Less:Tax(step 18)"
@@ -281,87 +287,28 @@ class HrTerminationPayslip(models.Model):
         # My `total_deduction` field currently sums EVERYTHING.
         # So Net = Leave Pay Gross + Gross Amount - My_Total_Deduction.
         
-        self.net_payable = self.leave_pay_gross + self.gross_amount - self.total_deduction
+        # Safeguard: Net Payable cannot be negative
+        self.net_payable = max(0.0, self.leave_pay_gross + self.gross_amount - self.total_deduction)
 
-    def _calculate_tax(self, income):
+    def _calculate_dynamic_tax(self, income):
         """
-        Ethiopian Tax Brackets (Monthly)
-        0-600: 0%
-        601-1650: 10% - 60
-        1651-3200: 15% - 142.5
-        3201-5250: 20% - 302.5
-        5251-7800: 25% - 565
-        7801-10900: 30% - 955
-        10901+: 35% - 1500
-        
-        Checking User's specific formulas in Request:
-        IF(G11<=600, 0,
-        IF(G11<=1650, (G11-600)*0.1,  -> This is equivalent to (G11*0.1 - 60)
-        IF(G11<=3200, (G11-1650)*0.15+105, -> (G11*0.15 - 247.5 + 105) = G11*0.15 - 142.5. Correct.
-        IF(G11<=5250, 337.5+(G11-3200)*0.2, -> 337.5 + G11*0.2 - 640 = G11*0.2 - 302.5. Correct.
-        IF(G11<=7800, 747.5+(G11-5250)*0.25, -> 747.5 + G11*0.25 - 1312.5 = G11*0.25 - 565. Correct.
-        IF(G11<=10900, 1385+(G11-7800)*0.3, -> 1385 + G11*0.3 - 2340 = G11*0.3 - 955. Correct.
-        2315+(G11-10900)*0.35 -> 2315 + G11*0.35 - 3815 = G11*0.35 - 1500. Correct.
-        
-        Wait, Step 8 formula provided by user has different constants/deductions:
-        IF(G13<=2000, 0, ...
-        IF(G13<=4000, G13*15%-300 ...
-        This looks like the NEW 2024 Tax Law (No tax < 2000?).
-        However, Step 6 usage of old brackets (0-600) vs Step 8 usage of new brackets?
-        User provided TWO different formulas.
-        Step 6 (Leave Tax): Uses 0-600 brackets.
-        Step 8 (Salary Tax for Excluded): Uses 0-2000 brackets? ("IF(G13<=2000,G13*0, IF(G13<=4000,G13*15%-300...")
-        Actually, looking at the formulas carefully:
-        Step 6: Old/Standard tax brackets.
-        Step 8: "IF(G13<=2000,G13*0... IF(G13<=10000,G13*25%-850..." This matches the NEW Proclamation 1339/2024?
-             2001-4000: 10%? No user says 15%-300?
-             Let's parse generic deduction-from-percentage logic:
-             User: "IF(G13<=4000, G13*15%-300" -> 15% rate, 300 deduction.
-             "IF(G13<=7000, G13*20%-500" -> 20% rate, 500 deduction.
-             "IF(G13<=10000, G13*25%-850" -> 25% rate, 850 deduction.
-             "IF(G13<=14000, G13*30%-1350" -> 30% rate, 1350 deduction.
-             "G13*35%-2050" -> 35% rate, 2050 deduction.
-        
-        This is Very Important. The user is using TWO DIFFERENT TAX TABLES in the same calculation?
-        Step 6 (Annual Leave Tax): Uses Old Table (0-600 exempt).
-        Step 8 (Excluded Annual Tax): Uses New Table? (0-2000 exempt?).
-        step 18 (Salary Tax): "IF(G24<=2000, ... G24*35%-2050" -> Matches Step 8.
-        
-        Conclusion:
-        - Leave Pay Calculation (Step 6) uses OLD TABLE (explicitly written in prompt).
-        - Salary Tax (Step 18) and Step 8 use NEW TABLE (explicitly written in prompt).
-        
-        I will implement `_calculate_tax_old` and `_calculate_tax_new` to respect the prompt exactly.
+        Calculates income tax based on the active brackets configured in the database.
         """
-        # Defaulting to NEW table for generic call, but I will split them.
-        return self._calculate_tax_new(income)
-
-    def _calculate_tax_old(self, income):
-        """Standard Old Tax Brackets (0-600 Exempt)"""
-        if income <= 600: return 0
-        elif income <= 1650: return income * 0.1 - 60
-        elif income <= 3200: return income * 0.15 - 142.5
-        elif income <= 5250: return income * 0.2 - 302.5
-        elif income <= 7800: return income * 0.25 - 565
-        elif income <= 10900: return income * 0.3 - 955
-        else: return income * 0.35 - 1500
-
-    def _calculate_tax_new(self, income):
-        """New Tax Brackets (0-2000 Exempt) as per User Prompt Steps 8 & 18"""
-        if income <= 2000: return 0
-        elif income <= 4000: return income * 0.15 - 300 # User said 15% - 300?? New law usually starts 10%.
-                                                         # But I MUST Follow User Formula: "G13*15%-300"
-        elif income <= 7000: return income * 0.20 - 500
-        elif income <= 10000: return income * 0.25 - 850
-        elif income <= 14000: return income * 0.30 - 1350
-        else: return income * 0.35 - 2050
-
-    def _calculate_tax(self, income):
-        # This method wrapper is used in Step 6 (Leave calc)
-        # Wait, Step 6 called `_calculate_tax`.
-        # I need to update Step 6 to call `_calculate_tax_old`.
-        # And Step 8 & 18 to call `_calculate_tax_new`.
-        return self._calculate_tax_new(income)
+        if income <= 0:
+            return 0.0
+        
+        brackets = self.env['ahadu.payroll.tax.bracket'].search([
+            ('active', '=', True)
+        ], order='lower_bound asc')
+        
+        for bracket in brackets:
+            # Check if income falls within this bracket
+            # upper_bound = 0 means infinity
+            if bracket.lower_bound <= income and (bracket.upper_bound == 0 or income <= bracket.upper_bound):
+                tax = (income * (bracket.rate / 100.0)) - bracket.deduction
+                return max(0.0, round(tax, 2))
+        
+        return 0.0
 
     def _get_remaining_annual_leave_days(self):
         """
@@ -403,22 +350,12 @@ class HrTerminationPayslip(models.Model):
         total_days = sum(allocations.mapped('effective_remaining_leaves')) if allocations else 0.0
         return total_days
 
-    def _get_benefit_amount(self, codes):
-        """Helper to fetch benefit amount from employee package"""
-        amount = 0.0
-        if not self.employee_id.benefit_package_id:
-            return 0.0
-            
-        for line in self.employee_id.benefit_package_id.line_ids:
-            if line.benefit_type_id.code in codes:
-                if line.value_type == 'fixed':
-                    amount += line.value_fixed
-                elif line.value_type == 'percentage':
-                    amount += (line.value_percentage / 100.0) * self.wage
-        return amount
+
 
 
     def action_confirm(self):
+        for rec in self:
+            rec.approved_by_id = self.env.user.id
         self.write({'state': 'done'})
 
     def action_cancel(self):

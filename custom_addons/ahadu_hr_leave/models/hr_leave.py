@@ -155,9 +155,9 @@ class HrLeave(models.Model):
                 leave.can_partial_cancel = False
 
     sick_leave_pay_tier = fields.Selection([
-        ('100', '100% Paid'),
-        ('50', '50% Paid'),
-        ('0', 'Unpaid'),
+        ('full_pay', 'SICK-FULL: 100% Pay (Days 1–60)'),
+        ('half_pay', 'SICK-HALF: 50% Pay (Days 61–120)'),
+        ('no_pay', 'SICK-UNPAID: 0% Pay (Days 121+)'),
     ], string="Sick Leave Pay Tier", readonly=True, copy=False, tracking=True)
 
     # Technical field for CEO approval on LWOP
@@ -181,6 +181,9 @@ class HrLeave(models.Model):
         help="Select the specific leave balance you want to use."
     )
 
+    lwop_supporting_document = fields.Binary(string="LWOP Supporting Document", copy=False)
+    lwop_supporting_document_name = fields.Char(string="LWOP Supporting Document Name")
+
     # --- to manage the dynamic workflow ---
     next_approver_id = fields.Many2one(
         'res.users',
@@ -202,10 +205,9 @@ class HrLeave(models.Model):
                 ('holiday_status_id', '=', leave.holiday_status_id.id),
                 ('state', '=', 'validate')
             ])
-            # Triggering the recompute on the allocation records
+            # Triggering the manual recompute to ensure theStored field is updated and saved.
             if allocations:
-                allocations._compute_leaves()
-                allocations._compute_effective_remaining_leaves()
+                allocations._manual_recompute_balance()
 
 
     
@@ -253,8 +255,8 @@ class HrLeave(models.Model):
                 ('state', '=', 'validate'),
             ]
             allocations = self.env['hr.leave.allocation'].search(domain)
-            if sum(allocations.mapped('effective_remaining_leaves')) > 0:
-                raise ValidationError(_("Leave Without Pay cannot be requested while you still have a positive Annual Leave balance."))
+            if sum(allocations.mapped('effective_remaining_leaves')) >= 1:
+                raise ValidationError(_("Leave Without Pay cannot be requested while you still have an Annual Leave balance of 1 day or more."))
 
     
     @api.depends('request_date_from', 'request_date_to')
@@ -369,8 +371,9 @@ class HrLeave(models.Model):
             is_leave_officer = self.env.user.has_group('ahadu_hr_leave.group_leave_officer')
 
             # Enforce document upload for Leave Officer on LWOP requests
-            if is_lwop and is_leave_officer and not leave.ceo_approved and leave.message_attachment_count == 0:
-                raise UserError(_("As the Leave Officer, you must upload a supporting document before approving a Leave Without Pay request."))
+            # Checks both the new dedicated field and the standard chatter attachments
+            if is_lwop and is_leave_officer and not leave.ceo_approved and not leave.lwop_supporting_document and leave.message_attachment_count == 0:
+                raise UserError(_("As the Leave Officer, you must upload a supporting document before approving a Leave Without Pay request. Use the 'LWOP Supporting Document' field or attach a file to the chatter."))
 
         return super(HrLeave, self).action_approve()
 
@@ -403,6 +406,9 @@ class HrLeave(models.Model):
                 _logger.info(f"Scheduling annual replenishment for {type_name} leave for {leave.employee_id.name}.")
                 self._schedule_allocation_reset(leave, type_name, f"_reset_paternity_bereavement_allocation('{xml_id}')")
         
+        # --- NEW: Force balance recomputation on validation ---
+        self._recompute_allocation_balances()
+        
         return res
 
     def _schedule_allocation_reset(self, leave, type_label, method_call):
@@ -427,7 +433,9 @@ class HrLeave(models.Model):
         for vals in vals_list:
             if vals.get('holiday_status_id') == sick_leave_type.id:
                 employee = self.env['hr.employee'].browse(vals.get('employee_id'))
-                request_start_date = fields.Date.from_string(vals.get('date_from'))
+                request_start_date = fields.Date.from_string(
+                    vals.get('date_from') or vals.get('request_date_from')
+                )
                 if not employee or not request_start_date:
                     continue
                 
@@ -442,29 +450,57 @@ class HrLeave(models.Model):
                     employee.write({'first_sick_leave_date_in_spell': spell_start_date})
                 
                 # --- CALCULATION LOGIC (uses the determined spell_start_date) ---
-                past_leaves = self.search([
-                    ('employee_id', '=', employee.id),
-                    ('state', '=', 'validate'),
-                    ('holiday_status_id', '=', sick_leave_type.id),
-                    ('date_from', '>=', spell_start_date),
-                ])
-                days_already_taken = sum(leave.number_of_days for leave in past_leaves)
-                
-                # --- SET PAY TIER INSTEAD OF CHANGING LEAVE TYPE ---
-                if days_already_taken < 60:
-                    vals['sick_leave_pay_tier'] = '100'
-                elif days_already_taken < 120:
-                    vals['sick_leave_pay_tier'] = '50'
-                else:
-                    vals['sick_leave_pay_tier'] = '0'
+                vals['sick_leave_pay_tier'] = self._compute_sick_leave_pay_tier(employee, spell_start_date)
 
         records = super(HrLeave, self).create(vals_list)
         records._check_probation_period()
         
         return records
 
+    def _compute_sick_leave_pay_tier(self, employee, spell_start_date):
+        """
+        Helper to calculate the sick leave pay tier based on history in current spell.
+        """
+        sick_leave_type = self.env.ref('ahadu_hr_leave.ahadu_sick_leave_request', raise_if_not_found=False)
+        if not sick_leave_type or not employee or not spell_start_date:
+            return 'full_pay'
+            
+        past_leaves = self.search([
+            ('employee_id', '=', employee.id),
+            ('state', '=', 'validate'),
+            ('holiday_status_id', '=', sick_leave_type.id),
+            ('date_from', '>=', spell_start_date),
+        ])
+        days_already_taken = sum(leave.number_of_days for leave in past_leaves)
+        
+        if days_already_taken < 60:
+            return 'full_pay'
+        elif days_already_taken < 120:
+            return 'half_pay'
+        else:
+            return 'no_pay'
 
     def write(self, vals):
+        # Update sick leave tier if relevant fields change
+        sick_leave_type = self.env.ref('ahadu_hr_leave.ahadu_sick_leave_request', raise_if_not_found=False)
+        if any(f in vals for f in ['date_from', 'request_date_from', 'employee_id', 'holiday_status_id']):
+            for leave in self:
+                # Determine holiday_status_id (check vals first, then field)
+                hs_id = vals.get('holiday_status_id', leave.holiday_status_id.id)
+                if sick_leave_type and hs_id == sick_leave_type.id:
+                    employee = self.env['hr.employee'].browse(vals.get('employee_id', leave.employee_id.id))
+                    date_from = fields.Date.from_string(
+                        vals.get('date_from') or vals.get('request_date_from') or leave.date_from
+                    )
+                    
+                    if employee and date_from:
+                        spell_start = employee.first_sick_leave_date_in_spell
+                        # If no spell start or if we are before current spell start, we might need to reset?
+                        # For simplicity, we use the current record's spell management logic if possible.
+                        # However, for 'write', we just re-compute based on current spell.
+                        if spell_start:
+                             vals['sick_leave_pay_tier'] = self._compute_sick_leave_pay_tier(employee, spell_start)
+
         allocations_to_update = self.env['hr.leave.allocation']
         if 'state' in vals:
             for leave in self:
@@ -486,8 +522,7 @@ class HrLeave(models.Model):
         # Now, trigger the update on the records we identified
         if 'state' in vals and allocations_to_update:
             _logger.info(f"Leave state changed. Triggering specific allocation balance recomputation.")
-            allocations_to_update._compute_leaves()
-            allocations_to_update._compute_effective_remaining_leaves()
+            allocations_to_update._manual_recompute_balance()
         
         return res
        
@@ -510,8 +545,7 @@ class HrLeave(models.Model):
         # Now, trigger the update
         if allocations_to_update:
             _logger.info("Leave record deleted. Triggering allocation balance recomputation.")
-            allocations_to_update._compute_leaves()
-            allocations_to_update._compute_effective_remaining_leaves()
+            allocations_to_update._manual_recompute_balance()
 
         return res
     

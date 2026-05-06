@@ -23,6 +23,7 @@
 
         <record id="loan_type_personal" model="hr.loan.type">
             <field name="name">Personal Staff Loan</field>
+            <field name="api_product_code">STAFTL-STAFF LOAN</field>
             <field name="interest_rate">8.0</field>
             <field name="eligibility_months_doj">6</field>
             <field name="salary_multiple_limit">6</field>

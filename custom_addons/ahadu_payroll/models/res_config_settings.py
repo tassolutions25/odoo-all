@@ -4,12 +4,16 @@ from odoo import fields, models
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    attendance_based_payroll = fields.Boolean(
-        string='Attendance Based Payroll',
-        config_parameter='ahadu_payroll.attendance_based_payroll',
-        help="If checked, payroll calculations will rely on check-in/check-out data. "
-             "If unchecked, employees are assumed present unless they have approved leave."
-    )
+    payroll_attendance_mode = fields.Selection([
+        ('standard', 'Standard (Assume Full Work)'),
+        ('automated', 'Automated (Attendance)'),
+        ('manual', 'Manual (Absenteeism Sheets)')
+    ], string='Payroll Attendance Mode', 
+       config_parameter='ahadu_payroll.payroll_attendance_mode',
+       default='standard',
+       help="Standard: Presumes employee is present unless leave is approved.\n"
+            "Automated: Uses Custome Ahadu Attendance module data.\n"
+            "Manual: Uses custom Absenteeism Sheets filled by Officers and approved by Managers.")
     
     # Overtime Rates
     overtime_rate_normal = fields.Float(string="Normal Rate", config_parameter='ahadu_payroll.ot_rate_normal', default=1.5)
@@ -19,5 +23,3 @@ class ResConfigSettings(models.TransientModel):
 
     # Overtime Time Configuration (Boundaries)
     
-    # Cash Indemnity
-    cash_indemnity_tax_rate = fields.Float(string="Cash Indemnity Tax Rate (%)", config_parameter='ahadu_payroll.cash_indemnity_tax_rate', default=35.0)

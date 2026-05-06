@@ -83,7 +83,7 @@ class PensionReport(AhaduReportCommon):
             p7 = self._get_rule_total(slip, 'PENSION_EMP')
             p11 = self._get_rule_total(slip, 'PENSION_COMP')
             
-            if basic > 0:
+            if (p7 + p11) > 0:
                 worksheet.write(row, 0, seq, border_fmt)
                 worksheet.write(row, 1, slip.employee_id.tin_number or '', border_fmt)
                 worksheet.write(row, 2, slip.employee_id.name, border_fmt)

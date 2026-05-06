@@ -74,7 +74,7 @@ class TestLeaveTypesDeduction(TransactionCase):
         # Ensure tier logic worked (ahadu_hr_leave mechanism)
         # If not running with full module logic, we manually set it to verify PAYROLL logic
         if not leave.sick_leave_pay_tier:
-             leave.write({'sick_leave_pay_tier': '100'})
+             leave.write({'sick_leave_pay_tier': 'full_pay'})
              
         deduction = payslip._calculate_leave_deduction(leave, 1000.0)
         self.assertEqual(deduction, 0.0, "Sick Leave (100% tier) should have 0 deduction")
@@ -91,7 +91,7 @@ class TestLeaveTypesDeduction(TransactionCase):
             'number_of_days': 1,
             'state': 'validate',
         })
-        leave.write({'sick_leave_pay_tier': '50'})
+        leave.write({'sick_leave_pay_tier': 'half_pay'})
         
         deduction = payslip._calculate_leave_deduction(leave, 1000.0)
         self.assertEqual(deduction, 500.0, "Sick Leave (50% tier) should have 50% deduction")

@@ -26,6 +26,15 @@
                     invisible="not can_partial_cancel"
                     groups="hr_holidays.group_hr_holidays_manager,hr_holidays.group_hr_holidays_responsible" />
             </xpath>
+
+            <!-- Sick Leave Pay Tier badge for employees -->
+            <xpath expr="//group[1]" position="inside">
+                <field name="sick_leave_pay_tier" widget="badge"
+                       decoration-success="sick_leave_pay_tier == 'full_pay'"
+                       decoration-warning="sick_leave_pay_tier == 'half_pay'"
+                       decoration-danger="sick_leave_pay_tier == 'no_pay'"
+                       invisible="holiday_status_id != %(ahadu_hr_leave.ahadu_sick_leave_request)d"/>
+            </xpath>
         </field>
     </record>
 </odoo>

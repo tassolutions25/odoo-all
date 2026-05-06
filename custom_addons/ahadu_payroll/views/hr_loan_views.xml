@@ -11,7 +11,9 @@
                 <field name="eligibility_months_doj"/>
                 <field name="salary_multiple_limit"/>
                 <field name="max_installment_months"/>
+                <field name="is_payroll_deduction"/>
                 <field name="is_credit_committee_required"/>
+
             </list>
         </field>
     </record>
@@ -34,7 +36,10 @@
                         </group>
                         <group string="Eligibility &amp; Approval">
                             <field name="eligibility_months_doj"/>
+                            <field name="is_payroll_deduction"/>
                             <field name="is_credit_committee_required"/>
+
+                            <field name="api_product_code"/>
                             <field name="active"/>
                         </group>
                     </group>
@@ -48,12 +53,15 @@
         <field name="name">hr.loan.list</field>
         <field name="model">hr.loan</field>
         <field name="arch" type="xml">
-            <list decoration-info="state == 'draft'" decoration-warning="state == 'committee_approval'" decoration-success="state == 'approved'" decoration-muted="state == 'completed'">
+            <list create="0" decoration-info="state == 'draft'" decoration-warning="state == 'committee_approval'" decoration-success="state == 'approved'" decoration-muted="state == 'completed'">
                 <field name="name"/>
                 <field name="employee_id"/>
                 <field name="loan_type_id"/>
                 <field name="principal_amount"/>
-                <field name="date_request"/>
+                <field name="monthly_installment"/>
+                <field name="remaining_amount"/>
+                <field name="is_external" string="Ext?"/>
+                <field name="external_ref" optional="hide"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'committee_approval'" decoration-success="state == 'approved'" decoration-muted="state == 'completed'"/>
             </list>
         </field>
@@ -63,11 +71,11 @@
         <field name="name">hr.loan.form</field>
         <field name="model">hr.loan</field>
         <field name="arch" type="xml">
-            <form>
+            <form create="0">
                 <header>
-                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft'"/>
-                    <button name="action_committee_approve" string="Approve (Committee)" type="object" class="oe_highlight" invisible="state != 'committee_approval'" groups="ahadu_payroll.group_loan_credit_committee"/>
-                    <button name="action_refuse" string="Refuse" type="object" invisible="state not in ['submitted', 'committee_approval']" groups="payroll.group_payroll_manager"/>
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft' or is_external"/>
+                    <button name="action_committee_approve" string="Approve (Committee)" type="object" class="oe_highlight" invisible="state != 'committee_approval' or is_external" groups="ahadu_payroll.group_loan_credit_committee"/>
+                    <button name="action_refuse" string="Refuse" type="object" invisible="state not in ['submitted', 'committee_approval'] or is_external" groups="payroll.group_payroll_manager"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
                 </header>
                 <sheet>
@@ -98,10 +106,12 @@
                             <field name="total_repayment" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="monthly_installment" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
-                        <group string="Other Options">
-                            <field name="is_spouse_income_used" readonly="not is_editable"/>
-                            <field name="spouse_income_deposit_required" invisible="not is_spouse_income_used"/>
-                            <field name="refusal_reason" invisible="state != 'refused'" readonly="1"/>
+                        <group string="External Information" invisible="not is_external">
+                            <field name="is_external"/>
+                            <field name="external_ref"/>
+                            <field name="api_status"/>
+                            <field name="api_account_number"/>
+                            <field name="api_remaining_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
                     </group>
                     <notebook>

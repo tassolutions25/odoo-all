@@ -11,6 +11,7 @@ access_ahadu_leave_full_cancel_wizard,ahadu.leave.full.cancel.wizard,model_ahadu
 access_ahadu_migrated_leave_history_responsible,ahadu.migrated.leave.history.responsible,model_ahadu_migrated_leave_history,hr_holidays.group_hr_holidays_responsible,1,0,0,0
 access_ahadu_migrated_leave_history_manager,ahadu.migrated.leave.history.manager,model_ahadu_migrated_leave_history,hr_holidays.group_hr_holidays_manager,1,1,1,1
 access_ahadu_leave_report_wizard,ahadu.leave.report.wizard,model_ahadu_leave_report_wizard,base.group_user,1,1,1,1
+access_ahadu_leave_report_line,ahadu.leave.report.line,model_ahadu_leave_report_line,base.group_user,1,1,1,1
 
 
 

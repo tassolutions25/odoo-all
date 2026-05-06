@@ -6,41 +6,31 @@
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_form" />
         <field name="arch" type="xml">
-            <xpath expr="//notebook" position="inside">
-                <page string="Payroll" name="ahadu_payroll_tab">
-                    
-                    <!-- Button to View Payslips -->
-                    <div class="oe_button_box" name="payroll_button_box">
-                        <button name="action_view_payslips" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-money">
-                            <field name="payslip_count" widget="statinfo" string="Payslips"/>
-                        </button>
-                        <button name="%(ahadu_payroll.action_hr_loan)d"
-                                type="action"
-                                class="oe_stat_button"
-                                icon="fa-credit-card"
-                                context="{'search_default_employee_id': id, 'default_employee_id': id}">
-                            <div class="o_stat_info">
-                                <span class="o_stat_text">Loans</span>
-                            </div>
-                        </button>
+            <xpath expr="//header" position="inside">
+                <button name="action_sync_loans" string="Sync External Loans" type="object" class="oe_highlight" invisible="not cif"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_payslips" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-money">
+                    <field name="payslip_count" widget="statinfo" string="Payslips"/>
+                </button>
+                <button name="%(ahadu_payroll.action_hr_loan)d"
+                        type="action"
+                        class="oe_stat_button"
+                        icon="fa-credit-card"
+                        context="{'search_default_employee_id': id, 'default_employee_id': id}">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Loans</span>
                     </div>
-                    
-                    <!-- Current Salary Information -->
-                    <group string="Salary Information">
-                        <field name="current_salary" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                        <field name="currency_id" invisible="1"/>
-                    </group>
-                    
-                    <!-- Tax & Pension Information -->
-                    <group string="Tax &amp; Pension Information">
-                        <field name="tin_number" string="TIN Number"/>
-                        <field name="ssnid" string="Pension Registration No"/>
-                    </group>
-                    
-                </page>
+                </button>
+            </xpath>
+
+            <xpath expr="//field[@name='identification_id']" position="after">
+                <field name="ssnid" string="Pension Registration No"/>
+                <field name="cif" string="CIF Number"/>
+                <field name="currency_id" invisible="1"/>
             </xpath>
         </field>
     </record>

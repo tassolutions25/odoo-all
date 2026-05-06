@@ -40,10 +40,31 @@ class HrLeaveAllocation(models.Model):
         """Helper method to manually force the calculation and writing of the effective balance."""
         _logger.info(f"Manually recomputing balance for {len(self)} allocation(s)...")
         for allocation in self:
+            # Refresh leaves_taken first
+            allocation._compute_leaves()
             # The simple, correct formula: Remaining = Granted - Taken - Expired
             new_balance = allocation.number_of_days - allocation.leaves_taken - allocation.expired_leaves
             allocation.write({'effective_remaining_leaves': new_balance})
         _logger.info("Manual re-computation finished.")
+
+    @api.depends('employee_id', 'holiday_status_id')
+    def _compute_leaves(self):
+        """
+        Overrides the base calculation to NOT ignore future leaves.
+        This ensures that 'Days Taken' always includes all approved leaves regardless of their date.
+        """
+        # Multi-fetch for all employees and leave types in the current allocation recordset
+        # Using ignore_future=False to include all approved leaves
+        employee_days_per_allocation = self.employee_id._get_consumed_leaves(
+            self.holiday_status_id, 
+            ignore_future=False
+        )[0]
+        for allocation in self:
+            # Recompute max_leaves (base logic)
+            allocation.max_leaves = allocation.number_of_hours_display if allocation.type_request_unit == 'hour' else allocation.number_of_days
+            # Calculate leaves_taken from the multi-fetch results
+            origin = allocation._origin
+            allocation.leaves_taken = employee_days_per_allocation[origin.employee_id][origin.holiday_status_id][origin]['leaves_taken']
 
     @api.depends('number_of_days', 'leaves_taken', 'expired_leaves')
     def _compute_effective_remaining_leaves(self):

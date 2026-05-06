@@ -4,10 +4,35 @@ from odoo.exceptions import UserError
 class CashIndemnityType(models.Model):
     _name = 'cash.indemnity.type'
     _description = 'Cash Indemnity Type'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string="Name", required=True)
-    amount = fields.Float(string="Amount (Monthly)", required=True, help="Full monthly allowance amount")
-    active = fields.Boolean(default=True)
+    name = fields.Char(string="Name", required=True, tracking=True)
+    amount = fields.Float(string="Amount (Monthly)", required=True, help="Full monthly allowance amount", tracking=True)
+    
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('approved', 'Approved'),
+    ], string="Status", default='draft', tracking=True, required=True)
+    
+    active = fields.Boolean(default=True, tracking=True)
+
+    def action_submit(self):
+        self.write({'state': 'submitted'})
+
+    def action_approve(self):
+        if not self.env.user.has_group('ahadu_payroll.group_ahadu_payroll_finance_manager'):
+            raise UserError(_("Only HR Finance Managers can approve these rules."))
+        self.write({'state': 'approved'})
+
+    def action_draft(self):
+        self.write({'state': 'draft'})
+
+    def write(self, vals):
+        for rec in self:
+            if rec.state == 'approved' and not self.env.user.has_group('ahadu_payroll.group_ahadu_payroll_finance_manager'):
+                raise UserError(_("You cannot modify an approved rule. Please contact an HR Finance Manager to reset it to draft."))
+        return super(CashIndemnityType, self).write(vals)
 
 class CashIndemnityTracking(models.Model):
     _name = 'cash.indemnity.tracking'
@@ -83,10 +108,61 @@ class CashIndemnityTracking(models.Model):
         self.write({'state': 'done'})
 
     def action_draft(self):
+        if any(rec.state in ('approved', 'done') for rec in self):
+            raise UserError(_("This cash indemnity tracking is already Approved or Done. You cannot reset it to Draft."))
         self.write({'state': 'draft'})
 
     def action_cancel(self):
         self.write({'state': 'cancel'})
+
+    @api.constrains('line_ids', 'date_from', 'date_to')
+    def _check_dates(self):
+        for rec in self:
+            for line in rec.line_ids:
+                if line.date < rec.date_from or line.date > rec.date_to:
+                    raise UserError(_("Line date %s is outside the header range %s to %s.") % (line.date, rec.date_from, rec.date_to))
+            
+            # Check unique dates
+            dates = rec.line_ids.mapped('date')
+            if len(dates) != len(set(dates)):
+                raise UserError(_("Duplicate dates detected in tracking lines. Each day can only have one indemnity record."))
+
+    def action_open_range_wizard(self):
+        self.ensure_one()
+        return {
+            'name': _('Add Range of Days'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'cash.indemnity.range.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_tracking_id': self.id,
+                'default_date_from': self.date_from,
+                'default_date_to': self.date_to,
+            }
+        }
+
+    def action_export_daily_lines(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/ahadu_payroll/export_ci_lines/{self.id}',
+            'target': 'new',
+        }
+
+    def action_import_daily_lines(self):
+        self.ensure_one()
+        return {
+            'name': _('Import Daily Lines'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'cash.indemnity.import.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_tracking_id': self.id,
+            }
+        }
+
 
 class CashIndemnityLine(models.Model):
     _name = 'cash.indemnity.line'
@@ -145,6 +221,7 @@ class CashIndemnity(models.Model):
                 record.contract_id = contract
 
     def action_fetch_tracking_data(self):
+        from datetime import timedelta
         for record in self:
             # 1. Fetch Tracking if not set
             if not record.tracking_id:
@@ -163,9 +240,29 @@ class CashIndemnity(models.Model):
             record.line_ids = [(5, 0, 0)]
             
             if record.tracking_id and record.total_working_days > 0:
+                # Fetch leaves to skip counting days if the employee is on leave
+                leaves = self.env['hr.leave'].search([
+                    ('employee_id', '=', record.employee_id.id),
+                    ('state', '=', 'validate'),
+                    ('date_from', '<=', record.date_to),
+                    ('date_to', '>=', record.date_from)
+                ])
+                leave_dates = set()
+                for leave in leaves:
+                    curr = leave.date_from.date()
+                    end = leave.date_to.date()
+                    while curr <= end:
+                        if record.date_from <= curr <= record.date_to:
+                            leave_dates.add(curr)
+                        curr += timedelta(days=1)
+
                 type_counts = {}
                 for line in record.tracking_id.line_ids:
                     if record.date_from <= line.date <= record.date_to:
+                        # NEW CHECK: Skip if on leave
+                        if line.date in leave_dates:
+                            continue
+                            
                         t_id = line.indemnity_type_id.id # stored as ID for dict key
                         if t_id not in type_counts: 
                             type_counts[t_id] = {'obj': line.indemnity_type_id, 'count': 0}
@@ -175,8 +272,8 @@ class CashIndemnity(models.Model):
                 for t_id, data in type_counts.items():
                     type_obj = data['obj']
                     count = data['count']
-                    # Calc
-                    amount = (type_obj.amount / record.total_working_days) * count
+                    # Calc: Cap at full monthly amount even if more days are tracked
+                    amount = min(type_obj.amount, (type_obj.amount / record.total_working_days) * count)
                     
                     lines_vals.append((0, 0, {
                         'indemnity_type_id': t_id,
@@ -273,6 +370,8 @@ class CashIndemnity(models.Model):
         self.write({'state': 'done'})
 
     def action_draft(self):
+        if any(rec.state in ('approved', 'done') for rec in self):
+            raise UserError(_("This cash indemnity calculation is already Approved or Done. You cannot reset it to Draft."))
         self.write({'state': 'draft'})
 
     def action_cancel(self):
@@ -286,3 +385,167 @@ class CashIndemnityDetail(models.Model):
     indemnity_type_id = fields.Many2one('cash.indemnity.type', string="Type", required=True)
     days = fields.Integer(string="Days", required=True)
     amount = fields.Float(string="Amount", required=True)
+
+
+class CashIndemnityRangeWizard(models.TransientModel):
+    _name = 'cash.indemnity.range.wizard'
+    _description = 'Wizard to add range of CI days'
+
+    tracking_id = fields.Many2one('cash.indemnity.tracking', string="Tracking", required=True)
+    indemnity_type_id = fields.Many2one('cash.indemnity.type', string="Indemnity Type", required=True)
+    date_from = fields.Date(string="Start Date", required=True)
+    date_to = fields.Date(string="End Date", required=True)
+    
+    skip_sundays = fields.Boolean(string="Skip Sundays", default=True)
+    skip_holidays = fields.Boolean(string="Skip Holidays", default=True)
+
+    def action_apply(self):
+        from datetime import timedelta
+        self.ensure_one()
+        
+        if self.date_from > self.date_to:
+            raise UserError(_("Start date must be before end date."))
+        
+        if self.date_from < self.tracking_id.date_from or self.date_to > self.tracking_id.date_to:
+            raise UserError(_("Selected range must be within the tracking period (%s to %s).") % (self.tracking_id.date_from, self.tracking_id.date_to))
+
+        # Holidays logic
+        holiday_dates = set()
+        if self.skip_holidays:
+            calendar = self.tracking_id.employee_id.resource_calendar_id
+            if calendar:
+                global_leaves = self.env['resource.calendar.leaves'].search([
+                    ('calendar_id', '=', calendar.id),
+                    ('date_from', '<=', self.date_to),
+                    ('date_to', '>=', self.date_from),
+                    ('resource_id', '=', False),
+                ])
+                for leave in global_leaves:
+                    curr = leave.date_from.date()
+                    end = leave.date_to.date()
+                    while curr <= end:
+                        if self.date_from <= curr <= self.date_to:
+                            holiday_dates.add(curr)
+                        curr += timedelta(days=1)
+
+        # Leaves logic
+        leave_dates = set()
+        leaves = self.env['hr.leave'].search([
+            ('employee_id', '=', self.tracking_id.employee_id.id),
+            ('state', '=', 'validate'),
+            ('date_from', '<=', self.date_to),
+            ('date_to', '>=', self.date_from)
+        ])
+        for leave in leaves:
+            curr = leave.date_from.date()
+            end = leave.date_to.date()
+            while curr <= end:
+                if self.date_from <= curr <= self.date_to:
+                    leave_dates.add(curr)
+                curr += timedelta(days=1)
+
+        # Existing dates to skip
+        existing_dates = set(self.tracking_id.line_ids.mapped('date'))
+        
+        lines_to_create = []
+        curr_date = self.date_from
+        while curr_date <= self.date_to:
+            # Check Sunday
+            if self.skip_sundays and curr_date.weekday() == 6:
+                curr_date += timedelta(days=1)
+                continue
+            
+            # Check Holidays
+            if self.skip_holidays and curr_date in holiday_dates:
+                curr_date += timedelta(days=1)
+                continue
+
+            # Check Leaves
+            if curr_date in leave_dates:
+                curr_date += timedelta(days=1)
+                continue
+            
+            # Check Duplicates
+            if curr_date in existing_dates:
+                curr_date += timedelta(days=1)
+                continue
+            
+            lines_to_create.append({
+                'tracking_id': self.tracking_id.id,
+                'date': curr_date,
+                'indemnity_type_id': self.indemnity_type_id.id
+            })
+            curr_date += timedelta(days=1)
+
+        if lines_to_create:
+            self.env['cash.indemnity.line'].create(lines_to_create)
+            
+        return {'type': 'ir.actions.act_window_close'}
+
+
+class CashIndemnityImportWizard(models.TransientModel):
+    _name = 'cash.indemnity.import.wizard'
+    _description = 'Import Cash Indemnity Lines'
+
+    tracking_id = fields.Many2one('cash.indemnity.tracking', string="Tracking", required=True)
+    file = fields.Binary(string="Excel File", required=True)
+    filename = fields.Char(string="Filename")
+
+    def action_import(self):
+        import io
+        import base64
+        try:
+            import openpyxl
+        except ImportError:
+            raise UserError(_("The 'openpyxl' library is required to import Excel files. Please install it."))
+        from datetime import datetime
+
+        if not self.file:
+            raise UserError(_("Please upload an Excel file."))
+
+        file_content = base64.b64decode(self.file)
+        f = io.BytesIO(file_content)
+        try:
+            workbook = openpyxl.load_workbook(f, data_only=True)
+        except Exception as e:
+            raise UserError(_("Invalid Excel file: %s") % str(e))
+            
+        sheet = workbook.active
+
+        # Headers: Date, Indemnity Type
+        lines_to_create = []
+        for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+            if not any(row): continue
+            
+            date_val = row[0]
+            type_name = row[1]
+            
+            if not date_val or not type_name:
+                continue
+
+            # Handle date
+            if isinstance(date_val, datetime):
+                date_val = date_val.date()
+            elif isinstance(date_val, str):
+                try:
+                    date_val = datetime.strptime(date_val, '%Y-%m-%d').date()
+                except ValueError:
+                    raise UserError(_("Invalid date format in row %s. Expected YYYY-MM-DD or Excel date.") % row_idx)
+            
+            # Search for type
+            type_id = self.env['cash.indemnity.type'].search([('name', '=', type_name)], limit=1)
+            if not type_id:
+                raise UserError(_("Indemnity Type '%s' not found in row %s.") % (type_name, row_idx))
+            
+            lines_to_create.append({
+                'tracking_id': self.tracking_id.id,
+                'date': date_val,
+                'indemnity_type_id': type_id.id
+            })
+        
+        if lines_to_create:
+            # The create() call will trigger the date range and unique constraints in the model
+            self.env['cash.indemnity.line'].create(lines_to_create)
+        
+        return {'type': 'ir.actions.act_window_close'}
+

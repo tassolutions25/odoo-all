@@ -6,7 +6,6 @@
         on the job application form and displays them in the backend applicant view.
     """,
     'author': "Your Name",
-    'website': "",
     'category': 'Human Resources',
     'version': '1.0',
     'depends': ['hr_recruitment', 'website_hr_recruitment', 'website', 'website_blog'],

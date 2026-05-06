@@ -1,0 +1,1 @@
+{"status": 404, "text": "{\"error\": \"Backend Error\", \"details\": \"Invalid Account or Mobile\"}", "payload": {"mobileNo": "251913363849", "AccountNum": "0009238010101"}, "url": "https://10.20.1.22:8243/get-cif/1.0.0/get-cif"}

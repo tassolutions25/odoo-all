@@ -116,11 +116,6 @@
         parent="hr_holidays.menu_hr_holidays_my_leaves"
         action="ahadu_hr_leave.action_ahadu_my_time_off_hub"
         sequence="1" />
-    <menuitem id="menu_ahadu_leave_reporting_master"
-        name="Master Reports"
-        parent="menu_hr_holidays_report"
-        action="action_ahadu_leave_report_wizard"
-        sequence="5" />
 
 
     <!-- Action for Allocated Leave (Annual, Paternity, etc.) -->

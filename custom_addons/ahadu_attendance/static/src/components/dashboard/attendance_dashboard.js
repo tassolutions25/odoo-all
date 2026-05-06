@@ -21,7 +21,7 @@ class AhaduAttendanceDashboard extends Component {
             summary_data: {},
             uid: null,
             filters: {
-                month: today.getMonth() + 1,   
+                month: today.getMonth() + 1,
                 year: today.getFullYear(),
                 employee_id: null,
             },
@@ -170,6 +170,19 @@ class AhaduAttendanceDashboard extends Component {
                     ["employee_id.user_id", "=", this.state.uid],
                     ["request_date_from", "<=", endOfMonth.split(' ')[0]],
                     ["request_date_to", ">=", startOfMonth.split(' ')[0]]
+                ],
+            });
+            return;
+        } else if (status === 'duty') {
+            this.action.doAction({
+                type: "ir.actions.act_window",
+                name: "My On-Duty Requests",
+                res_model: "hr.on.duty",
+                views: [[false, "list"], [false, "form"]],
+                domain: [
+                    ["employee_id.user_id", "=", this.state.uid],
+                    ["date_from", "<=", endOfMonth.split(' ')[0] + " 23:59:59"],
+                    ["date_to", ">=", startOfMonth.split(' ')[0] + " 00:00:00"]
                 ],
             });
             return;

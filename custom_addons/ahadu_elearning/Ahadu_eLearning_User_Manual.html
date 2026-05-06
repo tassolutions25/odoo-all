@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ahadu eLearning — User Manual</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    /* ============================================================
+       Ahadu Bank Brand Colors
+       Primary Crimson  : #8B1030
+       Deep Wine        : #5C0A1E
+       Gold Accent      : #C8A951
+       Dark Navy        : #0C2340
+       Light Crimson Bg : #FDF2F4
+       ============================================================ */
+
+    @page {
+        size: A4;
+        margin: 15mm 20mm;
+        @bottom-center { content: "Ahadu Bank — Confidential"; font-size: 8pt; color: #718096; }
+        @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #718096; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', 'Segoe UI', sans-serif; color: #2D3748; line-height: 1.7; font-size: 11pt; background: #FFFFFF; }
+
+    /* ---- COVER PAGE ---- */
+    .cover { page-break-after: always; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(150deg, #5C0A1E 0%, #8B1030 45%, #0C2340 100%); color: white; text-align: center; padding: 60px 40px; }
+    .cover h1 { font-size: 38pt; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px; }
+    .cover .subtitle { font-size: 16pt; font-weight: 300; opacity: 0.9; margin-bottom: 40px; }
+    .cover .version-box { background: rgba(255,255,255,0.12); border-radius: 12px; padding: 20px 40px; backdrop-filter: blur(10px); border: 1px solid rgba(200,169,81,0.4); }
+    .cover .version-box p { font-size: 11pt; margin: 6px 0; }
+    .cover .logo-line { width: 80px; height: 4px; background: #C8A951; border-radius: 2px; margin: 30px auto; }
+
+    /* ---- TABLE OF CONTENTS ---- */
+    .toc { page-break-after: always; padding: 40px; }
+    .toc h2 { color: #8B1030; font-size: 22pt; border-bottom: 3px solid #8B1030; padding-bottom: 10px; margin-bottom: 25px; }
+    .toc ol { list-style: none; counter-reset: toc-counter; }
+    .toc ol li { counter-increment: toc-counter; padding: 10px 0; border-bottom: 1px solid #E2E8F0; font-size: 12pt; }
+    .toc ol li::before { content: counter(toc-counter) ".  "; font-weight: 700; color: #8B1030; }
+
+    /* ---- CHAPTERS & HEADINGS ---- */
+    .chapter { page-break-before: always; padding: 20px 0; }
+    .chapter:first-of-type { page-break-before: avoid; }
+    h2.chapter-title { color: #0C2340; font-size: 20pt; font-weight: 700; border-left: 6px solid #8B1030; padding-left: 15px; margin-bottom: 20px; }
+    h3 { color: #8B1030; font-size: 14pt; margin: 20px 0 10px; font-weight: 600; }
+    h4 { color: #5C0A1E; font-size: 12pt; margin: 15px 0 8px; }
+    p { margin-bottom: 10px; text-align: justify; }
+    .content { padding: 0 40px; }
+
+    /* ---- SCREENSHOT PLACEHOLDER ---- */
+    .screenshot-placeholder {
+        border: 2px dashed #8B1030;
+        border-radius: 12px;
+        background: #FDF2F4;
+        padding: 30px;
+        margin: 15px 0;
+        text-align: center;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    .screenshot-placeholder .icon { font-size: 36pt; margin-bottom: 10px; }
+    .screenshot-placeholder .label { font-size: 11pt; font-weight: 600; color: #8B1030; }
+    .screenshot-placeholder .hint { font-size: 9pt; color: #718096; margin-top: 5px; }
+    .screenshot-placeholder .arrow-hint {
+        display: inline-block;
+        background: #8B1030;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 8pt;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+
+    /* ---- STEP BOX ---- */
+    .step-box {
+        background: #FDF2F4;
+        border-left: 4px solid #8B1030;
+        border-radius: 0 8px 8px 0;
+        padding: 15px 20px;
+        margin: 12px 0;
+    }
+    .step-box .step-num {
+        display: inline-block;
+        background: #8B1030;
+        color: white;
+        width: 26px; height: 26px;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 26px;
+        font-weight: 700;
+        font-size: 10pt;
+        margin-right: 10px;
+    }
+    .step-box p { margin: 0; display: inline; }
+
+    /* ---- TIP BOX (Gold accent) ---- */
+    .tip-box {
+        background: linear-gradient(135deg, #FFFBF0, #FFF3CC);
+        border-left: 4px solid #C8A951;
+        border-radius: 0 8px 8px 0;
+        padding: 12px 18px;
+        margin: 12px 0;
+        font-size: 10pt;
+    }
+    .tip-box strong { color: #8B6914; }
+
+    /* ---- INFO BOX (Crimson accent) ---- */
+    .info-box {
+        background: linear-gradient(135deg, #FDF2F4, #F9D7DE);
+        border-left: 4px solid #8B1030;
+        border-radius: 0 8px 8px 0;
+        padding: 12px 18px;
+        margin: 12px 0;
+        font-size: 10pt;
+    }
+    .info-box strong { color: #8B1030; }
+
+    /* ---- TABLES ---- */
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 10pt; }
+    th { background: #8B1030; color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+    td { padding: 9px 14px; border-bottom: 1px solid #E2E8F0; }
+    tr:nth-child(even) { background: #FDF2F4; }
+
+    /* ---- FOOTER ---- */
+    .footer-bar { background: linear-gradient(90deg, #5C0A1E, #0C2340); color: white; text-align: center; padding: 20px; font-size: 9pt; margin-top: 40px; border-radius: 8px; }
+    ul { margin-left: 20px; margin-bottom: 10px; }
+    li { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+    <h1>Ahadu eLearning</h1>
+    <div class="logo-line"></div>
+    <div class="subtitle">End-to-End User Manual</div>
+    <div class="version-box">
+        <p><strong>Module Version:</strong> 1.0</p>
+        <p><strong>Platform:</strong> Odoo 18</p>
+        <p><strong>Prepared for:</strong> Ahadu Bank S.C.</p>
+        <p><strong>Date:</strong> March 2026</p>
+        <p><strong>Classification:</strong> Internal Use Only</p>
+    </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc"><h2>Table of Contents</h2><ol><li>Introduction</li><li>Getting Started</li><li>Managing Courses</li><li>Managing Course Content (Slides)</li><li>Tags &amp; Course Organization</li><li>Quizzes &amp; Assessments</li><li>Enrollment &amp; Learner Progress</li><li>Best Practices &amp; Tips</li><li>Glossary</li></ol></div>
+
+<!-- CHAPTERS -->
+<div class="content">
+
+<div class="chapter">
+<h2 class="chapter-title">1. Introduction</h2>
+<h3>1.1 About Ahadu eLearning</h3>
+<p>The <strong>Ahadu eLearning</strong> module is a customized extension of Odoo 18's eLearning (Website Slides) platform, specifically tailored for <strong>Ahadu Bank S.C.</strong>. It provides a comprehensive Learning Management System (LMS) that enables the bank to create, manage, and deliver training courses and educational content to employees across all branches.</p>
+<p>This module empowers the bank's Human Resource Development and Training department to centralize all learning activities, track employee progress, and ensure compliance with banking industry training requirements.</p>
+
+<h3>1.2 Key Features</h3>
+<table>
+<tr><th>Feature</th><th>Description</th></tr>
+<tr><td>Course Management</td><td>Create and organize training courses with sections, categories, and tags</td></tr>
+<tr><td>Multi-format Content</td><td>Support for videos, documents, infographics, web pages, and articles</td></tr>
+<tr><td>Local Video Upload</td><td>Upload video files directly (up to 1.2 GB) from your device</td></tr>
+<tr><td>Google Drive Integration</td><td>Embed videos from Google Drive with automatic player rendering</td></tr>
+<tr><td>External Link Support</td><td>Link to external training resources and video platforms</td></tr>
+<tr><td>Quiz &amp; Assessments</td><td>Create quiz questions with multiple answers for knowledge evaluation</td></tr>
+<tr><td>Course Tagging</td><td>Organize courses using tags and tag groups for easy filtering</td></tr>
+<tr><td>Progress Tracking</td><td>Monitor employee enrollment and completion status</td></tr>
+<tr><td>Ahadu Branding</td><td>Complete Ahadu Bank branding throughout the interface</td></tr>
+</table>
+
+<h3>1.3 System Requirements</h3>
+<ul>
+<li>Odoo 18 Community or Enterprise Edition</li>
+<li>Website Slides (<code>website_slides</code>) module installed</li>
+<li>Modern web browser (Chrome, Firefox, Edge, or Safari)</li>
+<li>Stable internet connection</li>
+</ul>
+
+<h3>1.4 User Roles</h3>
+<table>
+<tr><th>Role</th><th>Access Level</th><th>Description</th></tr>
+<tr><td>eLearning Admin</td><td>Full Access</td><td>Create, edit, delete courses and all content. Manage configurations.</td></tr>
+<tr><td>eLearning Manager</td><td>Manager Access</td><td>Create and manage courses, view reports and analytics.</td></tr>
+<tr><td>eLearning Officer</td><td>User Access</td><td>Create content, manage assigned courses.</td></tr>
+<tr><td>Employee (Learner)</td><td>Portal Access</td><td>Enroll in courses, view content, take quizzes.</td></tr>
+</table>
+</div>
+
+<div class="chapter">
+<h2 class="chapter-title">2. Getting Started</h2>
+<h3>2.1 Accessing Ahadu eLearning</h3>
+<p>To access the Ahadu eLearning module, follow these steps:</p>
+<div class="step-box"><span class="step-num">1</span><p>Open your web browser and navigate to the Ahadu ERP URL (e.g., <code>https://erp.ahadubank.com.et</code>).</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Enter your <strong>login credentials</strong> (email and password) provided by your system administrator.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Click the <strong>"Log in"</strong> button to access the main dashboard.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Odoo Login Page</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the Email and Password fields</div>
+    </div>
+
+<div class="step-box"><span class="step-num">4</span><p>From the main application menu, locate and click on <strong>"Ahadu eLearning"</strong> to open the module.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Main App Menu — Ahadu eLearning Icon</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the Ahadu eLearning app icon</div>
+    </div>
+
+<div class="info-box"><strong>ℹ️ Note:</strong> If you cannot see the Ahadu eLearning app on your dashboard, contact your system administrator to ensure you have the proper access rights assigned to your user account.</div>
+
+<h3>2.2 Module Dashboard Overview</h3>
+<p>Upon opening the Ahadu eLearning module, you will see the main dashboard displaying all available courses in a <strong>Kanban view</strong> (card layout). Each course card shows:</p>
+<ul>
+<li><strong>Course Name</strong> — The title of the training course</li>
+<li><strong>Course Image</strong> — Visual thumbnail for easy identification</li>
+<li><strong>Content Count</strong> — Number of slides/lessons in the course</li>
+<li><strong>Enrollment Status</strong> — How many participants have enrolled</li>
+<li><strong>Publication Status</strong> — Whether the course is published or in draft</li>
+</ul>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Ahadu eLearning Main Dashboard (Kanban View)</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrows to course cards, showing name, image, and content count</div>
+    </div>
+
+<h3>2.3 Navigation Menu</h3>
+<p>The top navigation bar within the Ahadu eLearning module provides access to:</p>
+<table>
+<tr><th>Menu Item</th><th>Description</th></tr>
+<tr><td><strong>Ahadu Courses → All Courses</strong></td><td>View and manage all training courses</td></tr>
+<tr><td><strong>Ahadu Courses → Contents</strong></td><td>View all slide content across courses</td></tr>
+<tr><td><strong>Reporting</strong></td><td>View analytics and reports on course performance</td></tr>
+<tr><td><strong>Configuration → Tags</strong></td><td>Manage course tags and tag groups</td></tr>
+<tr><td><strong>Configuration → Settings</strong></td><td>Configure module settings and preferences</td></tr>
+</table>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Top Navigation Menu Bar</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrows to each menu item: Ahadu Courses, Reporting, Configuration</div>
+    </div>
+</div>
+
+<div class="chapter">
+<h2 class="chapter-title">3. Managing Courses</h2>
+<h3>3.1 Creating a New Course</h3>
+<p>To create a new training course in the Ahadu eLearning system:</p>
+<div class="step-box"><span class="step-num">1</span><p>Navigate to <strong>Ahadu Courses → All Courses</strong> from the top menu.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Click the <strong>"New"</strong> button located at the top-left corner of the page.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Courses List — New Button</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the 'New' button in the top-left</div>
+    </div>
+
+<div class="step-box"><span class="step-num">3</span><p>Fill in the course details in the form view:</p></div>
+<table>
+<tr><th>Field</th><th>Required</th><th>Description</th></tr>
+<tr><td>Course Title</td><td>✅ Yes</td><td>Enter a descriptive name for the course</td></tr>
+<tr><td>Website</td><td>No</td><td>Select which website will display the course</td></tr>
+<tr><td>Responsible</td><td>No</td><td>Assign a user responsible for managing the course</td></tr>
+<tr><td>Tags</td><td>No</td><td>Add tags to categorize the course (e.g., "Compliance", "IT")</td></tr>
+<tr><td>Description</td><td>No</td><td>Provide a detailed description of the course content</td></tr>
+<tr><td>Course Image</td><td>No</td><td>Upload an image that represents the course</td></tr>
+</table>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: New Course Form — Basic Details</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrows to Course Title, Tags, Responsible, and Description fields</div>
+    </div>
+
+<div class="step-box"><span class="step-num">4</span><p>Configure the <strong>Options</strong> tab to set course policies:</p></div>
+<ul>
+<li><strong>Enroll Policy</strong> — Open, On Invitation, or On Payment</li>
+<li><strong>Access Rights</strong> — Public, Signed In, or By Invitation</li>
+<li><strong>Allow Reviews</strong> — Whether learners can submit reviews</li>
+<li><strong>Forum</strong> — Link a discussion forum to the course</li>
+</ul>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Course Form — Options Tab</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrows to Enroll Policy and Access Rights dropdowns</div>
+    </div>
+
+<div class="step-box"><span class="step-num">5</span><p>Click <strong>"Save"</strong> or the record will auto-save (Odoo 18 auto-save feature).</p></div>
+
+<div class="tip-box"><strong>💡 Tip:</strong> Use meaningful course titles that clearly describe the training topic. For example, use 'Anti-Money Laundering (AML) Compliance Training Q1 2026' instead of just 'AML Training'.</div>
+
+<h3>3.2 Adding Course Sections</h3>
+<p>Sections help organize your course content into logical groups (like chapters in a textbook).</p>
+<div class="step-box"><span class="step-num">1</span><p>Open the desired course from the courses list.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Navigate to the <strong>"Content"</strong> tab within the course form.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Click <strong>"Add a Section"</strong> to create a new section header.</p></div>
+<div class="step-box"><span class="step-num">4</span><p>Enter the section name (e.g., "Module 1: Introduction to Banking Ethics").</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Course Content Tab — Adding a Section</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to 'Add a Section' button and section name field</div>
+    </div>
+
+<h3>3.3 Publishing a Course</h3>
+<p>Courses must be published before they become visible to learners on the website.</p>
+<div class="step-box"><span class="step-num">1</span><p>Open the course you want to publish.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Click the <strong>"Go to Website"</strong> button to preview the course page.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Toggle the <strong>"Published"</strong> switch at the top of the website page to make it live.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Course Website Preview — Publish Toggle</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the Published/Unpublished toggle switch at the top</div>
+    </div>
+<div class="info-box"><strong>ℹ️ Note:</strong> Unpublished courses are only visible to administrators. Learners will not see them until you set them to 'Published'.</div>
+
+<h3>3.4 Editing and Deleting Courses</h3>
+<p><strong>To Edit:</strong> Click on any course from the list to open it. Modify the desired fields and save.</p>
+<p><strong>To Delete:</strong> Open the course, click the <strong>⚙️ Actions (gear icon)</strong> menu, and select <strong>"Delete"</strong>. Confirm the deletion when prompted.</p>
+<div class="tip-box"><strong>💡 Tip:</strong> Deleting a course will also remove all its content (slides, quizzes). Consider archiving instead by setting the course to unpublished.</div>
+</div>
+
+<div class="chapter">
+<h2 class="chapter-title">4. Managing Course Content (Slides)</h2>
+<h3>4.1 Content Types Overview</h3>
+<p>The Ahadu eLearning module supports multiple types of course content:</p>
+<table>
+<tr><th>Content Type</th><th>Icon</th><th>Use Case</th></tr>
+<tr><td><strong>Document</strong></td><td>📄</td><td>PDF documents, policy manuals, procedures</td></tr>
+<tr><td><strong>Video</strong></td><td>🎬</td><td>Training videos, recorded lectures, demonstrations</td></tr>
+<tr><td><strong>Infographic</strong></td><td>🖼️</td><td>Images, charts, visual presentations</td></tr>
+<tr><td><strong>Article</strong></td><td>📝</td><td>Rich text articles written directly in Odoo</td></tr>
+<tr><td><strong>Webpage</strong></td><td>🌐</td><td>Custom HTML-based content pages</td></tr>
+</table>
+
+<h3>4.2 Adding New Content</h3>
+<div class="step-box"><span class="step-num">1</span><p>Open the course where you want to add content.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Go to the <strong>"Content"</strong> tab.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Click <strong>"Add Content"</strong> to open the content creation popup.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Course Content Tab — Add Content Button</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to 'Add Content' button</div>
+    </div>
+
+<div class="step-box"><span class="step-num">4</span><p>Fill in the content form fields:</p></div>
+<table>
+<tr><th>Field</th><th>Description</th></tr>
+<tr><td><strong>Title</strong></td><td>Name of the lesson/slide</td></tr>
+<tr><td><strong>Content Type</strong></td><td>Select the type: Document, Video, Infographic, Article, or Webpage</td></tr>
+<tr><td><strong>Source Type</strong></td><td>Choose how the content is sourced (see Section 4.3)</td></tr>
+<tr><td><strong>Duration</strong></td><td>Estimated time to complete the content</td></tr>
+<tr><td><strong>Is Preview</strong></td><td>Allow non-enrolled users to preview this content</td></tr>
+</table>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Add Content Popup — Form Fields</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrows to Title, Content Type, and Source Type fields</div>
+    </div>
+
+<h3>4.3 Video Source Types (Custom Ahadu Feature)</h3>
+<p>The Ahadu eLearning module provides <strong>three enhanced video source options</strong>, extending the standard Odoo functionality:</p>
+
+<h4>Option A: Upload from Device (Local File)</h4>
+<p>Upload video files directly from your computer. The module supports files up to <strong>1.2 GB</strong>.</p>
+<div class="step-box"><span class="step-num">1</span><p>Set <strong>Content Type</strong> to "Video".</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Set <strong>Source Type</strong> to <strong>"Upload from device"</strong>.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Click the <strong>"Upload Video"</strong> field and select your video file from your computer.</p></div>
+<div class="step-box"><span class="step-num">4</span><p>Wait for the upload to complete. Larger files may take several minutes.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Slide Form — Local Video Upload</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrows to Source Type (Upload from device) and the Upload Video file widget</div>
+    </div>
+<div class="info-box"><strong>ℹ️ Note:</strong> Supported video formats include MP4, WebM, OGG, and other common formats. The system auto-detects the MIME type from the file extension.</div>
+
+<h4>Option B: External URL (Google Drive &amp; Others)</h4>
+<p>Embed a video hosted on Google Drive or paste a direct video URL.</p>
+<div class="step-box"><span class="step-num">1</span><p>Set <strong>Source Type</strong> to <strong>"External"</strong>.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Paste the <strong>Google Drive file URL</strong> in the "Video URL" field.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>The system automatically converts the Google Drive URL into an embeddable player.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Slide Form — External Video URL (Google Drive)</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the Video URL field with a Google Drive link</div>
+    </div>
+<div class="tip-box"><strong>💡 Tip:</strong> For Google Drive videos, use the sharing link format: <code>https://drive.google.com/file/d/FILE_ID/view</code>. The system extracts the file ID automatically.</div>
+
+<h4>Option C: External Link</h4>
+<p>Link to any external video platform or training resource.</p>
+<div class="step-box"><span class="step-num">1</span><p>Set <strong>Source Type</strong> to <strong>"External Link"</strong>.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Enter the URL to the external video resource.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Slide Form — External Link Source Type</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to External Link option in the Source Type dropdown</div>
+    </div>
+
+<h3>4.4 Uploading Documents &amp; Infographics</h3>
+<div class="step-box"><span class="step-num">1</span><p>Set the <strong>Content Type</strong> to "Document" or "Infographic".</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Choose the <strong>Source Type</strong>: Upload from device or External URL.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Upload the file (PDF, PowerPoint, images, etc.) or provide the URL.</p></div>
+<div class="step-box"><span class="step-num">4</span><p>Save the content.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Document Upload — Source Type Selection</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrows to Content Type and Source Type selections</div>
+    </div>
+
+<h3>4.5 Creating Articles</h3>
+<p>Articles allow you to write rich-text content directly within the platform.</p>
+<div class="step-box"><span class="step-num">1</span><p>Set <strong>Content Type</strong> to "Article".</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Use the built-in <strong>rich text editor</strong> to compose your content. You can add formatted text, images, links, and tables.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Save when complete.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Article Content — Rich Text Editor</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the text editor area</div>
+    </div>
+</div>
+
+<div class="chapter">
+<h2 class="chapter-title">5. Tags &amp; Course Organization</h2>
+<h3>5.1 Understanding Tags</h3>
+<p>Tags in the Ahadu eLearning module help categorize and organize courses for easy discovery. There are two levels of tagging:</p>
+<ul>
+<li><strong>Course Tags</strong> — Applied to courses for categorization (e.g., "Compliance", "IT Skills", "Leadership")</li>
+<li><strong>Content Tags</strong> — Applied to individual slides/content within courses</li>
+</ul>
+
+<h3>5.2 Managing Course Tags</h3>
+<div class="step-box"><span class="step-num">1</span><p>Navigate to <strong>Configuration → Tags</strong> from the top menu.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Click <strong>"New"</strong> to create a new tag.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Enter the tag name and assign it to a <strong>Tag Group</strong> if applicable.</p></div>
+<div class="step-box"><span class="step-num">4</span><p>Save the tag.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Configuration → Tags List View</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the Tags menu item and the New button</div>
+    </div>
+
+<h3>5.3 Tag Groups</h3>
+<p>Tag Groups allow you to organize related tags together. For example:</p>
+<table>
+<tr><th>Tag Group</th><th>Tags</th></tr>
+<tr><td>Department</td><td>IT, Finance, Operations, Risk, Compliance</td></tr>
+<tr><td>Level</td><td>Beginner, Intermediate, Advanced</td></tr>
+<tr><td>Type</td><td>Mandatory, Optional, Certification</td></tr>
+</table>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Tag Group Form View</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the Tag Group name and associated tags</div>
+    </div>
+
+<h3>5.4 Applying Tags to Courses</h3>
+<div class="step-box"><span class="step-num">1</span><p>Open the course you want to tag.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>In the course form, locate the <strong>"Tags"</strong> field.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Click on the field and select existing tags or type to create new ones.</p></div>
+<div class="step-box"><span class="step-num">4</span><p>Save the course.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Course Form — Tags Field</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the Tags field showing selected tags</div>
+    </div>
+</div>
+
+<div class="chapter">
+<h2 class="chapter-title">6. Quizzes &amp; Assessments</h2>
+<h3>6.1 Adding Quiz Questions to Content</h3>
+<p>Each content slide can have quiz questions attached to it. Learners must answer these correctly to mark the content as completed.</p>
+<div class="step-box"><span class="step-num">1</span><p>Open any content/slide within a course.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Navigate to the <strong>"Quiz"</strong> tab in the slide form.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Click <strong>"Add a line"</strong> to create a new quiz question.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Slide Form — Quiz Tab</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the Quiz tab and Add a line button</div>
+    </div>
+
+<h3>6.2 Configuring Quiz Questions</h3>
+<div class="step-box"><span class="step-num">1</span><p>Enter the <strong>Question Text</strong> in the question field.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Add answer choices by clicking <strong>"Add a line"</strong> under the answers section.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>For each answer, enter the answer text.</p></div>
+<div class="step-box"><span class="step-num">4</span><p>Mark the correct answer(s) by checking the <strong>"Is Correct"</strong> checkbox.</p></div>
+<div class="step-box"><span class="step-num">5</span><p>Optionally, add a <strong>comment</strong> that displays when the learner answers incorrectly (to provide educational feedback).</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Quiz Question Form — Answers with Correct Mark</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrows to the question text, answer lines, and Is Correct checkboxes</div>
+    </div>
+
+<h3>6.3 Quiz Best Practices for Banking Training</h3>
+<div class="tip-box"><strong>💡 Tip:</strong> For compliance-related courses, include at least 3-5 quiz questions per section to ensure proper knowledge retention.</div>
+<ul>
+<li>Use <strong>clear, unambiguous</strong> question wording</li>
+<li>Provide <strong>3-4 answer options</strong> for each question</li>
+<li>Include <strong>feedback comments</strong> for wrong answers to guide learning</li>
+<li>Mix question types: factual, scenario-based, and application-based</li>
+<li>Ensure questions align with <strong>Ahadu Bank policies and procedures</strong></li>
+</ul>
+</div>
+
+<div class="chapter">
+<h2 class="chapter-title">7. Enrollment &amp; Learner Progress</h2>
+<h3>7.1 Course Enrollment</h3>
+<p>Employees can enroll in courses based on the enrollment policy set by the course administrator:</p>
+<table>
+<tr><th>Enrollment Policy</th><th>Description</th></tr>
+<tr><td><strong>Open</strong></td><td>Any employee with access can self-enroll</td></tr>
+<tr><td><strong>On Invitation</strong></td><td>Only invited employees can access the course</td></tr>
+<tr><td><strong>On Payment</strong></td><td>Requires payment (typically not used for internal banking training)</td></tr>
+</table>
+
+<h3>7.2 Inviting Employees to a Course</h3>
+<div class="step-box"><span class="step-num">1</span><p>Open the course and click the <strong>"Share"</strong> or <strong>"Invite"</strong> button.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>Enter the <strong>email addresses</strong> of the employees you want to invite.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Optionally, customize the invitation message.</p></div>
+<div class="step-box"><span class="step-num">4</span><p>Click <strong>"Send"</strong> to dispatch the invitations.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Course — Invite/Share Dialog</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the Share/Invite button and email input field</div>
+    </div>
+
+<h3>7.3 Tracking Learner Progress</h3>
+<p>Administrators and managers can monitor employee progress:</p>
+<div class="step-box"><span class="step-num">1</span><p>Open the course and navigate to the <strong>"Attendees"</strong> tab.</p></div>
+<div class="step-box"><span class="step-num">2</span><p>View the list of enrolled employees with their completion percentage.</p></div>
+<div class="step-box"><span class="step-num">3</span><p>Click on an individual attendee to see detailed progress.</p></div>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Course — Attendees Tab with Progress</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrows to the Attendees tab, completion percentage column</div>
+    </div>
+
+<h3>7.4 Reporting &amp; Analytics</h3>
+<p>Access comprehensive reports from the <strong>Reporting</strong> menu:</p>
+<ul>
+<li><strong>Course Statistics</strong> — Enrollments, completions, and average scores</li>
+<li><strong>Content Performance</strong> — Most/least viewed content</li>
+<li><strong>Employee Progress</strong> — Individual learning journey tracking</li>
+</ul>
+<div class="screenshot-placeholder">
+        <div class="icon">📸</div>
+        <div class="label">Screenshot: Reporting Dashboard — Course Statistics</div>
+        <div class="hint">Insert screenshot here</div>
+        <div class="arrow-hint">↑ Point arrow to the Reporting menu and chart area</div>
+    </div>
+</div>
+
+<div class="chapter">
+<h2 class="chapter-title">8. Best Practices &amp; Tips</h2>
+
+<h3>8.1 Course Design Best Practices</h3>
+<ul>
+<li><strong>Keep content modular</strong> — Break courses into small, focused sections (5-15 minutes each)</li>
+<li><strong>Mix content types</strong> — Combine videos, documents, and articles for engagement</li>
+<li><strong>Use sections</strong> — Group related content into logical sections for better navigation</li>
+<li><strong>Add preview content</strong> — Mark introductory slides as "Preview" so employees can see what the course covers before enrolling</li>
+<li><strong>Include quizzes</strong> — Add quiz questions after each section for knowledge reinforcement</li>
+</ul>
+
+<h3>8.2 Video Upload Guidelines</h3>
+<table>
+<tr><th>Aspect</th><th>Recommendation</th></tr>
+<tr><td>File Format</td><td>MP4 (H.264 codec) for best compatibility</td></tr>
+<tr><td>Maximum Size</td><td>1.2 GB per video file</td></tr>
+<tr><td>Resolution</td><td>720p (1280×720) for training videos</td></tr>
+<tr><td>Duration</td><td>5-20 minutes per video segment</td></tr>
+<tr><td>Compression</td><td>Use CRF 23-28 in HandBrake for good quality-size balance</td></tr>
+</table>
+<div class="info-box"><strong>ℹ️ Note:</strong> For Google Drive videos, ensure the sharing setting is set to 'Anyone with the link can view' so all enrolled employees can access the content.</div>
+
+<h3>8.3 Troubleshooting</h3>
+<table>
+<tr><th>Issue</th><th>Solution</th></tr>
+<tr><td>Video not playing</td><td>Check file format (use MP4). For Drive videos, verify sharing settings.</td></tr>
+<tr><td>Upload fails</td><td>Ensure file size is under 1.2 GB. Check internet connection stability.</td></tr>
+<tr><td>Course not visible to employees</td><td>Verify the course is "Published" and enrollment policy is correct.</td></tr>
+<tr><td>Quiz not showing</td><td>Ensure the parent slide is published and quiz questions have correct answers marked.</td></tr>
+<tr><td>Tags not appearing</td><td>Confirm tags are saved and refresh the page.</td></tr>
+</table>
+</div>
+
+<div class="chapter">
+<h2 class="chapter-title">9. Glossary</h2>
+<table>
+<tr><th>Term</th><th>Definition</th></tr>
+<tr><td><strong>Course (Channel)</strong></td><td>A collection of training content organized around a single topic or learning objective</td></tr>
+<tr><td><strong>Slide / Content</strong></td><td>An individual piece of learning material within a course (video, document, article, etc.)</td></tr>
+<tr><td><strong>Section</strong></td><td>A grouping header used to organize slides within a course into logical chapters</td></tr>
+<tr><td><strong>Source Type</strong></td><td>How the content is provided: uploaded from device, external URL, or external link</td></tr>
+<tr><td><strong>Tag</strong></td><td>A label applied to courses or content for categorization and filtering</td></tr>
+<tr><td><strong>Tag Group</strong></td><td>A category that bundles related tags together</td></tr>
+<tr><td><strong>Quiz / Assessment</strong></td><td>Questions attached to a slide to test learner comprehension</td></tr>
+<tr><td><strong>Attendee</strong></td><td>A user enrolled in a course</td></tr>
+<tr><td><strong>Kanban View</strong></td><td>A card-based visual layout for browsing courses</td></tr>
+<tr><td><strong>Publish</strong></td><td>Making a course or slide visible to learners on the website</td></tr>
+</table>
+</div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="content">
+<div class="footer-bar">
+    <p><strong>Ahadu Bank S.C.</strong> — Ahadu eLearning Module User Manual v1.0</p>
+    <p>© 2026 Ahadu Bank S.C. All Rights Reserved. | For Internal Use Only</p>
+    <p>For technical support, contact the IT Help Desk or email: <strong>itsupport@ahadubank.com.et</strong></p>
+</div>
+</div>
+
+</body>
+</html>

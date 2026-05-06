@@ -1,3 +1,11 @@
+/* 
+ * Ahadu eLearning - Fullscreen Local Video Player Patch
+ * 
+ * Extends Odoo's fullscreen player to handle local file videos
+ * uploaded as ir.attachment. These have source_type='local_file'.
+ */
+/** @odoo-module **/
+
 import { patch } from "@web/core/utils/patch";
 import Fullscreen from "@website_slides/js/slides_course_fullscreen_player";
 
@@ -6,6 +14,10 @@ const _originalPreprocessSlideData = Fullscreen.prototype._preprocessSlideData;
 const _originalRenderSlide = Fullscreen.prototype._renderSlide;
 
 patch(Fullscreen.prototype, {
+    /**
+     * Override _preprocessSlideData to mark local_file videos as auto-completed
+     * and keep embed_code as raw HTML markup (not a URL to extract).
+     */
     _preprocessSlideData(slidesDataList) {
         // Call the original method without using _super
         const result = _originalPreprocessSlideData.call(this, slidesDataList);

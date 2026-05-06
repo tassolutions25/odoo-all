@@ -191,7 +191,7 @@
                                                     
                                                     <!-- Fuel Logic -->
                                                     <t t-set="fuel_price_global" t-value="float(request.env['ir.config_parameter'].sudo().get_param('ahadu_hr.fuel_price_per_liter', 0.0))" />
-                                                    <t t-set="fuel_liters" t-value="line.employee_id.transport_allowance_liters" />
+                                                    <t t-set="fuel_liters" t-value="line._get_ahadu_prorated_fuel_liters()" />
                                                     <!-- Accumulate Grand Totals -->
                                                     <t t-set="sum_full_basic" t-value="sum_full_basic + full_basic"/>
                                                     <t t-set="sum_basic" t-value="sum_basic + basic"/>

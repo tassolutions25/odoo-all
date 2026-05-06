@@ -1,16 +1,41 @@
-# -*- coding: utf-8 -*-
-from odoo import fields, models, api
+from odoo import fields, models, api, _
+from odoo.exceptions import UserError
 
 class AhaduPayrollTaxBracket(models.Model):
     _name = 'ahadu.payroll.tax.bracket'
     _description = 'Payroll Tax Bracket'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'lower_bound asc'
 
-    lower_bound = fields.Float(string='Lower Bound (ETB)', required=True)
-    upper_bound = fields.Float(string='Upper Bound (ETB)', help="Enter 0 for infinity (Above X)")
-    rate = fields.Float(string='Tax Rate (%)', required=True)
-    deduction = fields.Float(string='Deduction (ETB)', required=True)
-    active = fields.Boolean(default=True)
+    lower_bound = fields.Float(string='Lower Bound (ETB)', required=True, tracking=True)
+    upper_bound = fields.Float(string='Upper Bound (ETB)', help="Enter 0 for infinity (Above X)", tracking=True)
+    rate = fields.Float(string='Tax Rate (%)', required=True, tracking=True)
+    deduction = fields.Float(string='Deduction (ETB)', required=True, tracking=True)
+    
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('approved', 'Approved'),
+    ], string="Status", default='draft', tracking=True, required=True)
+    
+    active = fields.Boolean(default=True, tracking=True)
+
+    def action_submit(self):
+        self.write({'state': 'submitted'})
+
+    def action_approve(self):
+        if not self.env.user.has_group('ahadu_payroll.group_ahadu_payroll_finance_manager'):
+            raise UserError(_("Only HR Finance Managers can approve these rules."))
+        self.write({'state': 'approved'})
+
+    def action_draft(self):
+        self.write({'state': 'draft'})
+
+    def write(self, vals):
+        for rec in self:
+            if rec.state == 'approved' and not self.env.user.has_group('ahadu_payroll.group_ahadu_payroll_finance_manager'):
+                raise UserError(_("You cannot modify an approved rule. Please contact an HR Finance Manager to reset it to draft."))
+        return super(AhaduPayrollTaxBracket, self).write(vals)
     
     display_range = fields.Char(string='Income Range', compute='_compute_display_range')
 

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: List -->
+    <record id="view_ahadu_bonus_payment_tree" model="ir.ui.view">
+        <field name="name">ahadu.bonus.payment.tree</field>
+        <field name="model">ahadu.bonus.payment</field>
+        <field name="arch" type="xml">
+            <list string="Bonus Payments">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="period_type"/>
+                <field name="cutoff_date"/>
+                <field name="total_bonus_amount" sum="Total Bonus"/>
+                <field name="total_tax_amount" sum="Total Tax"/>
+                <field name="total_net_pay" sum="Total Net Pay"/>
+                <field name="state" widget="badge" 
+                       decoration-info="state == 'draft'" 
+                       decoration-muted="state == 'calculated'" 
+                       decoration-warning="state == 'verified'" 
+                       decoration-primary="state == 'approved'" 
+                       decoration-success="state == 'done'" />
+            </list>
+        </field>
+    </record>
+
+    <!-- View: Form -->
+    <record id="view_ahadu_bonus_payment_form" model="ir.ui.view">
+        <field name="name">ahadu.bonus.payment.form</field>
+        <field name="model">ahadu.bonus.payment</field>
+        <field name="arch" type="xml">
+            <form string="Bonus Payment">
+                <header>
+                    <button name="action_generate_employees" string="Generate Employees" type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                    <button name="action_calculate" string="Calculate Bonus" type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                    <button name="action_verify" string="Verify" type="object" invisible="state != 'calculated'" class="oe_highlight"/>
+                    <button name="action_approve" string="Approve" type="object" invisible="state != 'verified'" class="oe_highlight"/>
+                    <button name="action_done" string="Done" type="object" invisible="state != 'approved'" class="oe_highlight"/>
+                    <button name="action_draft" string="Set to Draft" type="object" invisible="state in ('draft', 'approved', 'done')"/>
+                    <button name="action_print_excel" string="Export Excel" type="object" invisible="state not in ('calculated', 'verified', 'approved', 'done')"/>
+                    <button name="action_print_tax_declaration" string="Tax Declaration" type="object" class="btn-secondary" invisible="state != 'approved'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,calculated,verified,approved,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="e.g. Bonus Payment Dec 2025" readonly="state != 'draft'"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="period_type" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="months_of_year" readonly="state != 'draft'"/>
+                            <field name="cutoff_date" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Employee Bonuses">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom" create="1" delete="1">
+                                    <field name="employee_id_code"/>
+                                    <field name="employee_id"/>
+                                    <field name="job_id" optional="show"/>
+                                    <field name="department_id" optional="show"/>
+                                    <field name="is_managerial" column_invisible="1"/>
+                                    <field name="employment_date" optional="hide"/>
+                                    <field name="monthly_salary"/>
+                                    <field name="total_working_months"/>
+                                    <field name="entitlement_multiplier"/>
+                                    <field name="bonus_entitlement"/>
+                                    <field name="bonus_per_month"/>
+                                    <field name="salary_paid_during_mid" optional="hide"/>
+                                    <field name="tax_a" optional="hide"/>
+                                    <field name="tax_b" optional="hide"/>
+                                    <field name="tax_difference" optional="hide"/>
+                                    <field name="bonus_amount" sum="Total Amount"/>
+                                    <field name="bonus_tax" sum="Total Tax"/>
+                                    <field name="net_bonus_pay" sum="Total Net Pay"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                    
+                    <group string="Signatures &amp; Accountability">
+                        <group>
+                            <field name="prepared_by_id"/>
+                            <field name="prepared_on"/>
+                        </group>
+                        <group>
+                            <field name="verified_by_id" invisible="not verified_by_id"/>
+                            <field name="verified_on" invisible="not verified_on"/>
+                        </group>
+                        <group>
+                            <field name="approved_by_id" invisible="not approved_by_id"/>
+                            <field name="approved_on" invisible="not approved_on"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_ahadu_bonus_payment" model="ir.actions.act_window">
+        <field name="name">Bonus Payments</field>
+        <field name="res_model">ahadu.bonus.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create the first Bonus Payment Batch
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item (Under Operations) -->
+    <menuitem id="menu_ahadu_bonus_payment"
+              name="Bonus Payments"
+              parent="ahadu_payroll.menu_ahadu_operations"
+              action="action_ahadu_bonus_payment"
+              sequence="25" />
+</odoo>

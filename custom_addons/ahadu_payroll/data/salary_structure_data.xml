@@ -23,6 +23,10 @@
             <field name="name">Net</field>
             <field name="code">NET</field>
         </record>
+        <record id="ahadu_category_alc" model="hr.salary.rule.category">
+            <field name="name">Account Allocation</field>
+            <field name="code">ALC</field>
+        </record>
         <record id="ahadu_category_comp" model="hr.salary.rule.category">
             <field name="name">Company Contribution</field>
             <field name="code">COMP</field>
@@ -114,7 +118,8 @@
             <field name="category_id" ref="ahadu_category_alw" />
             <field name="condition_select">none</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_benefit_amount('MOBILE')</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_mobile()</field>
+
             <field name="ahadu_debit_account_id" ref="account_5030221" />
         </record>
 
@@ -126,7 +131,9 @@
             <field name="category_id" ref="ahadu_category_alw" />
             <field name="condition_select">none</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_benefit_amount('OTHER_BEN')</field>
+            <!-- Benefits are primarily on employee profile; this rule handles remaining items from profile or package if configured -->
+            <field name="amount_python_compute">result = payslip._get_ahadu_other_benefits()</field>
+
             <field name="ahadu_debit_account_id" ref="account_5030220" />
         </record>
 
@@ -192,19 +199,6 @@
             <field name="ahadu_credit_account_id" ref="account_2020301" />
         </record>
 
-        <!-- Cash Indemnity Tax (CI_TAX) -->
-        <record id="hr_rule_ci_tax" model="hr.salary.rule">
-            <field name="name">Cash Indemnity Tax (35%)</field>
-            <field name="sequence" eval="205" />
-            <field name="code">CI_TAX</field>
-            <field name="category_id" ref="ahadu_category_ded" />
-            <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip.cash_indemnity_tax > 0</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip.cash_indemnity_tax</field>
-            <field name="ahadu_credit_account_id" ref="account_2020301" />
-        </record>
-
         <!-- Pension Emp -->
         <record id="hr_rule_pension_emp" model="hr.salary.rule">
             <field name="name">Pension (Employee 7%)</field>
@@ -241,7 +235,8 @@
             <field name="condition_select">python</field>
             <field name="condition_python">result = payslip._get_ahadu_advance_loan_deduction() > 0</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_advance_loan_deduction()</field>
+            <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_advance_loan_deduction(), categories.GROSS - categories.DED)</field>
+
             <field name="appears_on_payslip" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_1010202" />
         </record>
@@ -255,7 +250,8 @@
             <field name="condition_select">python</field>
             <field name="condition_python">result = payslip._get_ahadu_personal_loan_deduction() > 0</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_personal_loan_deduction()</field>
+            <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_personal_loan_deduction(), categories.GROSS - categories.DED)</field>
+
             <field name="appears_on_payslip" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_1010203" />
         </record>
@@ -269,7 +265,8 @@
             <field name="condition_select">python</field>
             <field name="condition_python">result = payslip._get_ahadu_other_loan_deduction() > 0</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_other_loan_deduction()</field>
+            <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_other_loan_deduction(), categories.GROSS - categories.DED)</field>
+
             <field name="appears_on_payslip" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_1010202" />
         </record>
@@ -283,7 +280,8 @@
             <field name="condition_select">python</field>
             <field name="condition_python">result = payslip._get_ahadu_savings_deduction() > 0</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_savings_deduction()</field>
+            <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_savings_deduction(), categories.GROSS - categories.DED)</field>
+
             <field name="appears_on_payslip" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_2020310" />
         </record>
@@ -297,7 +295,8 @@
             <field name="condition_select">python</field>
             <field name="condition_python">result = payslip._get_ahadu_credit_association_deduction() > 0</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_credit_association_deduction()</field>
+            <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_credit_association_deduction(), categories.GROSS - categories.DED)</field>
+
             <field name="appears_on_payslip" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_2020311" />
         </record>
@@ -305,13 +304,14 @@
         <!-- Cost Sharing Deduction -->
         <record id="hr_rule_cost_sharing" model="hr.salary.rule">
             <field name="name">Cost Sharing</field>
-            <field name="sequence" eval="232" />
+            <field name="sequence" eval="212" />
             <field name="code">COST_SHARING</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">python</field>
             <field name="condition_python">result = payslip._get_ahadu_cost_sharing_deduction() > 0</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_cost_sharing_deduction()</field>
+            <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_cost_sharing_deduction(), categories.GROSS - categories.DED)</field>
+
             <field name="appears_on_payslip" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_2020309" />
         </record>
@@ -319,15 +319,41 @@
         <!-- Other Deductions -->
         <record id="hr_rule_other_deductions" model="hr.salary.rule">
             <field name="name">Other Deductions</field>
-            <field name="sequence" eval="235" />
+            <field name="sequence" eval="240" />
             <field name="code">OTHER_DED</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">python</field>
             <field name="condition_python">result = payslip._get_ahadu_other_deduction() > 0</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_other_deduction()</field>
+            <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_other_deduction(), categories.GROSS - categories.DED)</field>
+
             <field name="appears_on_payslip" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_2020312" />
+        </record>
+ 
+        <!-- Archived Cash Indemnity Tax (35%) - Kept to prevent upgrade constraint errors -->
+        <record id="hr_rule_ci_tax" model="hr.salary.rule">
+            <field name="name">Cash Indemnity Tax (35%)</field>
+            <field name="sequence" eval="244" />
+            <field name="code">CI_TAX</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="active" eval="False" />
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+        </record>
+
+        <!-- Cash Indemnity to CI Account (Allocation) -->
+        <record id="hr_rule_ci_to_acc" model="hr.salary.rule">
+            <field name="name">Cash Indemnity to CI Account</field>
+            <field name="sequence" eval="245" />
+            <field name="code">CI_ACC</field>
+            <field name="category_id" ref="ahadu_category_alc" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.ci_to_balance > 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.ci_to_balance</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_2020300" /> <!-- Generic Credit to Salary Payable, balance update is handled in Python -->
         </record>
 
         <!-- Net Pay -->
@@ -338,7 +364,7 @@
             <field name="category_id" ref="ahadu_category_net" />
             <field name="condition_select">none</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = categories.GROSS - categories.DED</field>
+            <field name="amount_python_compute">result = categories.GROSS - categories.DED - categories.ALC</field>
             <field name="ahadu_credit_account_id" ref="account_2020300" />
         </record>
 
@@ -376,7 +402,6 @@
                 (4, ref('hr_rule_gross')),
                 (4, ref('hr_rule_leave_deduction')),
                 (4, ref('hr_rule_income_tax')),
-                (4, ref('hr_rule_ci_tax')),
                 (4, ref('hr_rule_pension_emp')),
                 (4, ref('hr_rule_pension_comp')),
                 (4, ref('hr_rule_adv_loan')),
@@ -386,6 +411,7 @@
                 (4, ref('hr_rule_credit_assoc')),
                 (4, ref('hr_rule_cost_sharing')),
                 (4, ref('hr_rule_other_deductions')),
+                (4, ref('hr_rule_ci_to_acc')),
                 (4, ref('hr_rule_net')),
             ]" />
         </record>

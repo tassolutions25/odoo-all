@@ -3,8 +3,18 @@ import time
 import logging
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+from dateutil.relativedelta import relativedelta
 
 _logger = logging.getLogger(__name__)
+
+
+class HrPayslipRunMissed(models.Model):
+    _name = 'hr.payslip.run.missed'
+    _description = 'Missed Employees in Payslip Batch'
+
+    batch_id = fields.Many2one('hr.payslip.run', string='Batch', ondelete='cascade')
+    employee_id = fields.Many2one('hr.employee', string='Employee', required=True)
+    reason = fields.Char(string='Reason', required=True)
 
 
 class HrPayslipRun(models.Model):
@@ -118,6 +128,14 @@ class HrPayslipRun(models.Model):
         help="Technical field to track if cash indemnity bank transfer was executed."
     )
 
+    missed_reason_ids = fields.One2many(
+        'hr.payslip.run.missed',
+        'batch_id',
+        string='Generation Logs',
+        readonly=True,
+        help="Details of employees who were expected but skipped during payslip generation."
+    )
+
     @api.model_create_multi
     def create(self, vals_list):
         """
@@ -131,6 +149,9 @@ class HrPayslipRun(models.Model):
         user = self.env.user
         emp = user.employee_id
         
+        # Check if user is a Payroll Manager BEFORE creating
+        self._check_manager_restriction()
+
         for vals in vals_list:
             if not vals.get('branch_id') and emp and hasattr(emp, 'branch_id') and emp.branch_id:
                 # If user is Head Office, they might want empty branch. 
@@ -138,11 +159,24 @@ class HrPayslipRun(models.Model):
                 # Use Record Rules to enforce "Must be my branch". 
                 # Here we just default to help them.
                 vals['branch_id'] = emp.branch_id.id
-
-        # Check if user is a Payroll Manager
-        self._check_manager_restriction()
                 
         return super(HrPayslipRun, self).create(vals_list)
+
+    def write(self, vals):
+        """
+        Restrict Managers from editing Draft batches.
+        They should only be able to Approve/Reject.
+        """
+        if any(batch.state == 'draft' for batch in self):
+            # Only block if they are trying to modify something other than the state or technical fields
+            # (Though usually Managers shouldn't edit Draft at all)
+            self._check_manager_restriction()
+        return super(HrPayslipRun, self).write(vals)
+
+    def unlink(self):
+        """Restrict Managers from deleting batches."""
+        self._check_manager_restriction()
+        return super(HrPayslipRun, self).unlink()
 
     @api.depends('pay_group_ids', 'cost_center_ids', 'branch_ids', 'region_ids', 'slip_ids', 'slip_ids.contract_id.pay_group_id', 'slip_ids.contract_id.cost_center_id', 'slip_ids.employee_id.branch_id', 'slip_ids.employee_id.region_id')
     def _compute_filtered_slip_ids(self):
@@ -212,6 +246,10 @@ class HrPayslipRun(models.Model):
                 contracts = self.env['hr.contract'].search(contract_domain)
                 employees = contracts.mapped('employee_id')
 
+            # 3. Exclude Terminated/Suspended/Resigning (Consistent with generation logic)
+            excluded_ids = batch._get_excluded_employee_ids(batch.date_start, batch.date_end)
+            employees = employees.filtered(lambda e: e.id not in excluded_ids)
+
             batch.available_employee_ids = employees
             batch.employee_count = len(employees)
 
@@ -246,31 +284,63 @@ class HrPayslipRun(models.Model):
                 from odoo.exceptions import AccessError
                 raise AccessError(_("Payroll Managers are restricted from this action (Create/Process). This action is reserved for Payroll Officers."))
 
+    def _get_excluded_employee_ids(self, date_start, date_end):
+        """
+        Returns a set of employee IDs that should be excluded from the payroll batch.
+        Includes Terminated, Suspended, and Resigning employees.
+        """
+        # 1. Terminated (Contract ends in period OR has termination payslip)
+        terminated_slips = self.env['hr.termination.payslip'].search([
+            ('termination_date', '>=', date_start),
+            ('termination_date', '<=', date_end),
+            ('state', '!=', 'cancel')
+        ])
+        
+        ending_contracts = self.env['hr.contract'].search([
+            ('date_end', '>=', date_start),
+            ('date_end', '<=', date_end),
+            ('state', 'in', ['open', 'close'])
+        ])
+        
+        terminated_emp_ids = set(terminated_slips.mapped('employee_id').ids + ending_contracts.mapped('employee_id').ids)
+
+        # 2. Suspended
+        suspended_records = self.env['hr.employee.suspension'].search([
+            ('state', 'in', ['approved', 'Approved']),
+            ('end_date', '>', date_end)
+        ])
+        suspended_emp_ids = set(suspended_records.mapped('employee_id').ids)
+
+        # 3. Resigning
+        resigning_records = self.env['hr.employee.resignation'].search([
+            ('state', 'in', ['approved', 'Approved']),
+            ('resignation_date', '>=', date_start),
+            ('resignation_date', '<=', date_end + relativedelta(months=1))
+        ])
+        resigning_emp_ids = set(resigning_records.mapped('employee_id').ids)
+
+        return terminated_emp_ids | suspended_emp_ids | resigning_emp_ids
+
     def action_generate_payslips_filtered(self):
         """
-        Generate payslips for all employees matching the selected filters (Pay Group / Cost Center / Branch / Region).
-        Restricted for Managers.
+        Generate payslips for all employees matching the selected filters.
         """
         self._check_manager_restriction()
         self.ensure_one()
         
         if not self.pay_group_ids and not self.cost_center_ids and not self.branch_ids and not self.region_ids and not self.department_ids:
-            raise UserError(_("Please select at least one Pay Group, Cost Center, Branch, Region, or Department to generate payslips."))
+            raise UserError(_("Please select at least one filter (Pay Group, Branch, etc.) to generate payslips."))
         
         Payslip = self.env['hr.payslip']
         Contract = self.env['hr.contract']
         
-        # Get the salary structure (use default if available)
         structure = self.env.ref('ahadu_payroll.structure_ahadu_monthly', raise_if_not_found=False)
         if not structure:
-            # Fallback: get the first available structure
             structure = self.env['hr.payroll.structure'].search([], limit=1)
-        
         if not structure:
-            raise UserError(_("No salary structure found. Please create a salary structure first."))
+            raise UserError(_("No salary structure found."))
         
-        # Build Domain for Fetching Contracts for the matching employees
-        # We start with the same logic as _compute_available_employees
+        # 1. FIND EMPLOYEES MATCHING BASE FILTERS (Branch/Dept/Region)
         emp_domain = []
         if self.department_ids:
             emp_domain.append(('department_id', 'child_of', self.department_ids.ids))
@@ -281,45 +351,89 @@ class HrPayslipRun(models.Model):
 
         employees = self.env['hr.employee'].search(emp_domain) if emp_domain else self.env['hr.employee'].search([])
 
-        # Now get active contracts for these employees, matching pay_group/cost_center if selected
+        # 2. FIND ACTIVE CONTRACTS (State=Open, Matching Filters)
         contract_domain = [('state', '=', 'open'), ('employee_id', 'in', employees.ids)]
         if self.pay_group_ids:
             contract_domain.append(('pay_group_id', 'in', self.pay_group_ids.ids))
         if self.cost_center_ids:
             contract_domain.append(('cost_center_id', 'in', self.cost_center_ids.ids))
 
-        # Find active contracts
         contracts = Contract.search(contract_domain)
         
-        if not contracts:
-            raise UserError(_("No active contracts found for the selected criteria."))
+        # 3. IDENTIFY EXCLUDED EMPLOYEES
+        excluded_emp_ids = self._get_excluded_employee_ids(self.date_start, self.date_end)
         
-        # Get employees who already have payslips in this batch
-        existing_employee_ids = self.slip_ids.mapped('employee_id').ids
-        
-        # Filter contracts to exclude employees who already have payslips
-        new_contracts = contracts.filtered(
-            lambda c: c.employee_id.id not in existing_employee_ids
-        )
-        
-        # --- EXCLUDE TERMINATED EMPLOYEES ---
-        # Fetch employees who have a Termination Payslip in this period
+        # Breakdown for logging
         terminated_slips = self.env['hr.termination.payslip'].search([
             ('termination_date', '>=', self.date_start),
             ('termination_date', '<=', self.date_end),
             ('state', '!=', 'cancel')
         ])
-        terminated_emp_ids = terminated_slips.mapped('employee_id').ids
-        if terminated_emp_ids:
-             new_contracts = new_contracts.filtered(lambda c: c.employee_id.id not in terminated_emp_ids)
-             _logger.info(f"Excluded {len(terminated_emp_ids)} terminated employees from batch {self.name}")
+        ending_contracts = self.env['hr.contract'].search([
+            ('date_end', '>=', self.date_start),
+            ('date_end', '<=', self.date_end),
+            ('state', 'in', ['open', 'close'])
+        ])
+        terminated_emp_ids = set(terminated_slips.mapped('employee_id').ids) | set(ending_contracts.mapped('employee_id').ids)
 
-        if not new_contracts:
-            raise UserError(_("All employees in the selected filters already have payslips in this batch (or are terminated)."))
+        suspended_records = self.env['hr.employee.suspension'].search([
+            ('state', 'in', ['approved', 'Approved']),
+            ('end_date', '>', self.date_end)
+        ])
+        suspended_emp_ids = set(suspended_records.mapped('employee_id').ids)
+
+        resigning_records = self.env['hr.employee.resignation'].search([
+            ('state', 'in', ['approved', 'Approved']),
+            ('resignation_date', '>=', self.date_start),
+            ('resignation_date', '<=', self.date_end + relativedelta(months=1))
+        ])
+        resigning_emp_ids = set(resigning_records.mapped('employee_id').ids)
+
+        # 4. TRACK MISSED EMPLOYEES
+        missed_data = []
+        existing_employee_ids = self.slip_ids.mapped('employee_id').ids
         
-        # --- DUPLICATE EMPLOYEE ID CHECK ---
-        # The user's field for employee id in ahadu_hr is 'employee_id'
-        emp_ids = new_contracts.mapped('employee_id.employee_id')
+        all_candidate_emp_ids = employees.ids
+        emps_with_open_contracts = contracts.mapped('employee_id').ids
+        
+        # MISS REASON: No Open Contract
+        for eid in all_candidate_emp_ids:
+            if eid not in emps_with_open_contracts:
+                missed_data.append({'employee_id': eid, 'reason': _("No 'Open' contract found.")})
+
+        # MISS REASON: Already in batch
+        for eid in existing_employee_ids:
+            if eid in emps_with_open_contracts:
+                missed_data.append({'employee_id': eid, 'reason': _("Already has a payslip in this batch.")})
+
+        # MISS REASON: Terminated
+        for eid in terminated_emp_ids:
+            if eid in emps_with_open_contracts:
+                missed_data.append({'employee_id': eid, 'reason': _("Excluded (Terminated during period).")})
+
+        # MISS REASON: Suspended
+        for eid in suspended_emp_ids:
+            if eid in emps_with_open_contracts and eid not in terminated_emp_ids and eid not in existing_employee_ids:
+                missed_data.append({'employee_id': eid, 'reason': _("Excluded (Suspended).")})
+
+        # MISS REASON: Resigned
+        for eid in resigning_emp_ids:
+            if eid in emps_with_open_contracts and eid not in terminated_emp_ids and eid not in suspended_emp_ids and eid not in existing_employee_ids:
+                missed_data.append({'employee_id': eid, 'reason': _("Excluded (Pending Resignation Settlement).")})
+
+        # 5. FILTER CONTRACTS TO GENERATE
+        final_contracts = contracts.filtered(
+            lambda c: c.employee_id.id not in existing_employee_ids and c.employee_id.id not in excluded_emp_ids
+        )
+
+        if not final_contracts:
+            self.missed_reason_ids.unlink()
+            if missed_data:
+                self.write({'missed_reason_ids': [(0, 0, d) for d in missed_data]})
+            raise UserError(_("No new payslips could be generated. Check 'Generation Logs' tab for details."))
+
+        # 6. DUPLICATE CHECK
+        emp_ids = final_contracts.mapped('employee_id.employee_id')
         seen = set()
         duplicates = set()
         for eid in emp_ids:
@@ -329,14 +443,17 @@ class HrPayslipRun(models.Model):
             seen.add(eid)
         
         if duplicates:
-            dup_names = new_contracts.filtered(lambda c: c.employee_id.employee_id in duplicates).mapped('employee_id.name')
-            raise UserError(_("Duplicate Employee IDs detected in the selection: %s (%s). Manual correction is required before batch generation.") % (", ".join(duplicates), ", ".join(dup_names)))
-        
-        # Create payslips for each contract
-        payslips_created = 0
-        new_payslips = self.env['hr.payslip']
-        for contract in new_contracts:
-            payslip_vals = {
+            dup_emps = final_contracts.filtered(lambda c: c.employee_id.employee_id in duplicates).mapped('employee_id')
+            for emp in dup_emps:
+                missed_data.append({'employee_id': emp.id, 'reason': _("Duplicate Employee ID: %s") % emp.employee_id})
+            self.missed_reason_ids.unlink()
+            self.write({'missed_reason_ids': [(0, 0, d) for d in missed_data]})
+            raise UserError(_("Duplicate Employee IDs detected: %s. Please fix before proceeding.") % ", ".join(duplicates))
+
+        # 7. CREATE PAYSLIPS
+        payslip_vals_list = []
+        for contract in final_contracts:
+            payslip_vals_list.append({
                 'employee_id': contract.employee_id.id,
                 'contract_id': contract.id,
                 'struct_id': structure.id,
@@ -344,24 +461,26 @@ class HrPayslipRun(models.Model):
                 'date_to': self.date_end,
                 'payslip_run_id': self.id,
                 'name': f"Salary Slip - {contract.employee_id.name} - {self.name}",
-            }
-            payslip = Payslip.create(payslip_vals)
-            new_payslips += payslip
-            payslips_created += 1
+            })
         
-        # Compute all newly created payslips explicitly
-        # This triggers the calculation of salary rules (Basic, Tax, Net, etc.)
+        new_payslips = self.env['hr.payslip']
+        if payslip_vals_list:
+            new_payslips = Payslip.create(payslip_vals_list)
+        
+        # Save logs
+        self.missed_reason_ids.unlink()
+        if missed_data:
+             self.write({'missed_reason_ids': [(0, 0, d) for d in missed_data]})
+        
         if new_payslips:
             new_payslips.compute_sheet()
-        
-        _logger.info(f"Generated and computed {payslips_created} payslips for filtered batch '{self.name}'")
         
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
                 'title': _('Payslips Generated'),
-                'message': _(f'{payslips_created} payslips created and computed successfully.'),
+                'message': _(f'{len(new_payslips)} payslips created and computed successfully.'),
                 'type': 'success',
                 'sticky': False,
             }
@@ -422,20 +541,70 @@ class HrPayslipRun(models.Model):
                     # Get employees who already have payslips in this batch
                     existing_employee_ids = self.slip_ids.mapped('employee_id').ids
                     
-                    # Filter contracts to exclude employees who already have payslips
-                    new_contracts = contracts.filtered(
-                        lambda c: c.employee_id.id not in existing_employee_ids
-                    )
+                    # 3. IDENTIFY EXCLUDED EMPLOYEES
+                    excluded_emp_ids = self._get_excluded_employee_ids(self.date_start, self.date_end)
                     
-                    # Exclude terminated employees
+                    # Breakdown for logging
                     terminated_slips = self.env['hr.termination.payslip'].search([
                         ('termination_date', '>=', self.date_start),
                         ('termination_date', '<=', self.date_end),
                         ('state', '!=', 'cancel')
                     ])
-                    terminated_emp_ids = terminated_slips.mapped('employee_id').ids
-                    if terminated_emp_ids:
-                        new_contracts = new_contracts.filtered(lambda c: c.employee_id.id not in terminated_emp_ids)
+                    ending_contracts = self.env['hr.contract'].search([
+                        ('date_end', '>=', self.date_start),
+                        ('date_end', '<=', self.date_end),
+                        ('state', 'in', ['open', 'close'])
+                    ])
+                    terminated_emp_ids = set(terminated_slips.mapped('employee_id').ids) | set(ending_contracts.mapped('employee_id').ids)
+
+                    suspended_records = self.env['hr.employee.suspension'].search([
+                        ('state', 'in', ['approved', 'Approved']),
+                        ('end_date', '>', self.date_end)
+                    ])
+                    suspended_emp_ids = set(suspended_records.mapped('employee_id').ids)
+
+                    resigning_records = self.env['hr.employee.resignation'].search([
+                        ('state', 'in', ['approved', 'Approved']),
+                        ('resignation_date', '>=', self.date_start),
+                        ('resignation_date', '<=', self.date_end + relativedelta(months=1))
+                    ])
+                    resigning_emp_ids = set(resigning_records.mapped('employee_id').ids)
+
+                    # 4. TRACK MISSED EMPLOYEES
+                    missed_data = []
+                    all_candidate_emp_ids = employees.ids
+                    emps_with_contracts = contracts.mapped('employee_id').ids
+                    missed_contract_emp_ids = [eid for eid in all_candidate_emp_ids if eid not in emps_with_contracts]
+                    for emp_id in missed_contract_emp_ids:
+                        missed_data.append({'employee_id': emp_id, 'reason': _("No 'Open' contract found.")})
+                    
+                    for eid in existing_employee_ids:
+                        if eid in emps_with_contracts:
+                            missed_data.append({'employee_id': eid, 'reason': _("Already has a payslip in this batch.")})
+                    
+                    # Log Terminated
+                    for eid in terminated_emp_ids:
+                        if eid in emps_with_contracts:
+                            missed_data.append({'employee_id': eid, 'reason': _("Excluded (Terminated during period).")})
+
+                    # Log Suspended
+                    for eid in suspended_emp_ids:
+                        if eid in emps_with_contracts and eid not in terminated_emp_ids and eid not in existing_employee_ids:
+                            missed_data.append({'employee_id': eid, 'reason': _("Excluded (Suspended).")})
+
+                    # Log Resigned
+                    for eid in resigning_emp_ids:
+                        if eid in emps_with_contracts and eid not in terminated_emp_ids and eid not in suspended_emp_ids and eid not in existing_employee_ids:
+                            missed_data.append({'employee_id': eid, 'reason': _("Excluded (Pending Resignation Settlement).")})
+                    
+                    self.missed_reason_ids.unlink()
+                    if missed_data:
+                        self.write({'missed_reason_ids': [(0, 0, d) for d in missed_data]})
+
+                    # 5. FILTER CONTRACTS TO GENERATE
+                    new_contracts = contracts.filtered(
+                        lambda c: c.employee_id.id not in existing_employee_ids and c.employee_id.id not in excluded_emp_ids
+                    )
                     
                     if new_contracts:
                         # Create payslips for each contract
@@ -492,13 +661,14 @@ class HrPayslipRun(models.Model):
         1. Generate Standalone Journal Entries.
         2. Set all Payslips to 'Done'.
         3. Track Approver.
+        4. Send emails asynchronously.
         """
         for batch in self:
             if batch.state == 'verify':
                 # 1. Generate Journal Entries
                 batch.generate_standalone_journal_entry()
                 
-                # 2. Confirm all Payslips (Set to Done)
+                # 2. Confirm all Payslips
                 slips_to_confirm = batch.slip_ids.filtered(lambda s: s.state in ['draft', 'verify'])
                 if slips_to_confirm:
                     for slip in slips_to_confirm:
@@ -507,13 +677,13 @@ class HrPayslipRun(models.Model):
                 # 3. Track Approval
                 batch.write({
                     'approved_by_id': self.env.user.id,
-                    'approved_date': fields.Datetime.now()
+                    'approved_date': fields.Datetime.now(),
+                    'state': 'close'
                 })
-                # 4. Automatically send Payslips to Employees via Email
+                # 4. Automatically send Payslips to Employees (Background queuing)
                 batch.slip_ids.sudo().action_send_payslip_email()
         
-        # Call the standard method to handle state change (if any) or just write state
-        return self.write({'state': 'close'})
+        return True
 
     def generate_standalone_journal_entry(self):
         """
@@ -533,11 +703,15 @@ class HrPayslipRun(models.Model):
             'payslip_run_id': self.id,
             'state': 'posted',
         })
-        # 2. OPTIMIZATION: Collect all journal lines in a list for batch creation
+        # 2. OPTIMIZATION: Prefetch related fields to avoid O(N) queries
+        slips = self.slip_ids.filtered(lambda s: s.state != 'cancel')
+        slips.mapped('line_ids') # Prefetch salary rules
+        slips.mapped('contract_id.cost_center_id') # Prefetch cost centers
+        
         journal_lines_to_create = []
         
         # 3. Loop through every Payslip in this Batch
-        for slip in self.slip_ids:
+        for slip in slips:
             
             # Skip cancelled slips
             if slip.state == 'cancel':
@@ -669,11 +843,21 @@ class HrPayslipRun(models.Model):
     def action_print_cash_indemnity_report(self):
         """Download Cash Indemnity Excel Report."""
         self.ensure_one()
-        if self.state != 'close':
-            raise UserError(_("The bank transfer cannot be performed on unfinished or unverified and unapproved payrolls."))
             
         return {
             'type': 'ir.actions.act_url',
             'url': f'/ahadu_payroll/cash_indemnity_report/{self.id}',
+            'target': 'new',
+        }
+
+    def action_batch_upload(self):
+        """Returns a URL action to download the CBS Batch Upload ZIP file."""
+        self.ensure_one()
+        if self.state != 'close':
+            raise UserError(_("You cannot generate the Batch Upload files until the payroll batch is Approved and Closed."))
+            
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/ahadu_payroll/batch_upload/{self.id}',
             'target': 'new',
         }

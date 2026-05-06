@@ -12,7 +12,7 @@
                     <button name="action_verify" string="Verify" type="object" invisible="state != 'draft'" class="oe_highlight"/>
                     <button name="action_approve" string="Approve" type="object" invisible="state != 'verified'" class="oe_highlight"/>
                     <button name="action_done" string="Mark as Done" type="object" invisible="state != 'approved'" class="oe_highlight"/>
-                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state in ['draft', 'done']"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state in ['draft', 'approved', 'done']"/>
                     <button name="action_cancel" string="Cancel" type="object" invisible="state == 'cancel'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,verified,approved,done"/>
                 </header>
@@ -141,7 +141,7 @@
                 <header>
                     <button name="action_approve" string="Approve" type="object" invisible="state != 'draft'" class="oe_highlight"/>
                     <button name="action_done" string="Mark as Done" type="object" invisible="state != 'approved'" class="oe_highlight"/>
-                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state == 'draft'"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state in ['draft', 'approved', 'done']"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -284,15 +284,55 @@
         <field name="name">ahadu.overtime.rule.tree</field>
         <field name="model">ahadu.overtime.rule</field>
         <field name="arch" type="xml">
-            <list string="Overtime Rules" editable="bottom">
+            <list string="Overtime Rules">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="dayofweek"/>
                 <field name="time_start" widget="float_time"/>
                 <field name="time_end" widget="float_time"/>
                 <field name="type"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'submitted'" decoration-success="state == 'approved'"/>
                 <field name="active" widget="boolean_toggle"/>
             </list>
+        </field>
+    </record>
+
+    <record id="view_ahadu_overtime_rule_form" model="ir.ui.view">
+        <field name="name">ahadu.overtime.rule.form</field>
+        <field name="model">ahadu.overtime.rule</field>
+        <field name="arch" type="xml">
+            <form string="Overtime Rule">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                    <button name="action_approve" string="Approve" type="object" invisible="state != 'submitted'" class="oe_highlight" groups="ahadu_payroll.group_ahadu_payroll_finance_manager"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state == 'draft'" groups="ahadu_payroll.group_ahadu_payroll_finance_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Rule Name e.g. Night Shift"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="dayofweek"/>
+                            <field name="type"/>
+                        </group>
+                        <group>
+                            <field name="time_start" widget="float_time"/>
+                            <field name="time_end" widget="float_time"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
         </field>
     </record>
 
@@ -310,6 +350,7 @@
         <field name="name">Overtime</field>
         <field name="parent_id" ref="menu_ahadu_root"/>
         <field name="sequence">20</field>
+        <field name="groups_id" eval="[(4, ref('ahadu_payroll.group_attendance_officer')), (4, ref('ahadu_payroll.group_attendance_manager')), (4, ref('ahadu_payroll.group_branch_attendance_officer')), (4, ref('ahadu_payroll.group_branch_attendance_manager'))]"/>
     </record>
 
     <!-- Sub Menu: Overtime Tracking -->
@@ -334,5 +375,6 @@
         <field name="parent_id" ref="menu_ahadu_overtime_root"/>
         <field name="action" ref="action_ahadu_overtime_rule"/>
         <field name="sequence">30</field>
+        <field name="groups_id" eval="[(4, ref('group_ahadu_payroll_finance_officer'))]"/>
     </record>
 </odoo>

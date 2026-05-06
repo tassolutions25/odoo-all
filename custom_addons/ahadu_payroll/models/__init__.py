@@ -3,6 +3,7 @@ from . import ahadu_account
 from . import ahadu_journal_entry
 from . import ahadu_pay_group
 from . import ahadu_payroll_region
+from . import ahadu_payroll_city_hardship
 from . import hr_contract
 from . import hr_employee
 from . import hr_employee_deduction
@@ -23,3 +24,7 @@ from . import hr_employee_bank_account
 from . import payroll_dashboard
 from . import hr_loan_type
 from . import hr_loan
+from . import ahadu_bonus_payment
+from . import ahadu_backpay
+from . import ahadu_attendance
+from . import hr_resignation_payslip

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ -->
+    <!--  ACTIONS                                                       -->
+    <!-- ============================================================ -->
+
+    <!-- My On-Duty Requests (employee) -->
+    <record id="action_hr_on_duty_my" model="ir.actions.act_window">
+        <field name="name">My On-Duty Requests</field>
+        <field name="res_model">hr.on.duty</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="context">{'search_default_my_requests': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first On-Duty request
+            </p>
+            <p>
+                Submit On-Duty requests when you are working outside the office
+                for client visits, audits, training, or regulatory meetings.
+            </p>
+        </field>
+    </record>
+
+    <!-- All On-Duty Requests (manager / HR) -->
+    <record id="action_hr_on_duty_all" model="ir.actions.act_window">
+        <field name="name">All On-Duty Requests</field>
+        <field name="res_model">hr.on.duty</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No On-Duty requests found.
+            </p>
+        </field>
+    </record>
+
+    <!-- Pending Approvals (manager quick view) -->
+    <record id="action_hr_on_duty_pending" model="ir.actions.act_window">
+        <field name="name">Pending On-Duty Approvals</field>
+        <field name="res_model">hr.on.duty</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+    </record>
+
+    <!-- On-Duty Attendance Logs (from stat button) -->
+    <record id="action_hr_on_duty_attendance" model="ir.actions.act_window">
+        <field name="name">OD Attendance Logs</field>
+        <field name="res_model">hr.attendance</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('on_duty_id', '=', active_id), ('is_od', '=', True)]</field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!--  ON-DUTY: FORM VIEW                                            -->
+    <!-- ============================================================ -->
+    <record id="view_hr_on_duty_form" model="ir.ui.view">
+        <field name="name">hr.on.duty.form</field>
+        <field name="model">hr.on.duty</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <!-- Workflow Buttons -->
+                    <button name="action_submit" string="Submit"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_manager_approve" string="Approve"
+                            type="object" class="btn-primary"
+                            invisible="state != 'waiting_manager'"
+                            groups="ahadu_attendance.group_ahadu_attendance_manager,base.group_system"/>
+                    <!-- HR approve kept for backward compat but hidden in normal flow -->
+                    <button name="action_hr_approve" string="Approve (HR)"
+                            type="object" class="btn-primary"
+                            invisible="1"
+                            groups="ahadu_attendance.group_ahadu_attendance_hr_admin"/>
+                    <button name="action_reject" string="Reject"
+                            type="object" class="btn-danger"
+                            invisible="state != 'waiting_manager'"
+                            groups="ahadu_attendance.group_ahadu_attendance_manager,ahadu_attendance.group_ahadu_attendance_hr_admin,base.group_system"/>
+                    <button name="action_reset_draft" string="Reset to Draft"
+                            type="object"
+                            invisible="state != 'rejected'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,waiting_manager,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(ahadu_on_duty.action_hr_on_duty_attendance)d"
+                                type="action" class="oe_stat_button"
+                                icon="fa-clock-o"
+                                invisible="not attendance_created">
+                            <span>Attendance Logs</span>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Employee Details">
+                            <field name="employee_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="department_id"/>
+                            <field name="manager_id"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group string="On-Duty Details">
+                            <field name="od_type"
+                                   readonly="state != 'draft'"/>
+                            <field name="date_from"
+                                   readonly="state != 'draft'"/>
+                            <field name="date_to"
+                                   readonly="state != 'draft'"/>
+                            <field name="total_hours"/>
+                            <field name="reason_type"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description &amp; Justification">
+                            <field name="description"
+                                   readonly="state != 'draft'"
+                                   placeholder="Provide a detailed justification for this On-Duty request..."/>
+                        </page>
+                        <page string="Compliance">
+                            <group>
+                                <field name="attachment" filename="attachment_filename"
+                                       readonly="state == 'approved'"/>
+                                <field name="attachment_filename" invisible="1"/>
+                                <field name="gps_coordinates"
+                                       readonly="state != 'draft'"/>
+                            </group>
+                        </page>
+                        <page string="Approval History"
+                              invisible="state == 'draft'">
+                            <group>
+                                <group string="Manager Approval">
+                                    <field name="manager_approved_by"/>
+                                    <field name="manager_approved_date"/>
+                                </group>
+                                <group string="HR Approval">
+                                    <field name="hr_approved_by"/>
+                                    <field name="hr_approved_date"/>
+                                </group>
+                            </group>
+                            <group invisible="state != 'rejected'">
+                                <field name="rejected_by"/>
+                                <field name="rejection_reason"/>
+                            </group>
+                        </page>
+                    </notebook>
+                    <field name="attendance_created" invisible="1"/>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!--  ON-DUTY: LIST VIEW                                            -->
+    <!-- ============================================================ -->
+    <record id="view_hr_on_duty_list" model="ir.ui.view">
+        <field name="name">hr.on.duty.list</field>
+        <field name="model">hr.on.duty</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'rejected'"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state in ('waiting_manager', 'waiting_hr')"
+                  decoration-success="state == 'approved'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="od_type"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="total_hours" sum="Total Hours"/>
+                <field name="reason_type"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state in ('waiting_manager', 'waiting_hr')"
+                       decoration-success="state == 'approved'"
+                       decoration-danger="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!--  ON-DUTY: SEARCH VIEW                                          -->
+    <!-- ============================================================ -->
+    <record id="view_hr_on_duty_search" model="ir.ui.view">
+        <field name="name">hr.on.duty.search</field>
+        <field name="model">hr.on.duty</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <filter string="My Requests" name="my_requests"
+                        domain="[('employee_id.user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Draft" name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="Pending Approval" name="pending"
+                        domain="[('state', 'in', ('waiting_manager', 'waiting_hr'))]"/>
+                <filter string="Approved" name="approved"
+                        domain="[('state', '=', 'approved')]"/>
+                <filter string="Rejected" name="rejected"
+                        domain="[('state', '=', 'rejected')]"/>
+                <separator/>
+                <filter string="Full Day" name="full_day"
+                        domain="[('od_type', '=', 'full_day')]"/>
+                <filter string="Half Day" name="half_day"
+                        domain="[('od_type', 'in', ('half_day_am', 'half_day_pm'))]"/>
+                <filter string="Hourly" name="hourly"
+                        domain="[('od_type', '=', 'hourly')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Employee" name="groupby_employee"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter string="Department" name="groupby_department"
+                            context="{'group_by': 'department_id'}"/>
+                    <filter string="Status" name="groupby_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="OD Type" name="groupby_type"
+                            context="{'group_by': 'od_type'}"/>
+                    <filter string="Month" name="groupby_month"
+                            context="{'group_by': 'date_from:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>

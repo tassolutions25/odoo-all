@@ -62,10 +62,10 @@
     </record>
 
     <!-- MENU -->
-    <menuitem
+    <!-- <menuitem
         id="menu_ahadu_journal_entry"
         name="Journal Entries"
         parent="menu_ahadu_operations"
         action="action_ahadu_journal_entry"
-        sequence="30" />
+        sequence="30" /> -->
 </odoo>

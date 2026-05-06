@@ -34,11 +34,76 @@ class LeaveReportWizard(models.TransientModel):
     # Access control helper
     is_hr_officer = fields.Boolean(compute='_compute_is_hr_officer')
 
+    # Preview data
+    preview_line_ids = fields.One2many('ahadu.leave.report.line', 'wizard_id', string='Preview Lines')
+    show_preview = fields.Boolean(string='Show Preview', default=False)
+
     @api.depends_context('uid')
     def _compute_is_hr_officer(self):
         for wizard in self:
             wizard.is_hr_officer = self.env.user.has_group('ahadu_hr_leave.group_leave_officer') or \
                                    self.env.user.has_group('hr_holidays.group_hr_holidays_manager')
+
+    def action_preview(self):
+        self.ensure_one()
+        self.preview_line_ids.unlink()
+        
+        lines = []
+        if self.report_type == 'balance':
+            data = self.get_balance_data()
+            for item in data:
+                lines.append((0, 0, {
+                    'col1': item['employee'],
+                    'col2': item['leave_type'],
+                    'col3': str(item['allocated']),
+                    'col4': str(item['used']),
+                    'col5': str(item['remaining']),
+                }))
+        elif self.report_type == 'request':
+            leaves = self.get_request_data()
+            for leave in leaves:
+                lines.append((0, 0, {
+                    'col1': leave.employee_id.name,
+                    'col2': leave.holiday_status_id.name,
+                    'col3': str(leave.request_date_from),
+                    'col4': str(leave.request_date_to),
+                    'col5': leave.state,
+                }))
+        elif self.report_type == 'audit':
+            data = self.get_audit_data()
+            for item in data:
+                lines.append((0, 0, {
+                    'col1': item['employee'],
+                    'col2': item['issue'],
+                    'col3': item['details'],
+                }))
+        elif self.report_type == 'trend':
+            data = self.get_trend_data()
+            for item in data:
+                lines.append((0, 0, {
+                    'col1': item['month'],
+                    'col2': str(item['days']),
+                }))
+        elif self.report_type == 'approval':
+            data = self.get_approval_data()
+            for item in data:
+                lines.append((0, 0, {
+                    'col1': item['manager'],
+                    'col2': str(item['pending']),
+                    'col3': str(item['approved']),
+                }))
+
+        self.write({
+            'preview_line_ids': lines,
+            'show_preview': True
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'new',
+        }
 
     def _get_allowed_employees(self):
         """Helper to return employees allowed based on user role and wizard filters."""
@@ -143,3 +208,14 @@ class LeaveReportWizard(models.TransientModel):
             'approval': 'ahadu_hr_leave.action_report_leave_approval_efficiency'
         }.get(self.report_type)
         return self.env.ref(report_ref).report_action(self)
+
+class LeaveReportLine(models.TransientModel):
+    _name = 'ahadu.leave.report.line'
+    _description = 'Leave Report Preview Line'
+
+    wizard_id = fields.Many2one('ahadu.leave.report.wizard', string='Wizard', ondelete='cascade')
+    col1 = fields.Char('Column 1')
+    col2 = fields.Char('Column 2')
+    col3 = fields.Char('Column 3')
+    col4 = fields.Char('Column 4')
+    col5 = fields.Char('Column 5')

@@ -133,17 +133,21 @@ class HrEmployee(models.Model):
             # Were they on leave or duty?
             if self.env['hr.leave'].search_count([('employee_id', '=', emp.id), ('state', '=', 'validate'), ('date_from', '<=', yesterday), ('date_to', '>=', yesterday)]):
                 continue
-            if self.env['ab.hr.duty.request'].search_count([('employee_id', '=', emp.id), ('state', '=', 'approved'), ('date_from', '<=', yesterday), ('date_to', '>=', yesterday)]):
+            if 'hr.on.duty' in self.env and self.env['hr.on.duty'].search_count([('employee_id', '=', emp.id), ('state', '=', 'approved'), ('date_from', '<=', yesterday), ('date_to', '>=', yesterday)]):
                 continue
             
             # Have we already logged this absence?
-            if self.env['ab.hr.unplanned.absence'].search_count([('employee_id', '=', emp.id), ('date', '=', yesterday)]):
+            if self.env['ab.hr.unplanned.absence'].search_count([('employee_id', '=', emp.id), ('date_from', '<=', yesterday), ('date_to', '>=', yesterday)]):
                 continue
 
-            # Log the unplanned absence and notify manager
-            absence = self.env['ab.hr.unplanned.absence'].create({'employee_id': emp.id, 'date': yesterday})
-            if emp.parent_id.user_id:
-                absence.activity_schedule('mail.mail_activity_data_todo', summary=_("Review Unplanned Absence"), user_id=emp.parent_id.user_id.id)
+            # Log the unauthorized absence and ask employee for justification
+            absence = self.env['ab.hr.unplanned.absence'].create({
+                'employee_id': emp.id,
+                'date_from': yesterday,
+                'date_to': yesterday,
+                'state': 'detected',
+            })
+            absence.action_request_justification()
         
         # --- Generate Recurring Warnings ---
         one_week_ago = fields.Date.context_today(self) - timedelta(days=7)

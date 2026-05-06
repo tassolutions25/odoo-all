@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- ========================================================
+    Inherit the main slide.slide form view (shown when opening a slide standalone)
+    ======================================================== -->
     <record id="ahadu_view_slide_slide_form" model="ir.ui.view">
         <field name="name">ahadu.slide.slide.form</field>
         <field name="model">slide.slide</field>
@@ -29,9 +32,20 @@
                 <field name="video_binary_content" invisible="1"/>
                 <field name="video_binary_filename" invisible="1"/>
             </xpath>
+
+            <!-- Modify document binary field accepted extensions -->
+            <xpath expr="//field[@name='document_binary_content']" position="attributes">
+                <attribute name="options">{'accepted_file_extensions': '.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx'}</attribute>
+            </xpath>
         </field>
     </record>
 
+    <!-- ========================================================
+    Inherit the "Add Content" popup view (primary mode, opened from course form)
+    NOTE: The popup view (view_slide_slide_form_wo_channel_id) inherits from
+    view_slide_slide_form. So video_attachment_ids is already added by ahadu_view_slide_slide_form.
+    We only patch source_type visibility here to avoid duplication.
+    ======================================================== -->
     <record id="ahadu_view_slide_slide_form_wo_channel_id" model="ir.ui.view">
         <field name="name">ahadu.slide.slide.form.wo.channel.id</field>
         <field name="model">slide.slide</field>
@@ -46,4 +60,37 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Fallback for non-PDF documents in embed viewer -->
+    <template id="ahadu_embed_slide_fallback" inherit_id="website_slides.embed_slide">
+        <xpath expr="//t[@t-if=&quot;slide.slide_category == 'document'&quot;]" position="replace">
+            <t t-if="slide.slide_category == 'document'">
+                <t t-if="slide.slide_type in ['pdf', False]">
+                    <div id="PDFViewerLoader" class="oe_slides_loader mt-3 mx-2 w-100">
+                        <div class="toast show mx-auto">
+                            <div class="toast-header">
+                                <i class="fa fa-circle-o-notch fa-spin me-2"/><b>Loading...</b>
+                            </div>
+                            <div class="toast-body p-0">
+                                <img class="img-fluid w-100" t-att-src="website.image_url(slide, 'image_256')"/>
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="PDFViewerCanvas" class="mx-auto" style="display: none;"></canvas>
+                </t>
+                <t t-else="">
+                    <div class="oe_slides_loader mt-5 mx-2 w-100 text-center d-flex flex-column align-items-center justify-content-center h-100 pt-5">
+                        <i class="fa fa-file-text-o fa-4x text-muted mb-3"/>
+                        <h4 class="text-muted">Preview not available</h4>
+                        <p class="text-muted">This document format cannot be previewed natively.</p>
+                        <a t-attf-href="/web/content/slide.slide/#{slide.id}/binary_content?download=true" class="btn btn-primary mt-3" target="_blank">
+                            <i class="fa fa-download"/> Download Document
+                        </a>
+                    </div>
+                    <div id="PDFViewerLoader" class="d-none"></div>
+                    <canvas id="PDFViewerCanvas" class="d-none"></canvas>
+                </t>
+            </t>
+        </xpath>
+    </template>
 </odoo>

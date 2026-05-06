@@ -48,7 +48,17 @@
 
                 <!-- Additional KPIs Row -->
                 <div class="row g-4 mb-4">
-                    <div class="col-xl-4 col-md-6">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="o_kpi_card d-flex align-items-center on-duty"
+                            t-on-click="() => this.openRecords('On Duty Today', 'hr.on.duty', state.kpi_data.domain_on_duty)">
+                            <div class="kpi-icon"><i class="fa fa-fw fa-briefcase"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi_value"><t t-esc="state.kpi_data.on_duty_today"/></div>
+                                <div class="kpi_name">On Duty</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
                         <div class="o_kpi_card d-flex align-items-center early-out" t-on-click="() => this.openAttendances(state.kpi_data.domain_early_out)">
                             <div class="kpi-icon"><i class="fa fa-fw fa-sign-out"/></div>
                             <div class="kpi-content">
@@ -57,7 +67,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-4 col-md-6">
+                    <div class="col-xl-3 col-md-6">
                         <div class="o_kpi_card d-flex align-items-center lunch-track">
                             <div class="kpi-icon"><i class="fa fa-fw fa-cutlery"/></div>
                             <div class="kpi-content">
@@ -66,7 +76,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-4 col-md-6">
+                    <div class="col-xl-3 col-md-6">
                         <div class="o_kpi_card d-flex align-items-center overtime">
                             <div class="kpi-icon"><i class="fa fa-fw fa-hourglass-half"/></div>
                             <div class="kpi-content">
@@ -140,6 +150,19 @@
                                             <div class="stat-value"><t t-esc="state.summary_data.miss_out_days"/></div>
                                         </div>
                                     </div>
+                                    <div class="stat-group mt-3 mb-3">
+                                        <!-- Need a secondary row for Leave/OD stats to maintain visual balance -->
+                                        <div class="stat-block stat-on-leave" t-on-click="() => this.openFilteredAttendances('leave')">
+                                            <div class="stat-icon" style="color: var(--ahadu-accent);"><i class="fa fa-plane"/></div>
+                                            <div class="stat-label">On Leave</div>
+                                            <div class="stat-value"><t t-esc="state.summary_data.leave_days"/></div>
+                                        </div>
+                                        <div class="stat-block stat-on-duty" t-on-click="() => this.openFilteredAttendances('duty')">
+                                            <div class="stat-icon" style="color: #6366f1;"><i class="fa fa-briefcase"/></div>
+                                            <div class="stat-label">On Duty</div>
+                                            <div class="stat-value"><t t-esc="state.summary_data.on_duty_days"/></div>
+                                        </div>
+                                    </div>
 
                                     <div class="attendance-rate-box p-2 rounded text-center mt-auto" style="background: rgba(138, 0, 55, 0.05); border: 1px solid rgba(138, 0, 55, 0.1);">
                                         <div class="h3 fw-bold mb-0" style="color: var(--ahadu-primary);"><t t-esc="state.summary_data.attendance_perc"/>%</div>
@@ -166,6 +189,9 @@
                                             </div>
                                             <div class="legend-item pointer-cursor" t-on-click="() => this.openFilteredAttendances('leave')">
                                                 <span class="legend-dot on-leave"></span> <small style="font-size: 0.65rem;">Leave</small>
+                                            </div>
+                                            <div class="legend-item pointer-cursor" t-on-click="() => this.openFilteredAttendances('duty')">
+                                                <span class="legend-dot on_duty"></span> <small style="font-size: 0.65rem;">On Duty</small>
                                             </div>
                                         </div>
                                     </div>

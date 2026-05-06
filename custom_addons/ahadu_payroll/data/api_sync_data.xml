@@ -11,5 +11,25 @@
             <field name="nextcall" eval="(datetime.now().replace(hour=2, minute=0, second=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
             <field name="active" eval="True"/>
         </record>
+        <record id="ir_cron_fetch_employee_cif" model="ir.cron">
+            <field name="name">Fetch Employee CIF from API</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_fetch_cif()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="nextcall" eval="(datetime.now().replace(hour=3, minute=0, second=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="ir_cron_sync_external_loans" model="ir.cron">
+            <field name="name">Sync External Loans Daily</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_sync_external_loans()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="nextcall" eval="(datetime.now().replace(hour=4, minute=0, second=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="active" eval="True"/>
+        </record>
     </data>
 </odoo>

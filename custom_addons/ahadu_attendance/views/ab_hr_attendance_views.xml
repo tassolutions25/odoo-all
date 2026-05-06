@@ -82,7 +82,7 @@
                        decoration-warning="attendance_status in ('late_in', 'early_out')" 
                        decoration-danger="attendance_status == 'late_in_early_out'"
                        decoration-muted="attendance_status == ('miss_out', 'late_in_miss_out')"
-                       decoration-info="attendance_status == 'on_time_miss_out'"/>
+                       decoration-info="attendance_status in ('on_time_miss_out', 'on_duty')"/>
                 <!-- Make these columns optionally visible -->
                 <!-- <field name="is_late" optional="show"/> -->
                 <field name="late_minutes" string="Late (Min)" optional="hide" sum="Total Late Minutes"/>

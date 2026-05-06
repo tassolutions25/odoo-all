@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ahadu_payroll_city_hardship_config_tree" model="ir.ui.view">
+        <field name="name">ahadu.payroll.city.hardship.config.tree</field>
+        <field name="model">ahadu.payroll.city.hardship.config</field>
+        <field name="arch" type="xml">
+            <list string="City Hardship Exemptions">
+                <field name="city_id"/>
+                <field name="non_taxable_percentage"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ahadu_payroll_city_hardship_config_form" model="ir.ui.view">
+        <field name="name">ahadu.payroll.city.hardship.config.form</field>
+        <field name="model">ahadu.payroll.city.hardship.config</field>
+        <field name="arch" type="xml">
+            <form string="City Hardship Exemption">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="city_id"/>
+                            <field name="non_taxable_percentage"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ahadu_payroll_city_hardship_config" model="ir.actions.act_window">
+        <field name="name">City Hardship Exemptions</field>
+        <field name="res_model">ahadu.payroll.city.hardship.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new City Hardship Exemption
+            </p>
+            <p>
+                Configure the maximum non-taxable hardship allowance percentage for each city.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item under Payroll > Configuration > Settings / Rules -->
+    <menuitem
+        id="menu_ahadu_payroll_city_hardship_config"
+        name="City Hardship Exemptions"
+        parent="menu_ahadu_config_root"
+        action="action_ahadu_payroll_city_hardship_config"
+        sequence="55"/>
+</odoo>

@@ -12,6 +12,8 @@ class BiotimeApiManager(models.Model):
     _name = 'biotime.api.manager'
     _description = 'BioTime Integration Engine'
 
+    name = fields.Char(string="Name", default="BioTime API Manager")
+
     @api.model
     def _get_cfg(self):
         p = self.env["ir.config_parameter"].sudo()

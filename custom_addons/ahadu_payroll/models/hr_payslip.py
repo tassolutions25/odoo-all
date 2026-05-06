@@ -73,8 +73,9 @@ class HrPayslip(models.Model):
                 overtimes = self.env['ahadu.overtime'].search([
                     ('employee_id', '=', slip.employee_id.id),
                     ('state', 'in', ['approved', 'done']),
-                    ('date_from', '>=', slip.date_from),
+                    ('date_to', '>=', slip.date_from),
                     ('date_to', '<=', slip.date_to)
+
                 ])
                 amount = sum(ot.total_overtime_amount for ot in overtimes)
             slip.overtime_amount = amount
@@ -109,37 +110,43 @@ class HrPayslip(models.Model):
         from datetime import datetime
         
         for payslip in self:
-            # Check Config: If attendance based payroll is OFF, assume full attendance
-            attendance_based = self.env['ir.config_parameter'].sudo().get_param('ahadu_payroll.attendance_based_payroll')
+            # Check Config: Selection for Payroll Attendance Mode
+            mode = self.env['ir.config_parameter'].sudo().get_param('ahadu_payroll.payroll_attendance_mode') or 'standard'
             
-            if not payslip.date_from or not payslip.date_to or not payslip.employee_id:
-                payslip.working_days = 0
-                payslip.worked_days = 0
-                payslip.absent_days = 0
-                payslip.leave_days = 0
-                payslip.unauthorized_absent_days = 0
-                payslip.absent_reason = ''
-                continue
-            
-            # Get working days (excludes weekends & holidays)
-            working_days_list = payslip._get_working_days()
-            total_working_days = len(working_days_list)
-            
-            # Count days
-            days_with_attendance = 0
-            leaves_taken_count = 0
-            unauthorized_count = 0
-            
-            # Detailed tracking
-            absent_day_records = []  # List of (date, leave_or_none) tuples
-            
-            # Get leaves for optimization
+            # Fetch all leaves for optimization
             all_leaves = self.env['hr.leave'].search([
                 ('employee_id', '=', payslip.employee_id.id),
                 ('state', '=', 'validate'),
                 ('date_from', '<=', payslip.date_to),
                 ('date_to', '>=', payslip.date_from),
             ])
+
+            # Manual Absent Days from Approved Sheets
+            manual_absent_dates = []
+            if mode == 'manual':
+                manual_sheets = self.env['ahadu.attendance.sheet'].search([
+                    ('employee_id', '=', payslip.employee_id.id),
+                    ('state', '=', 'approved'),
+                    ('date_from', '<=', payslip.date_to),
+                    ('date_to', '>=', payslip.date_from),
+                ])
+                manual_absent_dates = manual_sheets.mapped('line_ids.date')
+
+            # Calculate Paid Days using unified logic
+            total_days = (payslip.date_to - payslip.date_from).days + 1
+            paid_days_count = payslip._get_paid_work_days(payslip.date_from, payslip.date_to)
+            
+            # Working days (excludes weekends & holidays) - strictly for UI reporting
+            working_days_list = payslip._get_working_days()
+            total_working_days = len(working_days_list)
+            
+            # Count detailed reasons for UI text
+            days_with_attendance = 0
+            leaves_taken_count = 0
+            unauthorized_count = 0
+            manual_absent_count = 0
+            absent_day_records = []
+
             
             # Determine Employment Bounds
             contract_start = payslip.contract_id.date_start
@@ -151,64 +158,131 @@ class HrPayslip(models.Model):
                 if (contract_start and work_day < contract_start) or (contract_end and work_day > contract_end):
                     continue
                     
-                # Determine attendance
-                has_attendance = False
-                if attendance_based:
-                    has_attendance = payslip._check_attendance_for_day(work_day)
-                
                 leave_for_day = payslip._get_leave_for_day(all_leaves, work_day)
                 
-                if attendance_based:
-                    if payslip._check_attendance_for_day(work_day):
-                        days_with_attendance += 1
-                        continue # Present
-                else:
-                    # Not attendance based: Present if NO leave
-                    if not leave_for_day:
-                         days_with_attendance += 1
-                         continue
-
-                # Employee was absent (or assumed absent due to leave)
-                absent_day_records.append((work_day, leave_for_day))
+                # Determine attendance based on mode
+                is_present = False
+                is_manual_absent = (mode == 'manual' and work_day in manual_absent_dates)
                 
+                if mode == 'automated':
+                    if payslip._check_attendance_for_day(work_day):
+                        is_present = True
+                elif mode == 'manual':
+                    # Manual: Present if no leave and NOT manually marked absent
+                    if not leave_for_day and not is_manual_absent:
+                        is_present = True
+                else: # standard
+                    if not leave_for_day:
+                        is_present = True
+
+                if is_present:
+                    days_with_attendance += 1
+                    continue
+
+                # Employee was absent
+                # Detailed tracking for reasons
+                reason_type = 'unauthorized'
                 if leave_for_day:
+                    reason_type = 'leave'
                     leaves_taken_count += 1
+                elif is_manual_absent:
+                    reason_type = 'manual'
+                    manual_absent_count += 1
                 else:
-                    # Unauthorized only if attendance based. 
-                    if attendance_based:
-                         unauthorized_count += 1
+                    unauthorized_count += 1
+                
+                absent_day_records.append({
+                    'date': work_day,
+                    'type': reason_type,
+                    'leave': leave_for_day
+                })
             
-            # Calculate total absent (Legacy field support)
+            # Calculate total absent
             total_absent = total_working_days - days_with_attendance
             
             # Build absence reason text
             absence_reasons = []
+            count_unauth = 0
+            count_manual = 0
             if absent_day_records:
-                # Group absences by leave type
                 leave_types_count = {}
-                count_unauth = 0
                 
-                for day, leave in absent_day_records:
-                    if leave:
-                        leave_type_name = leave.holiday_status_id.name
-                        leave_types_count[leave_type_name] = leave_types_count.get(leave_type_name, 0) + 1
+                for rec in absent_day_records:
+                    if rec['type'] == 'leave':
+                        name = rec['leave'].holiday_status_id.name
+                        leave_types_count[name] = leave_types_count.get(name, 0) + 1
+                    elif rec['type'] == 'manual':
+                        count_manual += 1
                     else:
                         count_unauth += 1
                 
-                # Build text
-                for leave_type, count in sorted(leave_types_count.items()):
-                    absence_reasons.append(f"{leave_type}: {count} day{'s' if count > 1 else ''}")
+                for l_type, count in sorted(leave_types_count.items()):
+                    absence_reasons.append(f"{l_type}: {count} day{'s' if count > 1 else ''}")
+                
+                if count_manual > 0:
+                    absence_reasons.append(f"Manual Absence: {count_manual} day{'s' if count_manual > 1 else ''}")
                 
                 if count_unauth > 0:
                     absence_reasons.append(f"Unauthorized Absence: {count_unauth} day{'s' if count_unauth > 1 else ''}")
             
             # Set field values
             payslip.working_days = total_working_days
-            payslip.worked_days = days_with_attendance
+            payslip.worked_days = round(paid_days_count, 1) # This matches the payroll logic
             payslip.leave_days = leaves_taken_count
-            payslip.unauthorized_absent_days = unauthorized_count
-            payslip.absent_days = total_absent
+            payslip.unauthorized_absent_days = unauthorized_count + manual_absent_count
+            payslip.absent_days = total_days - paid_days_count
             payslip.absent_reason = '\n'.join(absence_reasons) if absence_reasons else 'No absences'
+
+    def _get_worked_day_lines(self, domain=None):
+        """
+        Override to include manual absences and actual worked days in the 
+        'Worked Days & Inputs' tab on the payslip.
+        """
+        res = super()._get_worked_day_lines(domain=domain)
+        self.ensure_one()
+        
+        # 1. Total Calendar Days in Month
+        total_days = (self.date_to - self.date_from).days + 1
+        if total_days <= 0:
+            return res
+            
+        # 2. Total Paid Days (Using unified logic)
+        paid_days = self._get_paid_work_days(self.date_from, self.date_to)
+        unpaid_days = total_days - paid_days
+        
+        # 3. Create/Update Worked Day Lines
+        # Standard Odoo usually has a line with code 'WORK100' for presence. 
+        # We will add a line for 'ABSENT' for the remaining days.
+        
+        if unpaid_days > 0:
+            res.append({
+                'name': _('Unpaid Absence (Manual/Automated)'),
+                'sequence': 100,
+                'code': 'ABSENT',
+                'number_of_days': unpaid_days,
+                'number_of_hours': unpaid_days * 8, # Assumption: 8h/day for display
+                'contract_id': self.contract_id.id,
+            })
+            
+        # Filter out standard WORK100 if we want to show our own 'PAID' line?
+        # Actually, let's keep it clean and just add the 'PAID' line as a secondary indicator 
+        # OR update the existing WORK100 if it exists.
+        
+        work_line = next((line for line in res if line['code'] == 'WORK100'), None)
+        if work_line:
+            work_line['number_of_days'] = paid_days
+            work_line['number_of_hours'] = paid_days * 8
+        else:
+            res.append({
+                'name': _('Worked Days (Paid)'),
+                'sequence': 1,
+                'code': 'WORK100',
+                'number_of_days': paid_days,
+                'number_of_hours': paid_days * 8,
+                'contract_id': self.contract_id.id,
+            })
+            
+        return res
 
     # ------------------------------------------------------
     # LOP ADJUSTMENT FIELDS
@@ -274,6 +348,7 @@ class HrPayslip(models.Model):
     def _compute_cash_indemnity_values(self):
         """
         Calculates Cash Indemnity by fetching Approved/Done 'cash.indemnity' records.
+        Now calculates tax impact first, then distributes the NET amount.
         """
         for slip in self:
             amount = 0.0
@@ -283,24 +358,41 @@ class HrPayslip(models.Model):
             to_sal = 0.0
             
             if slip.date_from and slip.date_to and slip.employee_id:
-                # Fetch Approved Calculation
+                # 1. Fetch Approved Calculation
                 calculations = self.env['cash.indemnity'].search([
                     ('employee_id', '=', slip.employee_id.id),
                     ('state', 'in', ['approved', 'done']),
-                    ('date_from', '>=', slip.date_from),
+                    ('date_to', '>=', slip.date_from),
                     ('date_to', '<=', slip.date_to)
                 ])
-                # Check for overlap or sum multiple? Usually one per month.
                 amount = sum(c.total_amount for c in calculations)
 
-            # --- Tax & Distribution (Existing Logic) ---
+            # 2. Calculate Tax Impact and Distribution
             if amount > 0:
-                # Fetch configured tax rate (default 35%)
-                tax_rate = float(self.env['ir.config_parameter'].sudo().get_param('ahadu_payroll.cash_indemnity_tax_rate', 35.0))
-                tax = amount * (tax_rate / 100.0)
+                # --- NEW: Calculate Tax Impact ---
+                # We need to know the tax on the total income with CI vs without CI
+                # Base Taxable components (everything except CI)
+                base_taxable = (slip._get_ahadu_basic_salary() - 
+                                slip._get_ahadu_leave_deduction() - 
+                                slip._get_ahadu_penalty_deduction() + 
+                                slip._get_ahadu_taxable_transport() + 
+                                slip._get_ahadu_representation() + 
+                                slip._get_ahadu_taxable_hardship() + 
+                                slip._get_ahadu_housing() + 
+                                slip._get_ahadu_mobile() + 
+                                slip._get_ahadu_lop_adjustment() + 
+                                slip.overtime_amount)
+                
+                # Tax on base income
+                tax_base = slip._get_ahadu_income_tax(base_taxable)
+                # Tax on total income (including CI)
+                tax_total = slip._get_ahadu_income_tax(base_taxable + amount)
+                
+                # The tax impact is the difference
+                tax = tax_total - tax_base
                 net = amount - tax
 
-                # Calculate Distribution
+                # --- Distribution (Gap Logic) ---
                 ci_account = self.env['hr.employee.bank.account'].search([
                     ('employee_id', '=', slip.employee_id.id),
                     ('account_type', '=', 'cash_indemnity')
@@ -308,7 +400,7 @@ class HrPayslip(models.Model):
                 
                 current_balance = ci_account.balance if ci_account else 0.0
                 
-                # Gap Logic
+                # Gap Logic (Target 18,000 ETB)
                 target = 18000.0
                 gap = max(0.0, target - current_balance)
                 
@@ -316,14 +408,14 @@ class HrPayslip(models.Model):
                     # Priority 1: Fill the gap
                     fill_amount = min(net, gap)
                     
-                    # Priority 2: Split remainder
+                    # Priority 2: Split remainder 50/50
                     remaining = net - fill_amount
                     split_part = remaining / 2.0
                     
                     to_bal = fill_amount + split_part
                     to_sal = split_part
                 else:
-                    # Balance already saturated, pure split
+                    # Balance already saturated, pure 50/50 split
                     split_part = net / 2.0
                     to_bal = split_part
                     to_sal = split_part
@@ -388,7 +480,10 @@ class HrPayslip(models.Model):
             ('employee_id', '=', self.employee_id.id),
             ('state', '=', 'approved'),
             ('date_start', '<=', self.date_to),
+            ('loan_type_id.is_payroll_deduction', '=', True),
         ]
+
+
         if loan_type_names:
             domain.append(('loan_type_id.name', 'in', loan_type_names))
             
@@ -396,7 +491,12 @@ class HrPayslip(models.Model):
         
         total = 0.0
         for loan in loans:
-            if loan.paid_installments < loan.installment_months:
+            # For external loans, we check remaining amount
+            # For manual loans, we check installment count
+            if loan.is_external:
+                if loan.remaining_amount > 0:
+                    total += loan.monthly_installment
+            elif loan.paid_installments < loan.installment_months:
                 # Check if the payslip period corresponds to a period >= start_date
                 if self.date_to >= loan.date_start:
                     total += loan.monthly_installment
@@ -423,6 +523,79 @@ class HrPayslip(models.Model):
         Legacy/General method. Returns total loan repayment.
         """
         return self._get_ahadu_new_loan_deduction()
+
+    def _get_loan_details_by_type(self):
+        """
+        Returns a dictionary of loan deductions and their bank accounts, 
+        grouped by loan type name.
+        {
+            'Personal Loan': {'amount': 500, 'account': '12345...'},
+            ...
+        }
+        """
+        self.ensure_one()
+        details = {}
+        
+        loans = self.env['hr.loan'].search([
+            ('employee_id', '=', self.employee_id.id),
+            ('state', '=', 'approved'),
+            ('date_start', '<=', self.date_to),
+            ('loan_type_id.is_payroll_deduction', '=', True),
+        ])
+
+
+        
+        for loan in loans:
+            # Check if active
+            is_active = False
+            if loan.is_external:
+                if loan.remaining_amount > 0:
+                    is_active = True
+            elif loan.paid_installments < loan.installment_months:
+                if self.date_to >= loan.date_start:
+                    is_active = True
+            
+            if is_active:
+                ltype = loan.loan_type_id.name
+                amt = loan.monthly_installment
+                acc = loan.bank_account_id.account_number or ''
+                
+                if ltype not in details:
+                    details[ltype] = {'target_amount': 0.0, 'amount': 0.0, 'account': acc}
+                
+                details[ltype]['target_amount'] += amt
+                # If multiple loans of same type, we take the one with account (or just the first one)
+                if not details[ltype]['account'] and acc:
+                    details[ltype]['account'] = acc
+        
+        # Now, fetch the actual calculated values from the payslip lines
+        adv_actual = sum(self.line_ids.filtered(lambda l: l.code == 'ADV_LOAN').mapped('total'))
+        pers_actual = sum(self.line_ids.filtered(lambda l: l.code == 'PERS_LOAN').mapped('total'))
+        other_actual = sum(self.line_ids.filtered(lambda l: l.code == 'OTHER_LOAN').mapped('total'))
+
+        # Distribute actuals proportionally based on targets
+        adv_types = ['Emergency/Salary Advance Loan']
+        pers_types = ['Personal Staff Loan']
+
+        # Totals for proportional distribution
+        adv_target_total = sum(d['target_amount'] for k, d in details.items() if k in adv_types)
+        pers_target_total = sum(d['target_amount'] for k, d in details.items() if k in pers_types)
+        other_target_total = sum(d['target_amount'] for k, d in details.items() if k not in adv_types and k not in pers_types)
+
+        for ltype, data in details.items():
+            target = data['target_amount']
+            if target == 0:
+                continue
+
+            if ltype in adv_types:
+                data['amount'] = round((target / adv_target_total) * adv_actual, 2) if adv_target_total else 0.0
+            elif ltype in pers_types:
+                data['amount'] = round((target / pers_target_total) * pers_actual, 2) if pers_target_total else 0.0
+            else:
+                data['amount'] = round((target / other_target_total) * other_actual, 2) if other_target_total else 0.0
+        
+        return details
+
     
     def _get_ahadu_savings_deduction(self):
         """
@@ -456,10 +629,8 @@ class HrPayslip(models.Model):
         if commitment <= 0:
             return 0.0
         
-        # 10% of Base Salary (Full Month Wage)
-        # We use the raw wage here as the base for the commitment calculation, 
-        # not the prorated salary, to ensure consistent debt repayment schedules.
-        wage = self.employee_id.emp_wage or 0.0
+        # Calculate 10% of Weighted Base Salary
+        wage = self._get_ahadu_basic_salary()
         target_deduction = wage * 0.10
         
         # Cap by remaining commitment
@@ -497,31 +668,67 @@ class HrPayslip(models.Model):
                 total_penalty += (d.penalty_percentage / 100.0) * penalty_base
         return round(total_penalty, 2)
 
+    def _get_capped_amount(self, planned_amount, available_balance):
+        """
+        Helper to ensure a deduction does not exceed the available balance.
+        Ensures Net Pay >= 0.
+        """
+        return max(0.0, min(planned_amount, available_balance))
+
+
     # ------------------------------------------------------
     # 1. BASIC & ALLOWANCE COMPUTATIONS
     # ------------------------------------------------------
 
     def _get_ahadu_basic_salary(self):
         """
-        Returns the full monthly wage from the custom employee field.
-        Proration/LOP is now handled explicitly in the 'LOP_LEAVE' rule.
+        Returns the weighted monthly wage if there are salary changes (promotion/ctc).
+        Otherwise returns the standard employee wage.
+        Prorated by paid days.
         """
         self.ensure_one()
-        return round(self.employee_id.emp_wage or 0.0, 2)
+        segments = self._get_salary_and_job_segments()
+        total_days = (self.date_to - self.date_from).days + 1
+        
+        if total_days == 0 or not segments:
+            return round(self.employee_id.emp_wage or 0.0, 2)
+            
+        weighted_wage = 0.0
+        for seg in segments:
+            # Shift weight to use paid_days instead of all calendar_days
+            weight = seg['paid_days'] / total_days
+            weighted_wage += (seg['salary'] * weight)
+            
+        return round(weighted_wage, 2)
 
     def _get_ahadu_transport(self):
         """
         Returns transport allowance.
-        Uses 'transport_allowance_amount' from ahadu_hr module.
-        Prorated based on attendance.
+        Calculates prorated liters (Liter * Paid_Days / Total_Days) rounded to 2.
+        Amount = Prorated Liters * Fuel Rate.
         """
         self.ensure_one()
-        # Fallback to 0.0 if field doesn't exist (though it should)
-        base_amount = getattr(self.employee_id, 'transport_allowance_amount', 0.0)
+        # 1. Check Liters 
+        prorated_liters = self._get_ahadu_prorated_fuel_liters()
+        if prorated_liters > 0:
+            fuel_rate = self._get_weighted_fuel_rate()
+            return round(prorated_liters * fuel_rate, 2)
         
-        # Apply Proration
+        # 2. Fallback to Profile Amount ONLY if liters is 0 (Fixed amount case)
+        base_amount = getattr(self.employee_id, 'transport_allowance_amount', 0.0)
         ratio = self._get_paid_days_ratio()
         return round(base_amount * ratio, 2)
+
+    def _get_ahadu_prorated_fuel_liters(self):
+        """
+        Calculates fuel liters after attendance-based proration.
+        Round to 2 decimal places.
+        """
+        self.ensure_one()
+        # _get_weighted_fuel_liters already uses paid_days for proration
+        raw_liters = self._get_weighted_fuel_liters()
+        return round(raw_liters, 2)
+
 
     def _get_ahadu_taxable_transport(self):
         """
@@ -558,39 +765,33 @@ class HrPayslip(models.Model):
         return DEFAULT_EXEMPTION
 
     def _get_ahadu_housing(self):
-        """Returns housing allowance from Benefit Package."""
-        return self._get_ahadu_benefit_amount(['HOUSING', 'HOUSE', 'HOUSING_ALLOWANCE'])
+        """Returns housing allowance from employee profile, prorated by attendance."""
+        self.ensure_one()
+        base_amount = self.employee_id.housing_allowance or 0.0
+        ratio = self._get_paid_days_ratio()
+        return round(base_amount * ratio, 2)
 
     def _get_ahadu_mobile(self):
-        """Returns mobile allowance from Benefit Package."""
-        return self._get_ahadu_benefit_amount(['MOBILE', 'MOB', 'CELL', 'MOBILE_ALLOWANCE'])
+        """Returns mobile allowance from employee profile, prorated by attendance."""
+        self.ensure_one()
+        base_amount = self.employee_id.mobile_allowance or 0.0
+        ratio = self._get_paid_days_ratio()
+        return round(base_amount * ratio, 2)
 
     def _get_ahadu_representation(self):
-        """
-        Returns representation allowance.
-        Logic: 
-        1. Percentage Based: (Basic Salary - Leave Deduction) * Representation %
-           (User requested to preserve this specific formula)
-        2. Fixed Amount: From Benefit Package (code REPRESENTATION) * Proration Ratio
-        Returns sum of both.
-        """
+        """Returns representation allowance from employee profile, calculated as percentage of basic salary OR fixed amount, prorated by attendance."""
         self.ensure_one()
-        
-        # 1. Percentage Calculation (Original Formula)
-        rep_percent = getattr(self.employee_id, 'representation_allowance', 0.0)
-        percentage_amount = 0.0
-        
-        if rep_percent:
-            basic = self._get_ahadu_basic_salary()
-            leave_deduction = self._get_ahadu_leave_deduction()
-            adjusted_basic = basic - leave_deduction
-            percentage_amount = adjusted_basic * (rep_percent / 100.0)
-            
-        # 2. Benefit Package Calculation (Fixed Amount)
-        # This returns the Prorated amount already via _get_ahadu_benefit_amount
-        package_amount = self._get_ahadu_benefit_amount(['REPRESENTATION', 'REP'])
-        
-        return round(percentage_amount + package_amount, 2)
+        # Priority: Fixed amount if > 0
+        fixed_amount = getattr(self.employee_id, "representation_allowance_fixed", 0.0)
+        if fixed_amount > 0:
+            ratio = self._get_paid_days_ratio()
+            return round(fixed_amount * ratio, 2)
+
+        percentage = self.employee_id.representation_allowance or 0.0
+        # Formula: (percentage / 100.0) * basic_salary
+        # basic_salary is already prorated by attendance, so we don't multiply by ratio again
+        base_amount = (percentage / 100.0) * self._get_ahadu_basic_salary()
+        return round(base_amount, 2)
 
     def _get_ahadu_hardship(self):
         """
@@ -621,101 +822,112 @@ class HrPayslip(models.Model):
         
         return round(hardship_amount, 2)
 
+    def _get_ahadu_taxable_hardship(self):
+        """
+        Returns the taxable portion of the hardship allowance.
+        Taxable Hardship = Max(0, Hardship Percentage - City Exemption Percentage) * Basic Salary
+        """
+        self.ensure_one()
+        
+        # 1. Get Employee's Total Hardship Percentage
+        hardship_level = getattr(self.employee_id, 'hardship_allowance_level_id', False)
+        if not hardship_level:
+            return 0.0
+            
+        total_percentage = getattr(hardship_level, 'value_percentage', 0.0)
+        if total_percentage <= 0:
+            return 0.0
+            
+        # 2. Get Exemption Percentage for City
+        exemption_percentage = 0.0
+        city = getattr(self.employee_id, 'city_id', False)
+        
+        if city:
+            config = self.env['ahadu.payroll.city.hardship.config'].search([
+                ('city_id', '=', city.id)
+            ], limit=1)
+            
+            if config:
+                # The config stores the value like 30 for 30%
+                exemption_percentage = config.non_taxable_percentage / 100.0
+
+        # Taxable Percentage (minimum 0)
+        taxable_percentage = max(0.0, total_percentage - exemption_percentage)
+        
+        if taxable_percentage <= 0:
+            return 0.0
+            
+        # 3. Calculate Taxable Amount
+        basic_salary = self._get_ahadu_basic_salary()
+        taxable_amount = basic_salary * taxable_percentage
+        
+        return round(taxable_amount, 2)
+
 
     def _get_ahadu_benefit_amount(self, benefit_code):
         """
-        Generic method to calculate benefits from the package lines.
-        Args:
-            benefit_code (str or list): The benefit code(s) to look for.
+        [DEPRECATED] Benefits are now strictly on the employee profile.
+        This method returns 0.0 to ensure consistency.
         """
-        self.ensure_one()
-        employee = self.employee_id
-        amount = 0.0
-        
-        # Ensure code is a list for easy checking
-        if isinstance(benefit_code, str):
-            target_codes = [benefit_code]
-        else:
-            target_codes = benefit_code
+        return 0.0
 
-        for line in employee.benefit_package_id.line_ids:
-            if line.benefit_type_id.code in target_codes:
-                if line.value_type == 'fixed':
-                    amount += line.value_fixed
-                elif line.value_type == 'percentage':
-                    amount += (line.value_percentage / 100.0) * employee.emp_wage
-        
-        # Apple Proration to Benefits
-        ratio = self._get_paid_days_ratio()
-        return round(amount * ratio, 2)
 
     def _get_ahadu_other_benefits(self):
-        """Catch-all for benefits not explicitly defined."""
-        self.ensure_one()
-        employee = self.employee_id
-        amount = 0.0
-        # Exclude our new explicit fields
-        processed_codes = [
-            'HOUSING', 'HOUSE', 'HOUSING_ALLOWANCE',
-            'HARDSHIP', 
-            'REPRESENTATION', 
-            'CASH_INDEMNITY', 
-            'MOBILE', 'MOB', 'CELL', 'MOBILE_ALLOWANCE',
-            'TRANS', 'TRANSPORT', 'TRANSPORT_ALLOWANCE'
-        ]
+        """Strictly 0.0 as all valid benefits are now mapped to specific profile fields."""
+        return 0.0
 
-        for line in employee.benefit_package_id.line_ids:
-            if line.benefit_type_id.code not in processed_codes:
-                if line.value_type == 'fixed' or line.value_type == 'in_kind':
-                    amount += line.value_fixed
-                elif line.value_type == 'percentage':
-                    amount += (line.value_percentage / 100.0) * employee.emp_wage
-        
-        # Apply Proration
-        ratio = self._get_paid_days_ratio()
+
+    def _get_ahadu_benefit_amount_excluded(self, excluded_codes):
+        """[DEPRECATED] Returns 0.0."""
+        return 0.0
+
+
     def _get_ahadu_taxable_gross(self):
         """
         Calculates Taxable Salary & Benefits.
         Taxable = (Full Wage - Leave Deduction - Penalty) + Taxable Transport + Rep + Hardship + Housing + Mobile + LOP Adjustment
         """
         self.ensure_one()
-        wage = self.employee_id.emp_wage or 0.0
+        # Weighted Wage
+        wage = self._get_ahadu_basic_salary()
         leave_deduction = self._get_ahadu_leave_deduction()
         penalty = self._get_ahadu_penalty_deduction()
         
-        # Earned Basic = Full Wage - LOP Deduction - Penalty
+        # Earned Basic = Weighted Wage - LOP Deduction - Penalty
         earned_basic = wage - leave_deduction - penalty
         
         taxable_trans = self._get_ahadu_taxable_gross_transport() if hasattr(self, '_get_ahadu_taxable_gross_transport') else self._get_ahadu_taxable_transport()
         rep = self._get_ahadu_representation()
-        hardship = self._get_ahadu_hardship()
+        hardship = self._get_ahadu_taxable_hardship()
         housing = self._get_ahadu_housing()
         mobile = self._get_ahadu_mobile()
         lop_adj = self._get_ahadu_lop_adjustment()
+        ci_allowance = self.cash_indemnity_allowance
         
-        return earned_basic + taxable_trans + rep + hardship + housing + mobile + lop_adj + self.overtime_amount
+        return earned_basic + taxable_trans + rep + hardship + housing + mobile + lop_adj + self.overtime_amount + ci_allowance
 
     # ------------------------------------------------------
     # 2. DEDUCTION COMPUTATIONS
     # ------------------------------------------------------
 
-    def _get_working_days(self):
+    def _get_working_days(self, date_from=None, date_to=None):
         """
-        Calculate all working days in the payslip period (Full Month).
+        Calculate all working days in a given range or the payslip period.
         Excludes weekends (Saturday/Sunday) and public holidays.
-        
-        Returns:
-            list: List of date objects representing working days
         """
         from datetime import timedelta
         
         working_days = []
-        current_date = self.date_from
+        current_date = date_from or self.date_from
+        end_date = date_to or self.date_to
         
+        if not current_date or not end_date:
+            return []
+            
         # Get public holidays for the period
         public_holidays = self._get_public_holidays()
         
-        while current_date <= self.date_to:
+        while current_date <= end_date:
             # Skip weekends (5=Saturday, 6=Sunday in Python)
             if current_date.weekday() not in [5, 6]:
                 # Skip public holidays
@@ -725,6 +937,138 @@ class HrPayslip(models.Model):
             current_date += timedelta(days=1)
         
         return working_days
+
+    def _get_salary_and_job_segments(self):
+        """
+        Calculates salary and job segments within the payslip period.
+        Constructs a timeline based on approved Promotions and CTC adjustments.
+        """
+        self.ensure_one()
+        from datetime import timedelta
+        
+        date_from = self.date_from
+        date_to = self.date_to
+        employee = self.employee_id
+        
+        if not date_from or not date_to or not employee:
+            return []
+
+        # 1. Fetch relevant changes
+        promotions = self.env['hr.employee.promotion'].search([
+            ('employee_id', '=', employee.id),
+            ('state', '=', 'approved'),
+            ('promotion_date', '>', date_from),
+            ('promotion_date', '<=', date_to)
+        ], order='promotion_date asc')
+        
+        ctcs = self.env['hr.employee.ctc'].search([
+            ('employee_id', '=', employee.id),
+            ('state', '=', 'approved'),
+            ('date', '>', date_from),
+            ('date', '<=', date_to)
+        ], order='date asc')
+        
+        # 2. Combine and sort change events
+        events = []
+        for p in promotions:
+            events.append({
+                'date': p.promotion_date,
+                'salary': p.new_salary,
+                'liters': getattr(p, 'new_transport_allowance_liters', 0.0),
+                'job_id': p.new_job_id,
+                'type': 'promotion',
+                'prev_salary': p.current_salary,
+                'prev_liters': getattr(p, 'current_transport_allowance_liters', 0.0),
+                'prev_job': p.current_job_id
+            })
+        for c in ctcs:
+            events.append({
+                'date': c.date,
+                'salary': c.new_wage,
+                'liters': getattr(c, 'new_transport_allowance_liters', 0.0),
+                'job_id': c.new_job_id or c.current_job_id,
+                'type': 'ctc',
+                'prev_salary': c.current_wage,
+                'prev_liters': getattr(c, 'current_transport_allowance_liters', 0.0),
+                'prev_job': c.current_job_id
+            })
+            
+        # Sort by date
+        events.sort(key=lambda x: x['date'])
+        
+        # 3. Handle overlapping changes on same day (take latest)
+        unique_events = []
+        if events:
+            curr_date = events[0]['date']
+            curr_event = events[0]
+            for i in range(1, len(events)):
+                if events[i]['date'] == curr_date:
+                    curr_event = events[i] # Last one wins
+                else:
+                    unique_events.append(curr_event)
+                    curr_date = events[i]['date']
+                    curr_event = events[i]
+            unique_events.append(curr_event)
+            
+        segments = []
+        # 4. Construct Segments
+        if not unique_events:
+            total_paid = self._get_paid_work_days(date_from, date_to)
+            cal_days = (date_to - date_from).days + 1
+            segments.append({
+                'start': date_from,
+                'end': date_to,
+                'salary': employee.emp_wage,
+                'liters': getattr(employee, 'transport_allowance_liters', 0.0),
+                'job_id': employee.job_id,
+                'calendar_days': cal_days,
+                'paid_days': total_paid,
+            })
+            return segments
+
+        # Determine starting state from first event's previous values
+        current_start = date_from
+        current_salary = unique_events[0]['prev_salary']
+        current_liters = unique_events[0]['prev_liters']
+        current_job = unique_events[0]['prev_job']
+        
+        for event in unique_events:
+            end_date = event['date'] - timedelta(days=1)
+            if end_date >= current_start:
+                cal_days = (end_date - current_start).days + 1
+                paid_days = self._get_paid_work_days(current_start, end_date)
+                segments.append({
+                    'start': current_start,
+                    'end': end_date,
+                    'salary': current_salary,
+                    'liters': current_liters,
+                    'job_id': current_job,
+                    'calendar_days': cal_days,
+                    'paid_days': paid_days,
+                })
+            
+            # Start next segment
+            current_start = event['date']
+            current_salary = event['salary']
+            current_liters = event['liters']
+            if event['job_id']:
+                current_job = event['job_id']
+                
+        # Final segment
+        if current_start <= date_to:
+            cal_days = (date_to - current_start).days + 1
+            paid_days = self._get_paid_work_days(current_start, date_to)
+            segments.append({
+                'start': current_start,
+                'end': date_to,
+                'salary': current_salary,
+                'liters': current_liters,
+                'job_id': current_job,
+                'calendar_days': cal_days,
+                'paid_days': paid_days,
+            })
+            
+        return segments
 
     def _get_public_holidays(self):
         """
@@ -841,12 +1185,16 @@ class HrPayslip(models.Model):
         tier = getattr(leave, 'sick_leave_pay_tier', False)
         
         if tier:
-            if tier == '100':
+            # SUPPORT BOTH NEW KEYS AND LEGACY NUMERIC KEYS
+            if tier in ['full_pay', '100']:
                 deduction_percentage = 0.0  # Full pay (no deduction)
-            elif tier == '50':
+            elif tier in ['half_pay', '50']:
                 deduction_percentage = 0.5  # Half pay
-            elif tier == '0':
+            elif tier in ['no_pay', '0']:
                 deduction_percentage = 1.0  # No pay
+            else:
+                _logger.warning(f"Unknown sick leave pay tier '{tier}' on leave {leave.id}. Defaulting to no deduction.")
+                deduction_percentage = 0.0
         # Check Standard Unpaid Leave
         elif leave.holiday_status_id.unpaid:
             deduction_percentage = 1.0  # Full deduction
@@ -856,22 +1204,20 @@ class HrPayslip(models.Model):
         
         return daily_rate * deduction_percentage * half_day_modifier
 
-    def _get_paid_days_ratio(self):
+    def _get_paid_work_days(self, date_from, date_to):
         """
-        Calculates the ratio of Paid Days to Total Working Days.
-        Returns:
-            float: Ratio between 0.0 and 1.0 (e.g., 0.15 for 3/20 days)
+        Calculates the number of days for which the employee should be paid within a specific range.
+        Uses Calendar Days logic.
         """
+        from datetime import timedelta
         self.ensure_one()
         
-        # Step 1: Get working days
-        working_days = self._get_working_days()
-        num_working_days = len(working_days)
-        
-        if num_working_days == 0:
-            return 1.0 # Avoid division by zero, assume full pay if no working days defined
+        # Total days in range (Calendar Days)
+        total_days = (date_to - date_from).days + 1
+        if total_days <= 0:
+            return 0.0
             
-        # Step 2: Get all leaves
+        # Step 2: Get all leaves for the whole period (cached)
         leaves_cache = self._context.get('leaves_by_employee', {})
         if leaves_cache:
             all_leaves = leaves_cache.get(self.employee_id.id, [])
@@ -883,53 +1229,169 @@ class HrPayslip(models.Model):
                 ('date_to', '>=', self.date_from),
             ])
 
-        # Step 3: Calculate Paid Days
         paid_days = 0.0
         
         # Check Config
-        attendance_based = self.env['ir.config_parameter'].sudo().get_param('ahadu_payroll.attendance_based_payroll')
+        mode = self.env['ir.config_parameter'].sudo().get_param('ahadu_payroll.payroll_attendance_mode') or 'standard'
         
+        manual_absent_dates = []
+        if mode == 'manual':
+            manual_sheets = self.env['ahadu.attendance.sheet'].search([
+                ('employee_id', '=', self.employee_id.id),
+                ('state', '=', 'approved'),
+                ('date_from', '<=', self.date_to),
+                ('date_to', '>=', self.date_from),
+            ])
+            manual_absent_dates = manual_sheets.mapped('line_ids.date')
+
         # Determine Employment Bounds
         contract_start = self.contract_id.date_start
         contract_end = self.contract_id.date_end
         
-        for work_day in working_days:
-            # Skip days outside of employment
-            if (contract_start and work_day < contract_start) or (contract_end and work_day > contract_end):
+        curr_date = date_from
+        while curr_date <= date_to:
+            # 1. Skip days outside of employment
+            if (contract_start and curr_date < contract_start) or (contract_end and curr_date > contract_end):
+                curr_date += timedelta(days=1)
                 continue
-                
-            # Check Attendance
-            if attendance_based:
-                if self._check_attendance_for_day(work_day):
-                    paid_days += 1.0
-                    continue
-            else:
-                # If NOT attendance based, assume present (check leave below)
-                pass
-
-            # Check Approved Leave
-            leave_for_day = self._get_leave_for_day(all_leaves, work_day)
             
+            # 2. Check for Leaves FIRST (Leave takes precedence over absence sheets)
+            leave_for_day = self._get_leave_for_day(all_leaves, curr_date)
             if leave_for_day:
                 deduction_factor = self._calculate_leave_deduction(leave_for_day, 1.0)
                 paid_days += (1.0 - deduction_factor)
-            else:
-                # No attendance needed (disabled) AND no leave => FULLY PAID
-                if not attendance_based:
+                curr_date += timedelta(days=1)
+                continue
+            
+            # 3. Check for Absences based on Mode
+            if mode == 'manual':
+                if curr_date in manual_absent_dates:
+                    # Manual Absence marked => Unpaid
+                    pass
+                else:
                     paid_days += 1.0
+            elif mode == 'automated':
+                if self._check_attendance_for_day(curr_date):
+                    paid_days += 1.0
+                else:
+                    # No attendance record => Unpaid
+                    pass
+            else: # Standard mode
+                # Assume present unless leave was found (checked above)
+                paid_days += 1.0
+            
+            curr_date += timedelta(days=1)
         
-        return paid_days / num_working_days
+        return paid_days
+
+    def _get_paid_days_ratio(self):
+        """
+        Returns the ratio of paid calendar days to total calendar days in the month.
+        Used for prorating benefits.
+        """
+        total_days = (self.date_to - self.date_from).days + 1
+        if total_days <= 0:
+            return 1.0
+        
+        paid_days = self._get_paid_work_days(self.date_from, self.date_to)
+        return paid_days / total_days
+
+    def _get_contract_days_ratio(self):
+        """
+        Returns the ratio of active contract days to total calendar days in the month.
+        Ignores absences; only handles joining and leaving.
+        """
+        total_days = (self.date_to - self.date_from).days + 1
+        if total_days <= 0:
+            return 1.0
+            
+        contract_start = self.contract_id.date_start
+        contract_end = self.contract_id.date_end
+        
+        # Determine overlap range
+        start = max(self.date_from, contract_start) if contract_start else self.date_from
+        end = min(self.date_to, contract_end) if contract_end else self.date_to
+        
+        if start > end:
+            return 0.0
+            
+        active_days = (end - start).days + 1
+        return active_days / total_days
 
     def _get_ahadu_leave_deduction(self):
         """
-        Calculates the Loss of Pay (LOP) amount based on attendance/leave ratio.
-        LOP = Full Wage * (1 - Paid Days Ratio)
+        Deduction logic shifted to _get_ahadu_basic_salary to return the 'Calculated Balance'.
+        Returns 0.0 here to avoid double deduction in the LOP_LEAVE rule.
         """
+        return 0.0
+
+    def _get_weighted_fuel_rate(self):
+        """Calculate weighted average fuel rate for the payslip period"""
         self.ensure_one()
-        wage = self.employee_id.emp_wage or 0.0
-        ratio = self._get_paid_days_ratio()
-        lop_amount = wage * (1.0 - ratio)
-        return round(lop_amount, 2)
+        date_from = self.date_from
+        date_to = self.date_to
+        
+        # 1. Fetch fuel price history that could affect this period
+        # We need all changes that happened before or during the period.
+        history = self.env['ahadu.fuel.price.history'].search([
+            ('company_id', '=', self.company_id.id),
+            ('effective_date', '<=', date_to)
+        ], order='effective_date asc')
+        
+        if not history:
+            # Fallback to global config parameter if no history exists
+            return float(self.env['ir.config_parameter'].sudo().get_param('ahadu_hr.fuel_price_per_liter', default=0.0))
+            
+        # 2. Find the price active at the START of the period
+        pre_history = self.env['ahadu.fuel.price.history'].search([
+            ('company_id', '=', self.company_id.id),
+            ('effective_date', '<', date_from)
+        ], order='effective_date desc', limit=1)
+        
+        current_price = pre_history.price if pre_history else history[0].price
+        current_start = date_from
+        
+        total_weighted_price = 0.0
+        total_days = (date_to - date_from).days + 1
+        
+        if total_days <= 0:
+            return current_price
+            
+        # 3. Process changes that occurred WITHIN the period
+        for h in history.filtered(lambda x: x.effective_date >= date_from):
+            # Period before this change (within our payslip date range)
+            days = (h.effective_date - current_start).days
+            total_weighted_price += current_price * days
+            current_price = h.price
+            current_start = h.effective_date
+            
+        # 4. Final period from last change to the end of the month
+        days = (date_to - current_start).days + 1
+        total_weighted_price += current_price * days
+        
+        return total_weighted_price / total_days
+
+    def _get_weighted_fuel_liters(self):
+        """Calculate weighted average fuel liters for the period"""
+        self.ensure_one()
+        segments = self._get_salary_and_job_segments()
+        total_days = (self.date_to - self.date_from).days + 1
+        
+        if total_days == 0:
+            return getattr(self.employee_id, 'transport_allowance_liters', 0.0)
+            
+        if not segments:
+            base_liters = getattr(self.employee_id, 'transport_allowance_liters', 0.0)
+            ratio = self._get_paid_days_ratio()
+            return base_liters * ratio
+            
+        weighted_liters = 0.0
+        for seg in segments:
+            weight = seg.get('paid_days', 0) / total_days
+            weighted_liters += (seg.get('liters', 0.0) * weight)
+            
+        return weighted_liters
+
 
     def _get_ahadu_income_tax(self, taxable_income):
         """
@@ -995,6 +1457,18 @@ class HrPayslip(models.Model):
 
 
 
+    def compute_sheet(self):
+        """
+        Enforce a safeguard that the final NET amount cannot be negative.
+        If deductions exceed earnings, cap the NET line at 0.
+        """
+        res = super(HrPayslip, self).compute_sheet()
+        for slip in self:
+            net_line = slip.line_ids.filtered(lambda l: l.code == 'NET')
+            if net_line and net_line.total < 0:
+                net_line.total = 0.0
+        return res
+
     def action_payslip_done(self):
         """
         Override to automate balance reductions on confirmation.
@@ -1008,7 +1482,10 @@ class HrPayslip(models.Model):
             if cost_sharing_line and cost_sharing_line.total > 0:
                 current_bal = getattr(slip.employee_id, 'cost_sharing_amount', 0.0)
                 new_bal = max(0, current_bal - cost_sharing_line.total)
-                slip.employee_id.sudo().write({'cost_sharing_amount': new_bal})
+                slip.employee_id.sudo().write({
+                    'cost_sharing_amount': new_bal,
+                    'cost_sharing_status': 'paid' if new_bal <= 0 else slip.employee_id.cost_sharing_status
+                })
             
             # 2. Handle Loan Installments
             loan_codes = ['ADV_LOAN', 'PERS_LOAN', 'OTHER_LOAN', 'LOAN']
@@ -1067,8 +1544,8 @@ class HrPayslip(models.Model):
                 _logger.warning(f"Skipping payslip email for {slip.employee_id.name}: No work email defined.")
                 continue
             
-            # Send the email
-            template.send_mail(slip.id, force_send=True)
+            # Send the email (Asynchronous / Background)
+            template.send_mail(slip.id, force_send=False)
             _logger.info(f"Payslip email sent to {slip.employee_id.work_email} for employee {slip.employee_id.name}")
             
         return True

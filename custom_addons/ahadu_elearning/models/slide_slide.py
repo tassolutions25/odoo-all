@@ -75,14 +75,42 @@ class SlideSlide(models.Model):
             if slide.video_attachment_ids:
                 slide.video_attachment_ids.sudo().write({'public': True})
 
+    def _update_document_slide_types(self):
+        for slide in self:
+            if slide.slide_category == 'document' and slide.source_type == 'local_file':
+                attachment = self.env['ir.attachment'].sudo().search([
+                    ('res_model', '=', 'slide.slide'),
+                    ('res_field', '=', 'binary_content'),
+                    ('res_id', '=', slide.id)
+                ], limit=1)
+                
+                if attachment and attachment.mimetype:
+                    mimetype = attachment.mimetype
+                    new_type = False
+                    if mimetype in ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation']:
+                        new_type = 'slides'
+                    elif mimetype in ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']:
+                        new_type = 'sheet'
+                    elif mimetype in ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+                        new_type = 'doc'
+                    
+                    if new_type and slide.slide_type != new_type:
+                        slide.write({
+                            'slide_type': new_type,
+                            'slide_resource_downloadable': True
+                        })
+
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
         records._make_video_attachments_public()
+        records._update_document_slide_types()
         return records
 
     def write(self, vals):
         res = super().write(vals)
         if 'video_attachment_ids' in vals:
             self._make_video_attachments_public()
+        if 'document_binary_content' in vals or 'binary_content' in vals or 'slide_category' in vals or 'source_type' in vals:
+            self._update_document_slide_types()
         return res

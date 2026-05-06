@@ -15,6 +15,10 @@
                 <field name="request_date_to" string="End Date" />
                 <field name="ethiopian_date_from" optional="show" />
                 <field name="ethiopian_date_to" optional="show" />
+                <field name="sick_leave_pay_tier" string="Pay Tier" widget="badge" optional="show"
+                       decoration-success="sick_leave_pay_tier == 'full_pay'"
+                       decoration-warning="sick_leave_pay_tier == 'half_pay'"
+                       decoration-danger="sick_leave_pay_tier == 'no_pay'" />
                 <field name="state" widget="badge" decoration-success="state == 'validate'"
                     decoration-info="state == 'confirm'" />
             </list>

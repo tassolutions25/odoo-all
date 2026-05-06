@@ -56,6 +56,18 @@
                 <attribute name="statusbar_visible">
                     draft,confirm,to_cancel,to_cancel_partially,validate</attribute>
             </xpath>
+
+            <xpath expr="//group[@name='col_left']" position="inside">
+                <field name="sick_leave_pay_tier" widget="badge"
+                       decoration-success="sick_leave_pay_tier == 'full_pay'"
+                       decoration-warning="sick_leave_pay_tier == 'half_pay'"
+                       decoration-danger="sick_leave_pay_tier == 'no_pay'"
+                       invisible="holiday_status_id != %(ahadu_hr_leave.ahadu_sick_leave_request)d"/>
+                <field name="lwop_supporting_document" filename="lwop_supporting_document_name" 
+                       invisible="holiday_status_id != %(ahadu_hr_leave.ahadu_leave_type_lwop)d"
+                       groups="ahadu_hr_leave.group_leave_officer,hr_holidays.group_hr_holidays_manager"/>
+                <field name="lwop_supporting_document_name" invisible="1" />
+            </xpath>
         </field>
     </record>
 
