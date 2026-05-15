@@ -78,3 +78,4 @@ access_hr_employee_reassign_manager,hr.employee.reassign.manager,model_hr_employ
 access_hr_employee_reinitiate_user,hr.employee.reinitiate.user,model_hr_employee_reinitiate,hr.group_hr_user,1,1,1,0
 access_hr_employee_reinitiate_manager,hr.employee.reinitiate.manager,model_hr_employee_reinitiate,hr.group_hr_manager,1,1,1,1
 access_hr_employee_suspension_manager,hr.employee.suspension manager,model_hr_employee_suspension,hr.group_hr_manager,1,1,1,1
+access_hr_employee_mass_update_wizard,hr.employee.mass.update.wizard,model_hr_employee_mass_update_wizard,base.group_user,1,1,1,1

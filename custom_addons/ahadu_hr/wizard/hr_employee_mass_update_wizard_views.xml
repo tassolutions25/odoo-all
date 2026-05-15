@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_mass_update_wizard_form" model="ir.ui.view">
+        <field name="name">hr.employee.mass.update.wizard.form</field>
+        <field name="model">hr.employee.mass.update.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Mass Update Employee Data">
+                <div class="alert alert-info" role="alert">
+                    <p><strong>Instructions:</strong> Upload a <b>CSV or Excel (.xlsx / .xls)</b> file. You can update ANY field on the employee profile by making the column header match Odoo's <b>Technical Field Names</b> or their <b>View Labels</b> (e.g. "Work Email").</p>
+                    <p><b>Mandatory Column:</b></p>
+                    <ul>
+                        <li><code>employee_id</code>, <code>Employee id</code>, or <code>BioTime Emp ID</code></li>
+                    </ul>
+                    <p><b>Optional Columns (Examples):</b></p>
+                    <ul>
+                        <li><code>Department</code> (e.g., IT Department)</li>
+                        <li><code>Grade</code> (e.g., 8)</li>
+                        <li><code>Job Position</code> (e.g., Senior Developer)</li>
+                        <li><code>Work Email</code> (e.g., user@domain.com)</li>
+                        <li><code>emp_wage</code> (e.g., 15000)</li>
+                    </ul>
+                    <p><i>Note: Leave cells blank if you do not want to change a specific value.</i></p>
+                </div>
+                <group>
+                    <field name="file_name" invisible="1"/>
+                    <field name="file_data" filename="file_name" widget="binary"/>
+                </group>
+                <footer>
+                    <button name="action_update_employees" string="Upload &amp; Update" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_employee_mass_update_wizard" model="ir.actions.act_window">
+        <field name="name">Mass Update Employee Data</field>
+        <field name="res_model">hr.employee.mass.update.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- <menuitem id="menu_hr_employee_mass_update"
+              name="Mass Update Employee Data"
+              parent="hr.menu_hr_employee_payroll"
+              action="action_hr_employee_mass_update_wizard"
+              sequence="100"/> -->
+</odoo>

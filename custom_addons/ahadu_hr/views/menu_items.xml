@@ -117,7 +117,13 @@
 <menuitem id="menu_employee_headcount_report" name="Headcount Analysis" parent="menu_hr_reporting_root" action="action_employee_headcount_report" sequence="10"/>
 <menuitem id="menu_hr_analytics_dashboard" name="Analytics Dashboard" parent="menu_hr_reporting_root" action="action_hr_analytics_dashboard" sequence="20"/>
 
+<menuitem id="menu_hr_employee_mass_update"
+              name="Mass Update Employee Data"
+              parent="menu_employee_list_ahadu"
+              action="action_hr_employee_mass_update_wizard"
+              sequence="100"/>
 
+              
 <!--  <record id="action_employee_lateral" model="ir.actions.act_window">
         <field name="name">Employee Lateral Movements</field>
         <field name="res_model">hr.employee.lateral</field>

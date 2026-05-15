@@ -3,14 +3,14 @@
 import { Component, useState, useRef } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { rpc } from "@web/core/network/rpc"; // 1. Imported rpc directly (Fixes White Screen)
+import { rpc } from "@web/core/network/rpc";
 
 export class AhaduBotSystray extends Component {
-  static template = "ahadu_bot.SystrayItem"; // Moved template inside the class
-  static props = { "*": true }; // 2. Added wildcard props (Fixes the Owl Dev Warning)
+  static template = "ahadu_bot.SystrayItem";
+  static props = { "*": true };
 
   setup() {
-    // this.rpc = useService("rpc"); <--- REMOVED: This was causing the crash
+    // this.rpc = useService("rpc");
     this.actionService = useService("action");
     this.inputRef = useRef("inputRef");
 
@@ -63,8 +63,8 @@ export class AhaduBotSystray extends Component {
       if (response.action) {
         setTimeout(() => {
           this.actionService.doAction(response.action);
-          this.state.isOpen = false; // Close chat window
-        }, 1500); // 1.5 second delay so user can read the text
+          this.state.isOpen = false;
+        }, 1500);
       }
       // 5. If python returned a URL, redirect to it!
       else if (response.url) {

@@ -18,6 +18,7 @@
     "data": [
         "wizard/hr_approval_reject_wizard_views.xml",
         "wizard/hr_employee_reassign_wizard_views.xml",
+        "wizard/hr_employee_mass_update_wizard_views.xml",
         "views/res_config_settings_views.xml",
         "views/ahadu_fuel_price_views.xml",
         "security/ir.model.access.csv",

@@ -14,7 +14,7 @@
                                 <field name="mobile_allowance" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                                 <field name="representation_allowance" 
                                     invisible="representation_allowance_fixed > 0"/>
-                                <field name="representation_allowance_fixed" widget="monetary" 
+                                <field name="representation_allowance_fixed" widget="monetary"
                                     options="{'currency_field': 'currency_id'}"
                                     invisible="representation_allowance > 0"/>
                                 <field name="hardship_allowance_level_id" />

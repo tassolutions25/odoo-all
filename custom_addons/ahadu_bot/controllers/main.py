@@ -254,20 +254,23 @@ class AhaduBotController(http.Controller):
                     "ahadu_hr.reporting_dashboard", "HR Reporting Dashboard"
                 ),
             },
+            # {
+            #     "keywords": [
+            #         "org chart",
+            #         "organization chart",
+            #         "hierarchy",
+            #         "employee structure",
+            #     ],
+            #     "response": "Opening the Employee Organization Chart.",
+            #     "action": self._get_client_action(
+            #         "ahadu_hr.organization_chart", "Organization Chart"
+            #     ),
+            # },
             {
-                "keywords": [
-                    "org chart",
+                "keywords": ["structural chart", "department structure", "unit chart", "org chart",
                     "organization chart",
                     "hierarchy",
-                    "employee structure",
-                ],
-                "response": "Opening the Employee Organization Chart.",
-                "action": self._get_client_action(
-                    "ahadu_hr.organization_chart", "Organization Chart"
-                ),
-            },
-            {
-                "keywords": ["structural chart", "department structure", "unit chart"],
+                    "employee structure"],
                 "response": "Opening the Structural Organization Chart.",
                 "action": self._get_client_action(
                     "ahadu_hr.structural_org_chart", "Structural Org Chart"
@@ -293,8 +296,88 @@ class AhaduBotController(http.Controller):
 
                     return response_data
 
-        # Fallback if the bot doesn't understand the question
+        # Fallback if no exact dictionary match found: search custom addons dynamically
+        custom_modules = [
+            'ahadu_attendance', 'ahadu_bot', 'ahadu_custom_theme', 'ahadu_elearning', 
+            'ahadu_hr', 'ahadu_hr_leave', 'ahadu_hr_self_service', 'ahadu_on_duty', 
+            'ahadu_payroll', 'ahadu_recruitment', 'ahadu_theme', 'ahadu_website_custom', 
+            'payroll', 'payroll_account'
+        ]
+
+        if any(word in msg_lower for word in ['what can you do', 'list modules', 'features', 'help me']):
+            module_names = []
+            modules = request.env['ir.module.module'].sudo().search([('name', 'in', custom_modules), ('state', '=', 'installed')])
+            for mod in modules:
+                module_names.append(mod.shortdesc)
+            return {
+                "text": "I can help you with the following custom functionalities: " + ", ".join(module_names) + ". Just tell me what you want to open or do!",
+                "type": "bot"
+            }
+
+        stop_words = {'to', 'the', 'a', 'an', 'is', 'are', 'i', 'want', 'open', 'show', 'me', 'please', 'can', 'you', 'my', 'create', 'new', 'for', 'in', 'of', 'and', 'or', 'do', 'any', 'anything'}
+        words = [w for w in re.findall(r'\b\w+\b', msg_lower) if w not in stop_words]
+
+        if not words:
+            return {
+                "text": "I only handle functionalities related to our custom modules. Please specify what you want to do (e.g., 'open attendance', 'payroll').",
+                "type": "bot",
+            }
+
+        action_data = request.env['ir.model.data'].sudo().search([
+            ('module', 'in', custom_modules),
+            ('model', 'in', ['ir.actions.act_window', 'ir.actions.client'])
+        ])
+
+        action_ids_by_model = {
+            'ir.actions.act_window': [],
+            'ir.actions.client': []
+        }
+        for data in action_data:
+            if data.model in action_ids_by_model:
+                action_ids_by_model[data.model].append(data.res_id)
+
+        windows = request.env['ir.actions.act_window'].sudo().browse(action_ids_by_model['ir.actions.act_window'])
+        clients = request.env['ir.actions.client'].sudo().browse(action_ids_by_model['ir.actions.client'])
+
+        best_action = None
+        max_score = 0
+        action_type = None
+
+        for act in windows:
+            score = sum(1 for w in words if re.search(r"\b" + re.escape(w) + r"\b", (act.name or '').lower()))
+            if score > max_score:
+                max_score = score
+                best_action = act
+                action_type = 'ir.actions.act_window'
+
+        for act in clients:
+            score = sum(1 for w in words if re.search(r"\b" + re.escape(w) + r"\b", (act.name or '').lower()))
+            if score > max_score:
+                max_score = score
+                best_action = act
+                action_type = 'ir.actions.client'
+
+        if best_action and max_score > 0:
+            action_dict = best_action.read()[0]
+            # Ensure proper dictionary format for Odoo JS client
+            action_dict['id'] = best_action.id
+            if 'create' in msg_lower or 'new' in msg_lower or 'add' in msg_lower:
+                if action_type == 'ir.actions.act_window':
+                    action_dict['views'] = [[False, 'form']]
+                    action_dict['target'] = 'current'
+                    return {
+                        "text": f"Ready to create a new record in {best_action.name}. Opening form.",
+                        "type": "bot",
+                        "action": action_dict
+                    }
+
+            return {
+                "text": f"I found what you're looking for! Opening {best_action.name}.",
+                "type": "bot",
+                "action": action_dict
+            }
+
         return {
-            "text": "I'm sorry, I didn't quite catch that. Try asking me for 'leave', 'payslip', 'promotions', 'org chart', or 'HR dashboard'.",
+            "text": "I could not find a match for that within our custom modules. Try asking for something like 'attendance', 'leave', or 'payroll'.",
             "type": "bot",
         }
