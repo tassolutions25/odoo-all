@@ -129,7 +129,7 @@
                         <field name="date_of_joining" />
                         <field name="position_classification" />
                         <field name="ahadu_employee_type_id" readonly="1" force_save="1"/>
-                        <field name="grade_id" />
+                        <field name="grade_id" options="{'no_create': True}"/>
                         <!-- <field name="representation_allowance" />
                         <field name="hardship_allowance_level_id" /> -->
                         <field name="emp_wage" />
@@ -140,11 +140,11 @@
 
 
                 <xpath expr="//field[@name='department_id']" position="after">
-                    <field name="branch_id" />
-                    <field name="division_id" context="{'default_department_id': department_id}" />
+                    <field name="branch_id" options="{'no_create': True}"/>
+                    <field name="division_id" context="{'default_department_id': department_id}" options="{'no_create': True}" />
                     <field name="region_id" options="{'no_create': True}" />
                     <field name="city_id" options="{'no_create': True}" />
-                    <field name="district_id" />
+                    <field name="district_id" options="{'no_create': True}"/>
 
                 </xpath>
 
@@ -311,7 +311,7 @@
                 </xpath>
 
                 <xpath expr="//field[@name='grade_id']" position="after">
-                    <field name="cost_center_id" />
+                    <field name="cost_center_id" options="{'no_create': True}"/>
                 </xpath>
 
                 <xpath expr="//field[@name='job_title']" position="attributes">

@@ -183,7 +183,9 @@ class HrEmployee(models.Model):
     )
     date_of_joining = fields.Date(string="Date of Joining")
     # effective_from_date = fields.Date(string="Effective From Date")
-    grade_id = fields.Many2one("hr.grade", string="Grade", ondelete="set null")
+    grade_id = fields.Many2one(
+        "hr.grade", string="Grade", ondelete="set null", options="{'no_create': True}"
+    )
     position_classification = fields.Selection(
         [
             ("management", "Management"),
@@ -199,19 +201,28 @@ class HrEmployee(models.Model):
     )
     identification_id = fields.Char(string="National ID Number")
     ssnid = fields.Char(string="Pension Number")
-    district_id = fields.Many2one("hr.district", string="District", ondelete="set null")
-    branch_id = fields.Many2one("hr.branch", string="Branch", ondelete="set null")
+    district_id = fields.Many2one(
+        "hr.district",
+        string="District",
+        ondelete="set null",
+        
+    )
+    branch_id = fields.Many2one(
+        "hr.branch", string="Branch", ondelete="set null", options="{'no_create': True}"
+    )
     division_id = fields.Many2one(
         "hr.division",
         string="Division",
         ondelete="set null",
         domain="[('department_id', '=', department_id)]",
+        
     )
     cost_center_id = fields.Many2one(
         "hr.cost.center",
         string="Cost Center",
         tracking=True,
         help="The Cost Center to which this employee's costs are allocated.",
+        
     )
     tin_number = fields.Char(string="TIN Number", size=10, required=True)
     kebele_id = fields.Char(string="Kebele ID Number", size=20)
@@ -246,7 +257,10 @@ class HrEmployee(models.Model):
         help="Fixed amount for representation allowance.",
     )
     hardship_allowance_level_id = fields.Many2one(
-        "hr.hardship.allowance.level", string="Hardship Allowance Level", tracking=True
+        "hr.hardship.allowance.level",
+        string="Hardship Allowance Level",
+        tracking=True,
+        
     )
     housing_allowance = fields.Monetary(string="Housing Allowance", tracking=True)
     mobile_allowance = fields.Monetary(string="Mobile Allowance", tracking=True)
@@ -310,10 +324,18 @@ class HrEmployee(models.Model):
     )
 
     region_id = fields.Many2one(
-        "hr.region", string="Region", ondelete="set null", tracking=True
+        "hr.region",
+        string="Region",
+        ondelete="set null",
+        tracking=True,
+        
     )
     city_id = fields.Many2one(
-        "hr.city", string="City", ondelete="set null", tracking=True
+        "hr.city",
+        string="City",
+        ondelete="set null",
+        tracking=True,
+        
     )
     departure_type = fields.Selection(
         [
@@ -631,30 +653,30 @@ class HrEmployee(models.Model):
     #         else:
     #             employee.benefit_package_id = False
 
-    # @api.constrains("employee_id")
-    # def _check_employee_id_format(self):
-    #     for record in self:
-    #         if record.employee_id:
-    #             # 1. Check format: Must be 'AHB' followed by 4 digits
-    #             if not re.match(r"^AHB\d{4}$", record.employee_id):
-    #                 raise ValidationError(
-    #                     _(
-    #                         "Employee ID is invalid. It must start with 'AHB' followed by exactly 4 numbers (e.g., AHB1234)."
-    #                     )
-    #                 )
+    @api.constrains("employee_id")
+    def _check_employee_id_format(self):
+        for record in self:
+            if record.employee_id:
+                # 1. Check format: Must be 'AHB' or 'AHBC' followed by 4 digits
+                if not re.match(r"^AHBC?\d{4}$", record.employee_id):
+                    raise ValidationError(
+                        _(
+                            "Employee ID is invalid. It must start with 'AHB' or 'AHBC' followed by exactly 4 numbers (e.g., AHB1234 or AHBC1234)."
+                        )
+                    )
 
-    #             # 2. Check uniqueness
-    #             existing_employee = self.search(
-    #                 [("id", "!=", record.id), ("employee_id", "=", record.employee_id)],
-    #                 limit=1,
-    #             )
-    #             if existing_employee:
-    #                 raise ValidationError(
-    #                     _(
-    #                         "Employee ID must be unique. The ID '%s' is already assigned to another employee.",
-    #                         record.employee_id,
-    #                     )
-    #                 )
+                # 2. Check uniqueness
+                existing_employee = self.search(
+                    [("id", "!=", record.id), ("employee_id", "=", record.employee_id)],
+                    limit=1,
+                )
+                if existing_employee:
+                    raise ValidationError(
+                        _(
+                            "Employee ID must be unique. The ID '%s' is already assigned to another employee.",
+                            record.employee_id,
+                        )
+                    )
 
     @api.constrains("work_phone", "mobile_phone")
     def _check_ethiopian_phone_number(self):
@@ -890,19 +912,6 @@ class HrEmployee(models.Model):
                 record.middle_name = ""
                 record.last_name = ""
 
-    # @api.depends("name", "employee_id")
-    # @api.depends_context("show_manager_with_id")
-    # def _compute_display_name(self):
-    #     for employee in self:
-    #         if (
-    #             self.env.context.get("show_manager_with_id")
-    #             and employee.name
-    #             and employee.employee_id
-    #         ):
-    #             employee.display_name = f"{employee.name} ({employee.employee_id})"
-    #         else:
-    #             employee.display_name = employee.name
-
     @api.depends("name", "employee_id")
     @api.depends_context("show_manager_with_id", "show_employee_id_only")
     def _compute_display_name(self):
@@ -921,7 +930,7 @@ class HrEmployee(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            # Force new employees to be active until approved
+            # Force new employees to be inactive until approved
             vals["active"] = True
 
             if (
@@ -996,44 +1005,44 @@ class HrEmployee(models.Model):
 
         return res
 
-    # @api.constrains("work_email", "private_email")
-    # def _check_email_validity(self):
-    #     for employee in self:
-    #         if employee.work_email and not email_re.match(employee.work_email):
-    #             raise ValidationError(
-    #                 _("The work email address '%s' is not valid.", employee.work_email)
-    #             )
-    #         if employee.private_email and not email_re.match(employee.private_email):
-    #             raise ValidationError(
-    #                 _(
-    #                     "The private email address '%s' is not valid.",
-    #                     employee.private_email,
-    #                 )
-    # )
+    @api.constrains("work_email", "private_email")
+    def _check_email_validity(self):
+        for employee in self:
+            if employee.work_email and not email_re.match(employee.work_email):
+                raise ValidationError(
+                    _("The work email address '%s' is not valid.", employee.work_email)
+                )
+            if employee.private_email and not email_re.match(employee.private_email):
+                raise ValidationError(
+                    _(
+                        "The private email address '%s' is not valid.",
+                        employee.private_email,
+                    )
+                )
 
-    # @api.constrains("first_name", "middle_name", "last_name")
-    # def _check_names_format(self):
-    #     """Validates that names only contain alphabetic characters, spaces, hyphens, or apostrophes."""
-    #     name_regex = re.compile(r"^[a-zA-Z\s'-]+$")
-    #     for record in self:
-    #         if record.first_name and not name_regex.match(record.first_name):
-    #             raise ValidationError(
-    #                 _(
-    #                     "First Name can only contain letters, spaces, hyphens, or apostrophes."
-    #                 )
-    #             )
-    #         if record.middle_name and not name_regex.match(record.middle_name):
-    #             raise ValidationError(
-    #                 _(
-    #                     "Middle Name can only contain letters, spaces, hyphens, or apostrophes."
-    #                 )
-    #             )
-    #         if record.last_name and not name_regex.match(record.last_name):
-    #             raise ValidationError(
-    #                 _(
-    #                     "Last Name can only contain letters, spaces, hyphens, or apostrophes."
-    #                 )
-    #             )
+    @api.constrains("first_name", "middle_name", "last_name")
+    def _check_names_format(self):
+        """Validates that names only contain alphabetic characters, spaces, hyphens, or apostrophes."""
+        name_regex = re.compile(r"^[a-zA-Z\s'-]+$")
+        for record in self:
+            if record.first_name and not name_regex.match(record.first_name):
+                raise ValidationError(
+                    _(
+                        "First Name can only contain letters, spaces, hyphens, or apostrophes."
+                    )
+                )
+            if record.middle_name and not name_regex.match(record.middle_name):
+                raise ValidationError(
+                    _(
+                        "Middle Name can only contain letters, spaces, hyphens, or apostrophes."
+                    )
+                )
+            if record.last_name and not name_regex.match(record.last_name):
+                raise ValidationError(
+                    _(
+                        "Last Name can only contain letters, spaces, hyphens, or apostrophes."
+                    )
+                )
 
     @api.constrains("birthday")
     def _check_employee_age(self):
@@ -1047,49 +1056,49 @@ class HrEmployee(models.Model):
             if record.birthday:
                 today = date.today()
                 age = relativedelta(today, record.birthday).years
-                # if age < 18:
-                #     raise ValidationError(_("Employee must be at least 18 years old."))
-                # if age > 60:
-                #     raise ValidationError(
-                #         _(
-                #             "The date of birth results in an age over 100. Please verify the date."
-                #         )
-                #     )
+                if age < 18:
+                    raise ValidationError(_("Employee must be at least 18 years old."))
+                if age > 60:
+                    raise ValidationError(
+                        _(
+                            "The date of birth results in an age over 100. Please verify the date."
+                        )
+                    )
 
-    # @api.constrains("tin_number")
-    # def _check_tin_format_and_uniqueness(self):
-    #     """
-    #     Validates TIN number for uniqueness and ensures it only contains digits.
-    #     The original check for uniqueness is preserved and enhanced.
-    #     """
-    #     for record in self:
-    #         if record.tin_number:
-    #             if not record.tin_number.isdigit():
-    #                 raise ValidationError(_("TIN Number must contain only digits."))
+    @api.constrains("tin_number")
+    def _check_tin_format_and_uniqueness(self):
+        """
+        Validates TIN number for uniqueness and ensures it only contains digits.
+        The original check for uniqueness is preserved and enhanced.
+        """
+        for record in self:
+            if record.tin_number:
+                if not record.tin_number.isdigit():
+                    raise ValidationError(_("TIN Number must contain only digits."))
 
-    #             existing = self.search(
-    #                 [("tin_number", "=", record.tin_number), ("id", "!=", record.id)]
-    #             )
-    #             if existing:
-    #                 raise ValidationError(
-    #                     _(
-    #                         "TIN Number must be unique! Another employee already has this TIN."
-    #                     )
-    #                 )
+                existing = self.search(
+                    [("tin_number", "=", record.tin_number), ("id", "!=", record.id)]
+                )
+                if existing:
+                    raise ValidationError(
+                        _(
+                            "TIN Number must be unique! Another employee already has this TIN."
+                        )
+                    )
 
-    # @api.constrains("identification_id")
-    # def _check_identification_id_uniqueness(self):
-    #     """Ensures the National ID Number is unique across all employees."""
-    #     for record in self:
-    #         if record.identification_id:
-    #             existing = self.search(
-    #                 [
-    #                     ("identification_id", "=", record.identification_id),
-    #                     ("id", "!=", record.id),
-    #                 ]
-    #             )
-    #             if existing:
-    #                 raise ValidationError(_("National ID Number must be unique!"))
+    @api.constrains("identification_id")
+    def _check_identification_id_uniqueness(self):
+        """Ensures the National ID Number is unique across all employees."""
+        for record in self:
+            if record.identification_id:
+                existing = self.search(
+                    [
+                        ("identification_id", "=", record.identification_id),
+                        ("id", "!=", record.id),
+                    ]
+                )
+                if existing:
+                    raise ValidationError(_("National ID Number must be unique!"))
 
     # @api.constrains('date_of_joining')
     # def _check_date_of_joining(self):
@@ -1181,50 +1190,50 @@ class HrEmployee(models.Model):
                         email_values={"email_to": recipient.email},
                     )
 
-    # @api.model
-    # def _check_retirement_notifications(self):
-    #     """Scheduled action to check for upcoming retirements."""
-    #     today = fields.Date.today()
-    #     # Find all active employees with a birthday who haven't received all notifications
-    #     employees = self.search(
-    #         [
-    #             ("birthday", "!=", False),
-    #             ("active", "=", True),
-    #             "|",
-    #             ("retirement_notif_1y_sent", "=", False),
-    #             "|",
-    #             ("retirement_notif_6m_sent", "=", False),
-    #             ("retirement_notif_1m_sent", "=", False),
-    #         ]
-    #     )
+    @api.model
+    def _check_retirement_notifications(self):
+        """Scheduled action to check for upcoming retirements."""
+        today = fields.Date.today()
+        # Find all active employees with a birthday who haven't received all notifications
+        employees = self.search(
+            [
+                ("birthday", "!=", False),
+                ("active", "=", True),
+                "|",
+                ("retirement_notif_1y_sent", "=", False),
+                "|",
+                ("retirement_notif_6m_sent", "=", False),
+                ("retirement_notif_1m_sent", "=", False),
+            ]
+        )
 
-    #     for emp in employees:
-    #         # Calculate 60th birthday
-    #         sixtieth_birthday = emp.birthday + relativedelta(years=60)
+        for emp in employees:
+            # Calculate 60th birthday
+            sixtieth_birthday = emp.birthday + relativedelta(years=60)
 
-    #         # Check for 1 year milestone
-    #         if (
-    #             not emp.retirement_notif_1y_sent
-    #             and sixtieth_birthday == today + relativedelta(years=1)
-    #         ):
-    #             self._send_notification(emp, "1 year")
-    #             emp.write({"retirement_notif_1y_sent": True})
+            # Check for 1 year milestone
+            if (
+                not emp.retirement_notif_1y_sent
+                and sixtieth_birthday == today + relativedelta(years=1)
+            ):
+                self._send_notification(emp, "1 year")
+                emp.write({"retirement_notif_1y_sent": True})
 
-    #         # Check for 6 months milestone
-    #         if (
-    #             not emp.retirement_notif_6m_sent
-    #             and sixtieth_birthday == today + relativedelta(months=6)
-    #         ):
-    #             self._send_notification(emp, "6 months")
-    #             emp.write({"retirement_notif_6m_sent": True})
+            # Check for 6 months milestone
+            if (
+                not emp.retirement_notif_6m_sent
+                and sixtieth_birthday == today + relativedelta(months=6)
+            ):
+                self._send_notification(emp, "6 months")
+                emp.write({"retirement_notif_6m_sent": True})
 
-    #         # Check for 1 month milestone
-    #         if (
-    #             not emp.retirement_notif_1m_sent
-    #             and sixtieth_birthday == today + relativedelta(months=1)
-    #         ):
-    #             self._send_notification(emp, "1 month")
-    #             emp.write({"retirement_notif_1m_sent": True})
+            # Check for 1 month milestone
+            if (
+                not emp.retirement_notif_1m_sent
+                and sixtieth_birthday == today + relativedelta(months=1)
+            ):
+                self._send_notification(emp, "1 month")
+                emp.write({"retirement_notif_1m_sent": True})
 
     @api.model
     def _send_retirement_notification(self, employee, timeframe):
@@ -1291,68 +1300,68 @@ class HrEmployee(models.Model):
                         email_values={"email_to": recipient.email},
                     )
 
-    # @api.model
-    # def _check_and_process_retirements(self):
-    #     """
-    #     Scheduled action to:
-    #     1. Automatically retire employees who have reached age 60.
-    #     2. Send notifications for employees approaching retirement.
-    #     """
-    #     today = fields.Date.today()
-    #     # Find all active employees with a birthday
-    #     employees = self.search([("birthday", "!=", False), ("active", "=", True)])
+    @api.model
+    def _check_and_process_retirements(self):
+        """
+        Scheduled action to:
+        1. Automatically retire employees who have reached age 60.
+        2. Send notifications for employees approaching retirement.
+        """
+        today = fields.Date.today()
+        # Find all active employees with a birthday
+        employees = self.search([("birthday", "!=", False), ("active", "=", True)])
 
-    #     for emp in employees:
-    #         sixtieth_birthday = emp.birthday + relativedelta(years=60)
+        for emp in employees:
+            sixtieth_birthday = emp.birthday + relativedelta(years=60)
 
-    #         # --- 1. Automatic Retirement ---
-    #         if sixtieth_birthday <= today:
-    #             retirement_reason = self.env.ref(
-    #                 "hr.departure_reason_retirement", raise_if_not_found=False
-    #             )
-    #             emp.write(
-    #                 {
-    #                     "active": False,
-    #                     "departure_date": sixtieth_birthday,
-    #                     "departure_reason_id": (
-    #                         retirement_reason.id if retirement_reason else False
-    #                     ),
-    #                 }
-    #             )
-    #             emp.message_post(
-    #                 body=_(
-    #                     f"This employee has been automatically retired on {sixtieth_birthday} upon reaching the age of 60."
-    #                 )
-    #             )
-    #             _logger.info(
-    #                 f"Automatically retired employee {emp.name} (ID: {emp.id})."
-    #             )
-    #             continue  # Skip to the next employee
+            # --- 1. Automatic Retirement ---
+            if sixtieth_birthday <= today:
+                retirement_reason = self.env.ref(
+                    "hr.departure_reason_retirement", raise_if_not_found=False
+                )
+                emp.write(
+                    {
+                        "active": False,
+                        "departure_date": sixtieth_birthday,
+                        "departure_reason_id": (
+                            retirement_reason.id if retirement_reason else False
+                        ),
+                    }
+                )
+                emp.message_post(
+                    body=_(
+                        f"This employee has been automatically retired on {sixtieth_birthday} upon reaching the age of 60."
+                    )
+                )
+                _logger.info(
+                    f"Automatically retired employee {emp.name} (ID: {emp.id})."
+                )
+                continue  # Skip to the next employee
 
-    #         # --- 2. Notification Logic ---
-    #         # Check for 1 year milestone
-    #         if (
-    #             not emp.retirement_notif_1y_sent
-    #             and sixtieth_birthday == today + relativedelta(years=1)
-    #         ):
-    #             self._send_retirement_notification(emp, "1 year")
-    #             emp.write({"retirement_notif_1y_sent": True})
+            # --- 2. Notification Logic ---
+            # Check for 1 year milestone
+            if (
+                not emp.retirement_notif_1y_sent
+                and sixtieth_birthday == today + relativedelta(years=1)
+            ):
+                self._send_retirement_notification(emp, "1 year")
+                emp.write({"retirement_notif_1y_sent": True})
 
-    #         # Check for 6 months milestone
-    #         if (
-    #             not emp.retirement_notif_6m_sent
-    #             and sixtieth_birthday == today + relativedelta(months=6)
-    #         ):
-    #             self._send_retirement_notification(emp, "6 months")
-    #             emp.write({"retirement_notif_6m_sent": True})
+            # Check for 6 months milestone
+            if (
+                not emp.retirement_notif_6m_sent
+                and sixtieth_birthday == today + relativedelta(months=6)
+            ):
+                self._send_retirement_notification(emp, "6 months")
+                emp.write({"retirement_notif_6m_sent": True})
 
-    #         # Check for 1 month milestone
-    #         if (
-    #             not emp.retirement_notif_1m_sent
-    #             and sixtieth_birthday == today + relativedelta(months=1)
-    #         ):
-    #             self._send_retirement_notification(emp, "1 month")
-    #             emp.write({"retirement_notif_1m_sent": True})
+            # Check for 1 month milestone
+            if (
+                not emp.retirement_notif_1m_sent
+                and sixtieth_birthday == today + relativedelta(months=1)
+            ):
+                self._send_retirement_notification(emp, "1 month")
+                emp.write({"retirement_notif_1m_sent": True})
 
     @api.model
     def get_employee_hierarchy(self, filters=None):
@@ -1799,21 +1808,9 @@ class HrEmployee(models.Model):
                     "disciplinary": disciplinary_count,
                 },
                 "charts": {
-                    "by_gender": (
-                        get_chart_data("hr.employee", "gender_updated")
-                        if total_employees
-                        else get_sample_chart_data("gender")
-                    ),
-                    "by_age": (
-                        get_chart_data("hr.employee", "age_group")
-                        if total_employees
-                        else get_sample_chart_data("age")
-                    ),
-                    "by_location": (
-                        get_chart_data("hr.employee", "branch_id", "name")
-                        if total_employees
-                        else get_sample_chart_data("location")
-                    ),
+                    "by_gender": (get_chart_data("hr.employee", "gender_updated")),
+                    "by_age": (get_chart_data("hr.employee", "age_group")),
+                    "by_location": (get_chart_data("hr.employee", "branch_id", "name")),
                     "by_department": get_chart_data(
                         "hr.employee", "department_id", "name"
                     ),

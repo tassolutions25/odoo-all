@@ -217,19 +217,62 @@ class HrEmployeeMassUpdateWizard(models.TransientModel):
                     if field_def.type == "many2one":
                         comodel = field_def.comodel_name
                         if comodel == "hr.grade":
-                            g_int = int(float(val))
-                            rel_record = self.env[comodel].search(
-                                [("name", "=", g_int)], limit=1
-                            )
-                            if rel_record:
-                                update_vals[tech_name] = rel_record.id
+                            try:
+                                g_int = int(float(val))
+                                rel_record = self.env[comodel].search(
+                                    [("name", "=", g_int)], limit=1
+                                )
+                                if rel_record:
+                                    update_vals[tech_name] = rel_record.id
+                            except ValueError:
+                                # Fallback if they write 'Grade 8'
+                                rel_records = self.env[comodel].name_search(
+                                    str(val), operator="=", limit=1
+                                )
+                                if not rel_records:
+                                    rel_records = self.env[comodel].name_search(
+                                        str(val), operator="ilike", limit=1
+                                    )
+                                if rel_records:
+                                    update_vals[tech_name] = rel_records[0][0]
                         else:
-                            # Use name_search which works beautifully for exported strings
+                            # 1. First try an exact match (operator="=") to avoid "Manager I" matching "Manager III"
                             rel_records = self.env[comodel].name_search(
-                                str(val), operator="ilike", limit=1
+                                str(val), operator="=", limit=1
                             )
+
+                            # 2. If no exact match is found, fallback to ILIKE
+                            if not rel_records:
+                                rel_records = self.env[comodel].name_search(
+                                    str(val), operator="ilike", limit=1
+                                )
+
                             if rel_records:
                                 update_vals[tech_name] = rel_records[0][0]
+
+                    elif field_def.type == "selection":
+                        val_str = str(val).strip()
+                        val_lower = val_str.lower()
+
+                        # Fetch Odoo selection options
+                        selection = field_def.selection
+                        if callable(selection):
+                            selection = selection(employee)
+
+                        matched_key = None
+                        # Check both the internal technical key ('male') and UI Label ('Male')
+                        for k, label in selection:
+                            if (
+                                str(k).lower() == val_lower
+                                or str(label).lower() == val_lower
+                            ):
+                                matched_key = k
+                                break
+
+                        if matched_key is not None:
+                            update_vals[tech_name] = matched_key
+                        else:
+                            update_vals[tech_name] = val_str  # Fallback
 
                     elif field_def.type in ["integer"]:
                         update_vals[tech_name] = int(float(val))
