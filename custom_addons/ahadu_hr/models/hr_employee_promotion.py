@@ -139,7 +139,13 @@ class HrEmployeePromotion(models.Model):
             if rec.employee_number_search:
                 rec._sync_employee_data()
 
+    @api.onchange("employee_number_search")
+    def _onchange_employee_number_search(self):
+        if self.employee_number_search:
+            self._sync_employee_data()
+
     def _sync_employee_data(self):
+        # Find the employee by their ID string
         employee = (
             self.env["hr.employee"]
             .sudo()
@@ -150,7 +156,17 @@ class HrEmployeePromotion(models.Model):
             )
         )
         if employee:
-            self.employee_id = employee.id
+            self.employee_id = employee
+
+            # Explicitly force the UI to populate the historical data/allowances instantly
+            if hasattr(self, "_onchange_employee_id_fetch_history"):
+                self._onchange_employee_id_fetch_history()
+            if hasattr(self, "_compute_current_fields"):
+                self._compute_current_fields()
+            if hasattr(self, "_onchange_employee_allowances"):
+                self._onchange_employee_allowances()
+        else:
+            self.employee_id = False
 
     @api.model_create_multi
     def create(self, vals_list):

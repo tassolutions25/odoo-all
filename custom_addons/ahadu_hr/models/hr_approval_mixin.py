@@ -10,7 +10,8 @@ class HrApprovalMixin(models.AbstractModel):
     _name = "hr.approval.mixin"
     _description = "HR Multi-level Approval Mixin"
 
-    state = fields.Selection([
+    state = fields.Selection(
+        [
             ("draft", "Draft"),
             ("submitted", "Submitted"),
             ("approved", "Approved"),
@@ -118,7 +119,8 @@ class HrApprovalMixin(models.AbstractModel):
     def _find_applicable_policy(self):
         """Finds the first matching approval policy for this record."""
         self.ensure_one()
-        policies = self.env["hr.approval.policy"].search([("model_id.model", "=", self._name), ("active", "=", True)],
+        policies = self.env["hr.approval.policy"].search(
+            [("model_id.model", "=", self._name), ("active", "=", True)],
             order="sequence",
         )
         for policy in policies:
@@ -146,7 +148,7 @@ class HrApprovalMixin(models.AbstractModel):
                 )
             )
 
-        vals_list =[]
+        vals_list = []
         employee = self._get_employee_for_approval()
         last_sequence = 0
 
@@ -170,11 +172,12 @@ class HrApprovalMixin(models.AbstractModel):
                     current_approver = current_approver.parent_id
                     chain_sequence += 1
                 last_sequence = chain_sequence - 1
-                continue  # Move to the next policy line
+                continue
 
             elif line.approver_type == "job_position":
                 if line.job_id:
-                    approvers_to_add = self.env["hr.employee"].search([("job_id", "=", line.job_id.id), ("active", "=", True)]
+                    approvers_to_add = self.env["hr.employee"].search(
+                        [("job_id", "=", line.job_id.id), ("active", "=", True)]
                     )
 
             if not approvers_to_add and line.is_required:
@@ -197,7 +200,6 @@ class HrApprovalMixin(models.AbstractModel):
                 )
 
         if not vals_list:
-            # No approvers found, auto-approve
             _logger.info(
                 f"No approvers found for policy {policy.name}, auto-approving."
             )
@@ -205,8 +207,7 @@ class HrApprovalMixin(models.AbstractModel):
             self._perform_final_approval()
             return
 
-        # Deduplicate while preserving order
-        final_vals =[]
+        final_vals = []
         seen = set()
         for d in vals_list:
             key = (d["approver_id"], d["sequence"])
@@ -219,6 +220,10 @@ class HrApprovalMixin(models.AbstractModel):
 
     def action_submit(self):
         for rec in self:
+            # Skip any records that are already submitted/approved
+            if rec.state != "draft":
+                continue
+
             rec._generate_approval_chain()
             if rec.state != "approved":
                 rec.state = "submitted"
@@ -239,18 +244,23 @@ class HrApprovalMixin(models.AbstractModel):
         )
 
     def action_approve_step(self):
-        if not self.can_approve:
-            raise UserError(_("You are not authorized to approve this request."))
-
         for rec in self:
+            if not rec.can_approve:
+                raise UserError(
+                    _("You are not authorized to approve the request for %s.")
+                    % (rec.display_name or rec.id)
+                )
+
             lines_to_update = rec._get_current_approval_line()
             if not lines_to_update:
                 raise UserError(
-                    _("Could not find a pending approval line for you on this request.")
+                    _(
+                        "Could not find a pending approval line for you on the request for %s."
+                    )
+                    % (rec.display_name or rec.id)
                 )
 
-            # Find peers who share the same job position and sequence 
-            # to remove them so it acts as an "OR" condition pool
+            # Find peers who share the same job position and sequence to remove them
             peers_to_remove = self.env["hr.approval.line"]
             for line in lines_to_update:
                 job_id = line.approver_id.job_id
@@ -266,12 +276,10 @@ class HrApprovalMixin(models.AbstractModel):
             lines_to_update.write(
                 {"status": "approved", "approval_date": fields.Datetime.now()}
             )
-            
-            # Delete parallel approvers in the same sequence and job position
+
             if peers_to_remove:
                 peers_to_remove.unlink()
 
-            # Re-fetch next approvers after the update
             pending_lines_after = rec.approval_line_ids.filtered(
                 lambda l: l.status == "pending"
             )
@@ -282,15 +290,19 @@ class HrApprovalMixin(models.AbstractModel):
                 if hasattr(rec, "activity_id") and rec.activity_id:
                     rec.activity_id.action_approve()
             else:
-                # Need to re-compute to get the *new* next approvers
                 rec._compute_next_approvers()
                 rec._send_approval_notification(rec.next_approver_ids)
 
     def action_reject(self):
-        # Allow rejection without being the current approver if you are an HR manager
         is_hr_manager = self.env.user.has_group("hr.group_hr_manager")
-        if not self.can_approve and not is_hr_manager:
-            raise UserError(_("You are not authorized to reject this request."))
+
+        # Check permissions for all selected records before opening the wizard
+        for rec in self:
+            if not rec.can_approve and not is_hr_manager:
+                raise UserError(
+                    _("You are not authorized to reject the request for %s.")
+                    % (rec.display_name or rec.id)
+                )
 
         return {
             "name": _("Rejection Reason"),
@@ -300,23 +312,15 @@ class HrApprovalMixin(models.AbstractModel):
             "target": "new",
             "context": {
                 "active_model": self._name,
-                "active_id": self.id,
+                "active_ids": self.ids,
+                "active_id": self.ids[0] if self.ids else False,
             },
         }
 
     def action_draft(self):
-        """
-        Resets the approval request back to the 'draft' state.
-        This action clears the existing approval chain.
-        """
         for rec in self:
-            # Set the main record's state back to draft
             rec.write({"state": "draft"})
-
-            # Delete the previous approval lines, as they are no longer relevant
             rec.approval_line_ids.unlink()
-
-            # If the record is linked to an activity, reset that activity to draft as well
             if hasattr(rec, "activity_id") and rec.activity_id:
                 if hasattr(rec.activity_id, "action_draft"):
                     rec.activity_id.action_draft()

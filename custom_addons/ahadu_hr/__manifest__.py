@@ -5,7 +5,6 @@
     "summary": "HR Employee Management System",
     "author": "Ahadu Bank DevTeam",
     "license": "Other proprietary",
-    "website": "https://www.ahadubank.com",
     "depends": [
         "hr",
         "base",
@@ -64,6 +63,7 @@
         "views/hr_organogram_node_views.xml",
         "views/hr_structural_org_chart_views.xml",
         "views/menu_items.xml",
+        "views/hr_mass_approval_actions.xml",
         "data/ir_cron.xml",
     ],
     "assets": {

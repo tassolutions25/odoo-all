@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- ============================================== -->
+        <!-- 1. CTC Adjustments -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_ctc" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_ctc"/>
+            <field name="binding_model_id" ref="model_hr_employee_ctc"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_ctc" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_ctc"/>
+            <field name="binding_model_id" ref="model_hr_employee_ctc"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_ctc" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_ctc"/>
+            <field name="binding_model_id" ref="model_hr_employee_ctc"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 2. Promotions -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_promotion" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_promotion"/>
+            <field name="binding_model_id" ref="model_hr_employee_promotion"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_promotion" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_promotion"/>
+            <field name="binding_model_id" ref="model_hr_employee_promotion"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_promotion" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_promotion"/>
+            <field name="binding_model_id" ref="model_hr_employee_promotion"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 3. Demotions -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_demotion" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_demotion"/>
+            <field name="binding_model_id" ref="model_hr_employee_demotion"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_demotion" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_demotion"/>
+            <field name="binding_model_id" ref="model_hr_employee_demotion"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_demotion" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_demotion"/>
+            <field name="binding_model_id" ref="model_hr_employee_demotion"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 4. Transfers -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_transfer" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_transfer"/>
+            <field name="binding_model_id" ref="model_hr_employee_transfer"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_transfer" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_transfer"/>
+            <field name="binding_model_id" ref="model_hr_employee_transfer"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_transfer" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_transfer"/>
+            <field name="binding_model_id" ref="model_hr_employee_transfer"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 5. Acting Assignments -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_acting" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_acting"/>
+            <field name="binding_model_id" ref="model_hr_employee_acting"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_acting" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_acting"/>
+            <field name="binding_model_id" ref="model_hr_employee_acting"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_acting" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_acting"/>
+            <field name="binding_model_id" ref="model_hr_employee_acting"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 6. Temporary Assignments -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_temporary_assignment" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_temporary_assignment"/>
+            <field name="binding_model_id" ref="model_hr_employee_temporary_assignment"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_temporary_assignment" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_temporary_assignment"/>
+            <field name="binding_model_id" ref="model_hr_employee_temporary_assignment"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_temporary_assignment" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_temporary_assignment"/>
+            <field name="binding_model_id" ref="model_hr_employee_temporary_assignment"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 7. Terminations -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_termination" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_termination"/>
+            <field name="binding_model_id" ref="model_hr_employee_termination"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_termination" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_termination"/>
+            <field name="binding_model_id" ref="model_hr_employee_termination"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_termination" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_termination"/>
+            <field name="binding_model_id" ref="model_hr_employee_termination"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 8. Resignations -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_resignation" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_resignation"/>
+            <field name="binding_model_id" ref="model_hr_employee_resignation"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_resignation" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_resignation"/>
+            <field name="binding_model_id" ref="model_hr_employee_resignation"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_resignation" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_resignation"/>
+            <field name="binding_model_id" ref="model_hr_employee_resignation"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 9. Suspensions -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_suspension" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_suspension"/>
+            <field name="binding_model_id" ref="model_hr_employee_suspension"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_suspension" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_suspension"/>
+            <field name="binding_model_id" ref="model_hr_employee_suspension"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_suspension" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_suspension"/>
+            <field name="binding_model_id" ref="model_hr_employee_suspension"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 10. Disciplinary Actions -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_disciplinary" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_disciplinary"/>
+            <field name="binding_model_id" ref="model_hr_employee_disciplinary"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_disciplinary" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_disciplinary"/>
+            <field name="binding_model_id" ref="model_hr_employee_disciplinary"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_disciplinary" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_disciplinary"/>
+            <field name="binding_model_id" ref="model_hr_employee_disciplinary"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 11. Employee Guarantees -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_guarantee" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_guarantee"/>
+            <field name="binding_model_id" ref="model_hr_employee_guarantee"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_guarantee" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_guarantee"/>
+            <field name="binding_model_id" ref="model_hr_employee_guarantee"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_guarantee" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_guarantee"/>
+            <field name="binding_model_id" ref="model_hr_employee_guarantee"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 12. Retirements -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_retirement" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_retirement"/>
+            <field name="binding_model_id" ref="model_hr_employee_retirement"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_retirement" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_retirement"/>
+            <field name="binding_model_id" ref="model_hr_employee_retirement"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_retirement" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_retirement"/>
+            <field name="binding_model_id" ref="model_hr_employee_retirement"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 13. Employee Re-Initiate -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_reinitiate" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_reinitiate"/>
+            <field name="binding_model_id" ref="model_hr_employee_reinitiate"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_reinitiate" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_reinitiate"/>
+            <field name="binding_model_id" ref="model_hr_employee_reinitiate"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_reinitiate" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_reinitiate"/>
+            <field name="binding_model_id" ref="model_hr_employee_reinitiate"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 14. Data Changes -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_data_change" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_data_change"/>
+            <field name="binding_model_id" ref="model_hr_employee_data_change"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_data_change" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_data_change"/>
+            <field name="binding_model_id" ref="model_hr_employee_data_change"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_data_change" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_data_change"/>
+            <field name="binding_model_id" ref="model_hr_employee_data_change"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 15. Confirmations -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_confirmation" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_confirmation"/>
+            <field name="binding_model_id" ref="model_hr_employee_confirmation"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_confirmation" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_confirmation"/>
+            <field name="binding_model_id" ref="model_hr_employee_confirmation"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_confirmation" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_confirmation"/>
+            <field name="binding_model_id" ref="model_hr_employee_confirmation"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+        <!-- ============================================== -->
+        <!-- 16. Reassign Reportees -->
+        <!-- ============================================== -->
+        <record id="action_mass_submit_reassign" model="ir.actions.server">
+            <field name="name">Mass Submit</field>
+            <field name="model_id" ref="model_hr_employee_reassign"/>
+            <field name="binding_model_id" ref="model_hr_employee_reassign"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_submit()
+            </field>
+        </record>
+        <record id="action_mass_approve_reassign" model="ir.actions.server">
+            <field name="name">Mass Approve</field>
+            <field name="model_id" ref="model_hr_employee_reassign"/>
+            <field name="binding_model_id" ref="model_hr_employee_reassign"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    records.action_approve_step()
+            </field>
+        </record>
+        <record id="action_mass_reject_reassign" model="ir.actions.server">
+            <field name="name">Mass Reject</field>
+            <field name="model_id" ref="model_hr_employee_reassign"/>
+            <field name="binding_model_id" ref="model_hr_employee_reassign"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_reject()
+            </field>
+        </record>
+
+    </data>
+</odoo>
