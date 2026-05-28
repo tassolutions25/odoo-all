@@ -40,6 +40,7 @@ class HrEmployeeTemporaryAssignment(models.Model):
             self._sync_employee_data()
 
     def _sync_employee_data(self):
+        # Find the employee by their ID string
         employee = (
             self.env["hr.employee"]
             .sudo()
@@ -50,9 +51,26 @@ class HrEmployeeTemporaryAssignment(models.Model):
             )
         )
         if employee:
-            self.employee_id = employee.id
+            self.employee_id = employee
+
+            # Explicitly force the UI to populate the historical data/allowances instantly
+            if hasattr(self, "_onchange_employee_id_fetch_history"):
+                self._onchange_employee_id_fetch_history()
+            if hasattr(self, "_compute_current_fields"):
+                self._compute_current_fields()
+            if hasattr(self, "_onchange_employee_allowances"):
+                self._onchange_employee_allowances()
         else:
             self.employee_id = False
+
+    @api.onchange("new_branch_id")
+    def _onchange_new_branch_id_hardship(self):
+        if self.new_branch_id and self.new_branch_id.city_id:
+            self.new_hardship_allowance_level_id = (
+                self.new_branch_id.city_id.hardship_allowance_level_id.id
+            )
+        else:
+            self.new_hardship_allowance_level_id = False
 
     start_date = fields.Date(string="Start Date", required=True, tracking=True)
     end_date = fields.Date(string="End Date", required=True, tracking=True)
@@ -241,6 +259,14 @@ class HrEmployeeTemporaryAssignment(models.Model):
             "division_id": self.new_division_id.id,
             "cost_center_id": self.new_cost_center_id.id,
         }
+        # Auto-set region, city, and cost center from the new branch
+        if self.new_branch_id:
+            if self.new_branch_id.region_id:
+                update_vals["region_id"] = self.new_branch_id.region_id.id
+            if self.new_branch_id.city_id:
+                update_vals["city_id"] = self.new_branch_id.city_id.id
+            if self.new_branch_id.cost_center_id:
+                update_vals["cost_center_id"] = self.new_branch_id.cost_center_id.id
         employee.write({k: v for k, v in update_vals.items() if v})
 
     def action_cancel(self):

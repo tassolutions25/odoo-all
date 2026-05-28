@@ -27,6 +27,13 @@
                         <field name="value_percentage" widget="percentage"/>
                         <field name="active"/>
                     </group>
+                    <notebook>
+                        <page string="Associated Cities">
+                            <group>
+                                <field name="city_ids" widget="many2many_tags" options="{'no_create': True}" placeholder="Search and select cities..."/>
+                            </group>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

@@ -47,6 +47,11 @@ class HrEmployeePromotion(models.Model):
     current_representation_allowance = fields.Float(
         string="Previous Representation (%)", readonly=True
     )
+    current_representation_allowance_fixed = fields.Monetary(
+        string="Previous Representation (Fixed)",
+        currency_field="currency_id",
+        readonly=True,
+    )
     current_mobile_allowance = fields.Monetary(
         string="Previous Mobile Allowance", currency_field="currency_id", readonly=True
     )
@@ -73,6 +78,11 @@ class HrEmployeePromotion(models.Model):
     )
     new_representation_allowance = fields.Float(
         string="New Representation Allowance (%)", tracking=True
+    )
+    new_representation_allowance_fixed = fields.Monetary(
+        string="New Representation Allowance (Fixed)",
+        tracking=True,
+        currency_field="currency_id",
     )
     new_mobile_allowance = fields.Monetary(
         string="New Mobile Allowance", tracking=True, currency_field="currency_id"
@@ -109,7 +119,20 @@ class HrEmployeePromotion(models.Model):
             self.current_mobile_allowance = emp.mobile_allowance
             self.current_transport_allowance_liters = emp.transport_allowance_liters
             self.current_representation_allowance = emp.representation_allowance
+            self.current_representation_allowance_fixed = (
+                emp.representation_allowance_fixed
+            )
             self.current_hardship_allowance_level_id = emp.hardship_allowance_level_id
+
+    @api.onchange("new_branch_id")
+    def _onchange_new_branch_id_hardship(self):
+        if self.new_branch_id and self.new_branch_id.city_id:
+            self.new_hardship_allowance_level_id = (
+                self.new_branch_id.city_id.hardship_allowance_level_id.id
+            )
+        else:
+            self.new_hardship_allowance_level_id = False
+            
 
     @api.depends("employee_id")
     def _compute_name(self):
@@ -168,6 +191,8 @@ class HrEmployeePromotion(models.Model):
         else:
             self.employee_id = False
 
+    
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -192,6 +217,7 @@ class HrEmployeePromotion(models.Model):
                         "current_transport_allowance_liters": employee.transport_allowance_liters,
                         "current_hardship_allowance_level_id": employee.hardship_allowance_level_id.id,
                         "current_representation_allowance": employee.representation_allowance,
+                        "current_representation_allowance_fixed": employee.representation_allowance_fixed,
                         "current_mobile_allowance": employee.mobile_allowance,
                         "current_housing_allowance": employee.housing_allowance,
                     }
@@ -210,6 +236,10 @@ class HrEmployeePromotion(models.Model):
                 if "new_representation_allowance" not in vals:
                     vals["new_representation_allowance"] = (
                         employee.representation_allowance
+                    )
+                if "new_representation_allowance_fixed" not in vals:
+                    vals["new_representation_allowance_fixed"] = (
+                        employee.representation_allowance_fixed
                     )
                 if "new_mobile_allowance" not in vals:
                     vals["new_mobile_allowance"] = employee.mobile_allowance
@@ -241,6 +271,7 @@ class HrEmployeePromotion(models.Model):
                 else False
             ),
             "representation_allowance": self.new_representation_allowance,
+            "representation_allowance_fixed": self.new_representation_allowance_fixed,
             "mobile_allowance": self.new_mobile_allowance,
             "housing_allowance": self.new_housing_allowance,
         }
@@ -250,6 +281,13 @@ class HrEmployeePromotion(models.Model):
             update_vals["division_id"] = self.new_division_id.id
         if self.new_branch_id:
             update_vals["branch_id"] = self.new_branch_id.id
+            # Auto-set region, city, and cost center from the new branch
+            if self.new_branch_id.region_id:
+                update_vals["region_id"] = self.new_branch_id.region_id.id
+            if self.new_branch_id.city_id:
+                update_vals["city_id"] = self.new_branch_id.city_id.id
+            if self.new_branch_id.cost_center_id:
+                update_vals["cost_center_id"] = self.new_branch_id.cost_center_id.id
         if self.new_cost_center_id:
             update_vals["cost_center_id"] = self.new_cost_center_id.id
         if self.new_parent_id:

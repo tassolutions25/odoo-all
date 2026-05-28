@@ -38,6 +38,7 @@ class HrEmployeeSuspension(models.Model):
             self._sync_employee_data()
 
     def _sync_employee_data(self):
+        # Find the employee by their ID string
         employee = (
             self.env["hr.employee"]
             .sudo()
@@ -48,7 +49,17 @@ class HrEmployeeSuspension(models.Model):
             )
         )
         if employee:
-            self.employee_id = employee.id
+            self.employee_id = employee
+
+            # Explicitly force the UI to populate the historical data/allowances instantly
+            if hasattr(self, "_onchange_employee_id_fetch_history"):
+                self._onchange_employee_id_fetch_history()
+            if hasattr(self, "_compute_current_fields"):
+                self._compute_current_fields()
+            if hasattr(self, "_onchange_employee_allowances"):
+                self._onchange_employee_allowances()
+        else:
+            self.employee_id = False
 
     reason = fields.Text(string="Reason for Suspension", required=True)
     attachment_ids = fields.Many2many("ir.attachment", string="Attachments")

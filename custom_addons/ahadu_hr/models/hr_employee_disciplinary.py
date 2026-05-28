@@ -39,6 +39,7 @@ class HrEmployeeDisciplinary(models.Model):
         store=True,
         readonly=False,
     )
+    
 
     @api.depends("employee_id")
     def _compute_employee_number_search(self):
@@ -57,6 +58,7 @@ class HrEmployeeDisciplinary(models.Model):
             self._sync_employee_data()
 
     def _sync_employee_data(self):
+        # Find the employee by their ID string
         employee = (
             self.env["hr.employee"]
             .sudo()
@@ -67,7 +69,15 @@ class HrEmployeeDisciplinary(models.Model):
             )
         )
         if employee:
-            self.employee_id = employee.id
+            self.employee_id = employee
+
+            # Explicitly force the UI to populate the historical data/allowances instantly
+            if hasattr(self, "_onchange_employee_id_fetch_history"):
+                self._onchange_employee_id_fetch_history()
+            if hasattr(self, "_compute_current_fields"):
+                self._compute_current_fields()
+            if hasattr(self, "_onchange_employee_allowances"):
+                self._onchange_employee_allowances()
         else:
             self.employee_id = False
 

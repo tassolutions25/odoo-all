@@ -260,8 +260,8 @@ class HrEmployee(models.Model):
         "hr.hardship.allowance.level",
         string="Hardship Allowance Level",
         tracking=True,
-        
     )
+
     housing_allowance = fields.Monetary(string="Housing Allowance", tracking=True)
     mobile_allowance = fields.Monetary(string="Mobile Allowance", tracking=True)
     transport_allowance_liters = fields.Float(
@@ -353,10 +353,68 @@ class HrEmployee(models.Model):
         if self.branch_id:
             if self.branch_id.city_id:
                 self.city_id = self.branch_id.city_id.id
+                if self.branch_id.city_id.hardship_allowance_level_id:
+                    self.hardship_allowance_level_id = self.branch_id.city_id.hardship_allowance_level_id.id
             if self.branch_id.region_id:
                 self.region_id = self.branch_id.region_id.id
             if self.branch_id.cost_center_id:
                 self.cost_center_id = self.branch_id.cost_center_id.id
+
+    @api.onchange("city_id")
+    def _onchange_city(self):
+        if self.city_id and self.city_id.hardship_allowance_level_id:
+            self.hardship_allowance_level_id = self.city_id.hardship_allowance_level_id.id
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if 'branch_id' in vals and vals['branch_id']:
+                branch = self.env['hr.branch'].browse(vals['branch_id'])
+                if branch:
+                    if branch.region_id and 'region_id' not in vals:
+                        vals['region_id'] = branch.region_id.id
+                    if branch.city_id and 'city_id' not in vals:
+                        vals['city_id'] = branch.city_id.id
+                    if branch.cost_center_id and 'cost_center_id' not in vals:
+                        vals['cost_center_id'] = branch.cost_center_id.id
+            if 'city_id' in vals and vals['city_id'] and 'hardship_allowance_level_id' not in vals:
+                city = self.env['hr.city'].browse(vals['city_id'])
+                if city and city.hardship_allowance_level_id:
+                    vals['hardship_allowance_level_id'] = city.hardship_allowance_level_id.id
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if 'branch_id' in vals and vals['branch_id']:
+            branch = self.env['hr.branch'].browse(vals['branch_id'])
+            if branch:
+                if branch.region_id and 'region_id' not in vals:
+                    vals['region_id'] = branch.region_id.id
+                if branch.city_id and 'city_id' not in vals:
+                    vals['city_id'] = branch.city_id.id
+                if branch.cost_center_id and 'cost_center_id' not in vals:
+                    vals['cost_center_id'] = branch.cost_center_id.id
+        if 'city_id' in vals and vals['city_id'] and 'hardship_allowance_level_id' not in vals:
+            city = self.env['hr.city'].browse(vals['city_id'])
+            if city and city.hardship_allowance_level_id:
+                vals['hardship_allowance_level_id'] = city.hardship_allowance_level_id.id
+
+        res = super().write(vals)
+        if 'branch_id' in vals:
+            for employee in self:
+                branch = employee.branch_id
+                if branch:
+                    update = {}
+                    if branch.region_id:
+                        update['region_id'] = branch.region_id.id
+                    if branch.city_id:
+                        update['city_id'] = branch.city_id.id
+                    if branch.cost_center_id:
+                        update['cost_center_id'] = branch.cost_center_id.id
+                    if branch.city_id and branch.city_id.hardship_allowance_level_id and 'hardship_allowance_level_id' not in vals:
+                        update['hardship_allowance_level_id'] = branch.city_id.hardship_allowance_level_id.id
+                    if update:
+                        super(HrEmployee, employee).write(update)
+        return res
 
     # Activity tracking
     ahadu_activity_ids = fields.One2many(

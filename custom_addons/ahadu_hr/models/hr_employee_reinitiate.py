@@ -23,8 +23,6 @@ class HrEmployeeReinitiate(models.Model):
     )
     activity_id = fields.Many2one("hr.employee.activity", string="Activity Record")
 
-    employee_number_search = fields.Char(string="Employee ID", store=False)
-
     employee_number_search = fields.Char(
         string="Employee ID",
         compute="_compute_employee_number_search",
@@ -50,6 +48,7 @@ class HrEmployeeReinitiate(models.Model):
             self._sync_employee_data()
 
     def _sync_employee_data(self):
+        # Find the employee by their ID string
         employee = (
             self.env["hr.employee"]
             .sudo()
@@ -60,7 +59,15 @@ class HrEmployeeReinitiate(models.Model):
             )
         )
         if employee:
-            self.employee_id = employee.id
+            self.employee_id = employee
+
+            # Explicitly force the UI to populate the historical data/allowances instantly
+            if hasattr(self, "_onchange_employee_id_fetch_history"):
+                self._onchange_employee_id_fetch_history()
+            if hasattr(self, "_compute_current_fields"):
+                self._compute_current_fields()
+            if hasattr(self, "_onchange_employee_allowances"):
+                self._onchange_employee_allowances()
         else:
             self.employee_id = False
 

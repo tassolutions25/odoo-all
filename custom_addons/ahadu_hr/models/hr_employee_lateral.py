@@ -82,6 +82,7 @@ class HrEmployeeLateral(models.Model):
             self._sync_employee_data()
 
     def _sync_employee_data(self):
+        # Find the employee by their ID string
         employee = (
             self.env["hr.employee"]
             .sudo()
@@ -92,9 +93,26 @@ class HrEmployeeLateral(models.Model):
             )
         )
         if employee:
-            self.employee_id = employee.id
+            self.employee_id = employee
+
+            # Explicitly force the UI to populate the historical data/allowances instantly
+            if hasattr(self, "_onchange_employee_id_fetch_history"):
+                self._onchange_employee_id_fetch_history()
+            if hasattr(self, "_compute_current_fields"):
+                self._compute_current_fields()
+            if hasattr(self, "_onchange_employee_allowances"):
+                self._onchange_employee_allowances()
         else:
             self.employee_id = False
+
+    @api.onchange("new_branch_id")
+    def _onchange_new_branch_id_hardship(self):
+        if self.new_branch_id and self.new_branch_id.city_id:
+            self.new_hardship_allowance_level_id = (
+                self.new_branch_id.city_id.hardship_allowance_level_id.id
+            )
+        else:
+            self.new_hardship_allowance_level_id = False
 
     @api.depends("employee_id")
     def _compute_current_fields(self):

@@ -8,6 +8,7 @@
                 <list string="Cities">
                     <field name="name"/>
                     <field name="region_id"/>
+                    <field name="hardship_allowance_level_id"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                 </list>
             </field>
@@ -23,6 +24,7 @@
                             <group>
                                 <field name="name"/>
                                 <field name="region_id" options="{'no_create': True}"/>
+                                <field name="hardship_allowance_level_id" options="{'no_create': True}"/>
                             </group>
                             <group>
                                 <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
