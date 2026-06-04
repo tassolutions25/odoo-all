@@ -287,24 +287,24 @@ class HrEmployeeOnboarding(models.Model):
                 vals_to_write[field_name] = self[field_name]
 
         # --- 1. SYNC BANK ACCOUNTS ---
-        self.employee_id.bank_account_ids.unlink()
         bank_vals = []
+        existing_banks = {b.account_type: b for b in self.employee_id.bank_account_ids}
         for line in self.bank_account_ids:
-            bank_vals.append(
-                (
-                    0,
-                    0,
-                    {
-                        "bank_id": line.bank_id.id,
-                        "bank_country_id": line.bank_country_id.id,
-                        "account_number": line.account_number,
-                        "currency_id": line.currency_id.id,
-                        "account_type": line.account_type,
-                        "account_holder_name": line.account_holder_name
-                        or self.employee_id.name,
-                    },
-                )
-            )
+            b_vals = {
+                "bank_id": line.bank_id.id,
+                "bank_country_id": line.bank_country_id.id,
+                "account_number": line.account_number,
+                "currency_id": line.currency_id.id,
+                "account_type": line.account_type,
+                "account_holder_name": line.account_holder_name or self.employee_id.name,
+            }
+            if line.account_type in existing_banks:
+                # Update existing account of the same type
+                bank_vals.append((1, existing_banks[line.account_type].id, b_vals))
+            else:
+                # Create new account
+                bank_vals.append((0, 0, b_vals))
+                
         if bank_vals:
             vals_to_write["bank_account_ids"] = bank_vals
 

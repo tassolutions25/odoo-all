@@ -7,6 +7,7 @@ from datetime import datetime
 import base64
 import logging
 import re
+import json
 
 _logger = logging.getLogger(__name__)
 
@@ -45,7 +46,11 @@ class AhaduSelfServicePortal(CustomerPortal):
         return eth.id if eth else False
 
     def _get_lang_list(self):
-        return request.env["res.lang"].search([("active", "=", True)])
+        """
+        Bypasses default active filtering to fetch all world languages 
+        available in Odoo's core system, sorted alphabetically by name.
+        """
+        return request.env["res.lang"].with_context(active_test=False).search([], order="name")
 
     def _get_bank_list(self):
         return request.env["res.bank"].search([])
@@ -123,6 +128,11 @@ class AhaduSelfServicePortal(CustomerPortal):
             "default_country_id": self._get_ethiopia_id(),
         }
         return request.render("ahadu_hr_self_service.employee_onboarding_form", values)
+
+    @http.route(["/my/onboarding/success"], type="http", auth="user", website=True)
+    def employee_onboarding_success(self, **kw):
+        """Dedicated route to render onboarding success template on successful JSON post"""
+        return request.render("ahadu_hr_self_service.onboarding_submit_success")
 
     @http.route(["/my/document_request"], type="http", auth="user", website=True)
     def document_request_form(self, **kw):
@@ -226,9 +236,10 @@ class AhaduSelfServicePortal(CustomerPortal):
 
         if not res_date or not last_day:
             return request.render(
-                "ahadu_hr_self_service.submission_error",
+                "website.http_error",
                 {
-                    "error_message": "Both Resignation Date and Last Working Day are required."
+                    "status_code": "Submission Error",
+                    "status_message": "Both Resignation Date and Last Working Day are required."
                 },
             )
 
@@ -237,8 +248,11 @@ class AhaduSelfServicePortal(CustomerPortal):
             parsed_last_day = self._parse_portal_date(last_day)
         except Exception:
             return request.render(
-                "ahadu_hr_self_service.submission_error",
-                {"error_message": "Invalid date format. Please use DD/MM/YYYY."},
+                "website.http_error",
+                {
+                    "status_code": "Submission Error",
+                    "status_message": "Invalid date format. Please use DD/MM/YYYY."
+                },
             )
 
         vals = {
@@ -322,9 +336,13 @@ class AhaduSelfServicePortal(CustomerPortal):
         except Exception as e:
             # Log the actual error to the server console
             _logger.error("Resignation Submission Error: %s", str(e))
-            # Fallback render - ensure this template ID is correct in your XML
+            # Fallback render
             return request.render(
-                "ahadu_hr_self_service.submission_error", {"error_message": str(e)}
+                "website.http_error",
+                {
+                    "status_code": "Submission Error",
+                    "status_message": _("An error occurred: %s") % str(e),
+                },
             )
 
     @http.route(
@@ -338,10 +356,15 @@ class AhaduSelfServicePortal(CustomerPortal):
     def employee_onboarding_submit(self, **kw):
         employee = request.env.user.employee_id
         if not employee:
-            return request.render("ahadu_hr_self_service.onboarding_no_employee")
+            return request.make_response(
+                json.dumps({
+                    "success": False, 
+                    "error": _("Your user account is not linked to an employee record.")
+                }),
+                headers=[("Content-Type", "application/json")]
+            )
 
         try:
-
             # 1. Enforce Declaration Check
             if not kw.get("declaration_confirmed"):
                 raise ValidationError(
@@ -508,8 +531,6 @@ class AhaduSelfServicePortal(CustomerPortal):
                         "certificate_level": kw.get(f"edu_level_{idx}"),
                         "field_of_study": kw.get(f"edu_field_{idx}"),
                         "cgpa": float(kw.get(f"edu_cgpa_{idx}") or 0.0),
-                        # "start_date": kw.get(f"edu_start_date_{idx}") or None,
-                        # "end_date": kw.get(f"edu_end_date_{idx}") or None,
                         "start_date": self._parse_portal_date(
                             kw.get(f"edu_start_date_{idx}")
                         ),
@@ -537,13 +558,24 @@ class AhaduSelfServicePortal(CustomerPortal):
             )
             onboarding_request.sudo().action_submit()
 
-            return request.render("ahadu_hr_self_service.onboarding_submit_success")
+            return request.make_response(
+                json.dumps({
+                    "success": True, 
+                    "redirect": "/my/onboarding/success"
+                }),
+                headers=[("Content-Type", "application/json")]
+            )
 
         except (ValidationError, Exception) as e:
             _logger.error("Error during onboarding submission: %s", e, exc_info=True)
-            return request.render(
-                "ahadu_hr_self_service.submission_error",
-                {
-                    "error_message": str(e),
-                },
+            error_msg = str(e)
+            if hasattr(e, 'name'):
+                error_msg = e.name
+
+            return request.make_response(
+                json.dumps({
+                    "success": False, 
+                    "error": error_msg
+                }),
+                headers=[("Content-Type", "application/json")]
             )

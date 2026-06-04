@@ -12,6 +12,28 @@
             <field name="active" eval="True"/>
             <field name="nextcall" eval="(datetime.now()).strftime('%Y-%m-%d %H:%M:%S')"/>
         </record>
+        <record id="ir_cron_archive_resigned_employees" model="ir.cron">
+            <field name="name">HR: Archive Resigned Employees</field>
+            <field name="model_id" ref="model_hr_employee_resignation"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_archive_resigned_employees()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+            <field name="nextcall" eval="(datetime.now()).strftime('%Y-%m-%d %H:%M:%S')"/>
+        </record>
+
+        <!-- NEW: Termination Cron -->
+        <record id="ir_cron_archive_terminated_employees" model="ir.cron">
+            <field name="name">HR: Archive Terminated Employees</field>
+            <field name="model_id" ref="model_hr_employee_termination"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_archive_terminated_employees()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+            <field name="nextcall" eval="(datetime.now()).strftime('%Y-%m-%d %H:%M:%S')"/>
+        </record>
 
         <record id="ir_cron_check_suspension_end" model="ir.cron">
             <field name="name">HR: Check Suspension End Dates</field>

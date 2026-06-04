@@ -230,3 +230,24 @@
 .o_onboarding_form textarea.form-control {
   height: auto !important;
 }
+
+/* --- Premium Toast System --- */
+.toast-container {
+  z-index: 100000 !important;
+}
+#validationToast {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translateY(-20px);
+  max-width: 380px;
+  background: linear-gradient(135deg, #dc3545, #bd2130) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 30px rgba(220, 53, 69, 0.4) !important;
+}
+#validationToast.show {
+  display: block !important;
+  opacity: 1 !important;
+  transform: translateY(0);
+}
+

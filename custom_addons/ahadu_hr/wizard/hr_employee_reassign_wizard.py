@@ -1,3 +1,5 @@
+# --- START OF FILE wizard/hr_employee_reassign_wizard.py ---
+
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
@@ -57,35 +59,54 @@ class HrEmployeeReassignWizard(models.TransientModel):
                 }
             )
 
-        # Finalize the termination process
         termination = self.termination_id
-        termination.employee_id.write(
-            {"active": False, "departure_date": termination.termination_date}
-        )
+        today = fields.Date.context_today(self)
+        should_archive_now = termination.termination_date <= today
 
-        # End the active contract
-        running_contracts = self.env["hr.contract"].search(
-            [
-                ("employee_id", "=", termination.employee_id.id),
-                ("state", "in", ["draft", "open"]),
-            ]
-        )
-        if running_contracts:
-            running_contracts.write(
-                {"date_end": termination.termination_date, "state": "close"}
+        update_vals = {
+            "departure_type": "termination",
+            "departure_date": termination.termination_date,
+        }
+
+        if should_archive_now:
+            update_vals["active"] = False
+
+        # Apply updates
+        termination.employee_id.write(update_vals)
+
+        # End the active contract only if it's archiving now
+        if should_archive_now:
+            running_contracts = self.env["hr.contract"].search(
+                [
+                    ("employee_id", "=", termination.employee_id.id),
+                    ("state", "in", ["draft", "open"]),
+                ]
             )
+            if running_contracts:
+                running_contracts.write(
+                    {"date_end": termination.termination_date, "state": "close"}
+                )
 
         if termination.activity_id:
             termination.activity_id.action_approve()
 
-        termination.message_post(
-            body=_(
-                "%(count)d subordinates were successfully reassigned to %(new_manager)s and the termination process is complete."
+        msg = _(
+            "%(count)d subordinates were successfully reassigned to %(new_manager)s."
+        ) % {
+            "count": len(self.subordinate_ids),
+            "new_manager": self.new_manager_id.name,
+        }
+
+        if should_archive_now:
+            msg += _(
+                " The termination process is now complete and the employee has been archived."
             )
-            % {
-                "count": len(self.subordinate_ids),
-                "new_manager": self.new_manager_id.name,
-            }
-        )
+        else:
+            msg += (
+                _(" The employee will be archived automatically on %s.")
+                % termination.termination_date
+            )
+
+        termination.message_post(body=msg)
 
         return {"type": "ir.actions.act_window_close"}

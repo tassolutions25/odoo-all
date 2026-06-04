@@ -93,7 +93,7 @@
                                     <field name="wedding_date" invisible="marital != 'married'"/>
                                     <field name="nationality_id"/>
                                     <field name="country_id"/>
-                                    <field name="subcity"/>
+                                    <!-- <field name="subcity"/> -->
                                     <field name="language_ids" widget="many2many_tags"/>
                                 </group>
                             </group>
