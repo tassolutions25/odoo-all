@@ -453,16 +453,12 @@
                 </xpath>
 
                 <xpath expr="//field[@name='private_phone']" position="replace">
-                    <!-- <group string="Permanent Address"> -->
-                        <field name="permanent_address_city" />
-                        <field name="permanent_address_country_id" />
-                    <!-- </group>                     -->
+                    <field name="permanent_address_city" />
+                    <field name="permanent_address_country_id" />
                 </xpath>
                 <xpath expr="//field[@name='blood_group']" position="after">
-                    <!-- <group string="Marital Status"> -->
-                        <field name="marital"/>
-                        <field name="wedding_date" invisible="marital != 'married'"/>
-                    <!-- </group> -->
+                    <field name="marital"/>
+                    <field name="wedding_date" invisible="marital != 'married'"/>
                 </xpath>
 
                 <xpath expr="//group[@name='emergency']" position="replace">
@@ -512,7 +508,7 @@
                                 <field name="cost_sharing_amount" invisible="cost_sharing_institution == 'private'"/>
                             </group>
                             <group>
-                                <field name="cost_sharing_document" invisible="cost_sharing_institution == 'private'"/>
+                                <field name="cost_sharing_document" filename="cost_sharing_document_filename" invisible="cost_sharing_institution == 'private'"/>
                                 <field name="cost_sharing_document_filename" invisible="1" />
                             </group>
                         </group>

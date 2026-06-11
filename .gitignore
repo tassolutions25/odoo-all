@@ -17,6 +17,11 @@ __pycache__/
 # hg stuff
 *.orig
 status
+
+# log file
+*.log
+odoo.log
+
 # odoo filestore
 odoo/filestore
 # maintenance migration scripts

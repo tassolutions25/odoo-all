@@ -6,3 +6,4 @@ from . import hr_employee_activity
 from . import hr_employee_onboarding_bank
 from . import hr_document_request
 from . import hr_employee_education
+from . import hr_employee_experience

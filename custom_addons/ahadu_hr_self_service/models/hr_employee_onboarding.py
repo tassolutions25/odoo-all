@@ -31,7 +31,7 @@ class HrEmployeeOnboarding(models.Model):
         readonly=True,
     )
 
-    # ... Personal Information fields ...
+    # Personal Information fields
     salutation = fields.Selection(
         [
             ("mr", "Mr."),
@@ -127,6 +127,9 @@ class HrEmployeeOnboarding(models.Model):
     )
     education_ids = fields.One2many(
         "hr.employee.education", "onboarding_id", string="Education History"
+    )
+    experience_ids = fields.One2many(
+        "hr.employee.experience", "onboarding_id", string="Experience History"
     )
 
     # Passport Detail
@@ -283,8 +286,10 @@ class HrEmployeeOnboarding(models.Model):
         ]
 
         for field_name in simple_fields:
-            if self[field_name] or isinstance(self[field_name], (bool, int, float)):
-                vals_to_write[field_name] = self[field_name]
+            value = self[field_name]
+            # Write only if value is truthy, or if it is a number (int, float) and not a boolean False
+            if value or (isinstance(value, (int, float)) and not isinstance(value, bool)):
+                vals_to_write[field_name] = value
 
         # --- 1. SYNC BANK ACCOUNTS ---
         bank_vals = []
@@ -296,7 +301,8 @@ class HrEmployeeOnboarding(models.Model):
                 "account_number": line.account_number,
                 "currency_id": line.currency_id.id,
                 "account_type": line.account_type,
-                "account_holder_name": line.account_holder_name or self.employee_id.name,
+                "account_holder_name": line.account_holder_name
+                or self.employee_id.name,
             }
             if line.account_type in existing_banks:
                 # Update existing account of the same type
@@ -304,7 +310,7 @@ class HrEmployeeOnboarding(models.Model):
             else:
                 # Create new account
                 bank_vals.append((0, 0, b_vals))
-                
+
         if bank_vals:
             vals_to_write["bank_account_ids"] = bank_vals
 
@@ -354,6 +360,31 @@ class HrEmployeeOnboarding(models.Model):
             )
         if education_vals:
             vals_to_write["education_ids"] = education_vals
+
+        # --- 4. SYNC PREVIOUS EXPERIENCE ---
+        self.employee_id.experience_ids.unlink()
+        experience_vals = []
+        for line in self.experience_ids:
+            experience_vals.append(
+                (
+                    0,
+                    0,
+                    {
+                        "company_name": line.company_name,
+                        "job_title": line.job_title,
+                        "location": line.location,
+                        "start_date": line.start_date,
+                        "end_date": line.end_date,
+                        "previous_salary": line.previous_salary,
+                        "reason_for_leaving": line.reason_for_leaving,
+                        "job_description": line.job_description,
+                        "attachment": line.attachment,
+                        "attachment_filename": line.attachment_filename,
+                    },
+                )
+            )
+        if experience_vals:
+            vals_to_write["experience_ids"] = experience_vals
 
         # Handle Many2many languages
         if self.language_ids:

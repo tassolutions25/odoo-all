@@ -65,14 +65,14 @@
                                 </a>
                             </div>
                             <!-- Attendance -->
-                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                            <!-- <div class="col-6 col-md-4 col-lg-3 mb-4">
                                 <a href="/web#action=ahadu_attendance.action_my_attendance" class="card h-100 text-center text-decoration-none dashboard-card">
                                     <div class="card-body d-flex flex-column justify-content-center">
                                         <i class="fa fa-fingerprint dashboard-card-icon mb-3"/>
                                         <h5 class="card-title">My Attendance</h5>
                                     </div>
                                 </a>
-                            </div>
+                            </div> -->
                             <!-- To-Do -->
                             <div class="col-6 col-md-4 col-lg-3 mb-4">
                                  <a href="/web#action=project_todo.project_task_action_todo" class="card h-100 text-center text-decoration-none dashboard-card">
@@ -147,7 +147,7 @@
                         <form action="/my/document_request/submit" method="post" enctype="multipart/form-data" class="col-md-8 mx-auto">
                             <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                             <div class="mb-3">
-                                <label for="document_type" class="form-label">Type of Document *</label>
+                                <label for="document_type" class="form-label">Type of Document <span class="text-danger">*</span></label>
                                 <select name="document_type" class="form-select" required="1">
                                     <option value="">Select a document...</option>
                                     <option value="experience">Experience Letter</option>
@@ -157,7 +157,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="reason" class="form-label">Reason for Request *</label>
+                                <label for="reason" class="form-label">Reason for Request <span class="text-danger">*</span></label>
                                 <textarea name="reason" class="form-control" rows="4" required="1" placeholder="Please explain why you need this document..."/>
                             </div>
                             <div class="mb-3">
@@ -213,7 +213,7 @@
                             
                             <div class="row">
                                 <div class="mb-3 col-md-6">
-                                    <label class="form-label">Resignation Date *</label>
+                                    <label class="form-label">Resignation Date <span class="text-danger">*</span></label>
                                     <input type="text" name="resignation_date" class="form-control ahadu-datepicker" 
                                         required="1" placeholder="DD/MM/YYYY"
                                         t-att-value="datetime.date.today().strftime('%d/%m/%Y')"/>
@@ -221,14 +221,14 @@
                                 </div>
 
                                 <div class="mb-3 col-md-6">
-                                    <label class="form-label">Proposed Last Working Day *</label>
+                                    <label class="form-label">Proposed Last Working Day <span class="text-danger">*</span></label>
                                     <input type="text" name="last_day" class="form-control ahadu-datepicker" required="1" placeholder="DD/MM/YYYY"/>
                                     <div class="form-text">The final day you intend to work.</div>
                                 </div>
                             </div>               
 
                             <div class="mb-3">
-                                <label class="form-label">Reason for Resignation *</label>
+                                <label class="form-label">Reason for Resignation <span class="text-danger">*</span></label>
                                 <textarea name="reason" class="form-control" rows="4" required="1" placeholder="Please provide your reason..."/>
                             </div>
 
@@ -253,6 +253,19 @@
                 <div class="alert alert-success">
                     <h3>Resignation Submitted Successfully</h3>
                     <p>Your request has been sent to HR and your Manager for approval.</p>
+                    <hr/>
+                    <a href="/my/dashboard" class="btn btn-success">Return to Dashboard</a>
+                </div>
+            </div>
+        </t>
+    </template>
+    
+    <template id="onboarding_submit_success" name="Onboarding Submitted">
+        <t t-call="website.layout">
+            <div class="container py-5 text-center">
+                <div class="alert alert-success">
+                    <h3>Onboarding Profile Submitted Successfully</h3>
+                    <p>Your profile details have been submitted to HR for approval.</p>
                     <hr/>
                     <a href="/my/dashboard" class="btn btn-success">Return to Dashboard</a>
                 </div>
@@ -292,6 +305,7 @@
                                 <li class="nav-item" role="presentation"><button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank" type="button" role="tab">Bank Details</button></li>
                                 <li class="nav-item" role="presentation"><button class="nav-link" id="family-tab" data-bs-toggle="tab" data-bs-target="#family" type="button" role="tab">Family Details</button></li>
                                 <li class="nav-item" role="presentation"><button class="nav-link" id="education-tab" data-bs-toggle="tab" data-bs-target="#education" type="button" role="tab">Education Details</button></li>
+                                <li class="nav-item" role="presentation"><button class="nav-link" id="experience-tab" data-bs-toggle="tab" data-bs-target="#experience" type="button" role="tab">Previous Experience</button></li>
                                 <li class="nav-item" role="presentation"><button class="nav-link" id="passport-tab" data-bs-toggle="tab" data-bs-target="#passport" type="button" role="tab">Passport Details</button></li>
                                 <li class="nav-item" role="presentation"><button class="nav-link" id="cost-sharing-tab" data-bs-toggle="tab" data-bs-target="#cost-sharing" type="button" role="tab">Cost-Sharing</button></li>
                             </ul>
@@ -301,15 +315,15 @@
                                 <!-- Personal Info -->
                                 <div class="tab-pane fade show active" id="personal" role="tabpanel">
                                     <div class="row">
-                                        <div class="mb-3 col-md-2"><label for="salutation" class="form-label">Salutation *</label><select name="salutation" class="form-select" required="1"><option value="">...</option><option value="mr" t-att-selected="employee.salutation == 'mr'">Mr.</option><option value="mrs" t-att-selected="employee.salutation == 'mrs'">Mrs.</option><option value="ms" t-att-selected="employee.salutation == 'ms'">Ms.</option><option value="dr" t-att-selected="employee.salutation == 'dr'">Dr.</option><option value="prof" t-att-selected="employee.salutation == 'prof'">Prof.</option></select></div>
-                                        <div class="mb-3 col-md-4"><label for="first_name" class="form-label">First Name *</label><input type="text" class="form-control" name="first_name" t-att-value="employee.first_name" readonly="1"/></div>
-                                        <div class="mb-3 col-md-3"><label for="middle_name" class="form-label">Middle Name *</label><input type="text" class="form-control" name="middle_name" t-att-value="employee.middle_name" readonly="1"/></div>
-                                        <div class="mb-3 col-md-3"><label for="last_name" class="form-label">Last Name *</label><input type="text" class="form-control" name="last_name" t-att-value="employee.last_name" readonly="1"/></div>
-                                        <div class="mb-3 col-md-4"><label for="gender" class="form-label">Gender *</label><select name="gender" class="form-select" required="1"><option value="">...</option><option value="male" t-att-selected="employee.gender_updated == 'male'">Male</option><option value="female" t-att-selected="employee.gender_updated == 'female'">Female</option></select></div>
+                                        <div class="mb-3 col-md-2"><label for="salutation" class="form-label">Salutation <span class="text-danger">*</span></label><select name="salutation" class="form-select" required="1"><option value="">...</option><option value="mr" t-att-selected="employee.salutation == 'mr'">Mr.</option><option value="mrs" t-att-selected="employee.salutation == 'mrs'">Mrs.</option><option value="ms" t-att-selected="employee.salutation == 'ms'">Ms.</option><option value="dr" t-att-selected="employee.salutation == 'dr'">Dr.</option><option value="prof" t-att-selected="employee.salutation == 'prof'">Prof.</option></select></div>
+                                        <div class="mb-3 col-md-4"><label for="first_name" class="form-label">First Name</label><input type="text" class="form-control" name="first_name" t-att-value="employee.first_name" readonly="1"/></div>
+                                        <div class="mb-3 col-md-3"><label for="middle_name" class="form-label">Middle Name</label><input type="text" class="form-control" name="middle_name" t-att-value="employee.middle_name" readonly="1"/></div>
+                                        <div class="mb-3 col-md-3"><label for="last_name" class="form-label">Last Name</label><input type="text" class="form-control" name="last_name" t-att-value="employee.last_name" readonly="1"/></div>
+                                        <div class="mb-3 col-md-4"><label for="gender" class="form-label">Gender <span class="text-danger">*</span></label><select name="gender" class="form-select" required="1"><option value="">...</option><option value="male" t-att-selected="employee.gender_updated == 'male'">Male</option><option value="female" t-att-selected="employee.gender_updated == 'female'">Female</option></select></div>
                                         
-                                        <!-- Birthday: REMOVED ahadu-datepicker class, ADDED bg-light and readonly="1" as requested -->
+                                        <!-- Birthday -->
                                         <div class="mb-3 col-md-4">
-                                            <label for="birthday" class="form-label">Birthdate (DD/MM/YYYY) *</label>
+                                            <label for="birthday" class="form-label">Birthdate (DD/MM/YYYY) <span class="text-danger">*</span></label>
                                             <input type="text" name="birthday" 
                                                 class="form-control bg-light" 
                                                 placeholder="DD/MM/YYYY" 
@@ -320,9 +334,9 @@
                                         
                                         <div class="mb-3 col-md-4"><label for="birth_place" class="form-label">Place of Birth</label><input type="text" class="form-control" name="birth_place" t-att-value="employee.birth_place"/></div>
                                         <div class="mb-3 col-md-3"><label for="nationality_id" class="form-label">Nationality</label><select name="nationality_id" class="form-select"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.nationality_id.id or 68)" t-esc="c.name"/></t></select></div>
-                                        <div class="mb-3 col-md-3"><label for="country_id" class="form-label">Country of Residence *</label><select name="country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
-                                        <!-- <div class="mb-3 col-md-3"><label for="subcity" class="form-label">Sub City</label><input type="text" class="form-control" name="subcity" t-att-value="employee.subcity"/></div> -->
-                                        <div class="mb-3 col-md-3"><label for="marital" class="form-label">Marital Status</label><select name="marital" class="form-select"><option value="">...</option><option value="single" t-att-selected="employee.marital == 'single'">Single</option><option value="married" t-att-selected="employee.marital == 'married'">Married</option><option value="cohabitant" t-att-selected="employee.marital == 'cohabitant'">Legal Cohabitant</option><option value="widower" t-att-selected="employee.marital == 'widower'">Widower</option><option value="divorced" t-att-selected="employee.marital == 'divorced'">Divorced</option></select></div>
+                                        <div class="mb-3 col-md-3"><label for="country_id" class="form-label">Country of Residence <span class="text-danger">*</span></label><select name="country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
+                                        <!-- <div class="mb-3 col-md-3"><label for="marital" class="form-label">Marital Status</label><select name="marital" class="form-select"><option value="">...</option><option value="single" t-att-selected="employee.marital == 'single'">Single</option><option value="married" t-att-selected="employee.marital == 'married'">Married</option><option value="cohabitant" t-att-selected="employee.marital == 'cohabitant'">Legal Cohabitant</option><option value="widower" t-att-selected="employee.marital == 'widower'">Widower</option><option value="divorced" t-att-selected="employee.marital == 'divorced'">Divorced</option></select></div> -->
+                                        <div class="mb-3 col-md-3"><label for="marital" class="form-label">Marital Status</label><select name="marital" class="form-select"><option value="">...</option><option value="single" t-att-selected="employee.marital == 'single'">Single</option><option value="married" t-att-selected="employee.marital == 'married'">Married</option><option value="widower" t-att-selected="employee.marital == 'widower'">Widower</option><option value="divorced" t-att-selected="employee.marital == 'divorced'">Divorced</option></select></div>
                                         <div class="mb-3 col-md-4">
                                             <label for="wedding_date" class="form-label">Wedding Date (DD/MM/YYYY)</label>
                                             <input type="text" name="wedding_date" 
@@ -331,10 +345,9 @@
                                                 t-att-value="employee.wedding_date.strftime('%d/%m/%Y') if employee.wedding_date else ''"/>
                                         </div>
                                         
-                                        <!-- Languages Spoken: REPLACED static select box with dynamic search-enabled Bootstrap 5 dropdown -->
+                                        <!-- Languages Spoken -->
                                         <div class="mb-3 col-md-4">
-                                            <label for="language_ids" class="form-label">Languages Spoken *</label>
-                                            <!-- Hidden select to submit array and enforce HTML5 native validation -->
+                                            <label for="language_ids" class="form-label">Languages Spoken <span class="text-danger">*</span></label>
                                             <select name="language_ids" id="language_ids" multiple="multiple" required="1" class="d-none">
                                                 <t t-foreach="languages" t-as="language_rec">
                                                     <option t-att-value="language_rec.id" 
@@ -395,9 +408,9 @@
                                                     placeholder="Please provide details about the physical challenge..."><t t-esc="employee.physical_challenge_detail or ''"/></textarea>
                                         </div>
                                         <div class="mb-3 col-md-6"><label for="national_id_number" class="form-label">National ID Number</label><input type="text" name="national_id_number" class="form-control" t-att-value="employee.identification_id"/></div>
-                                        <div class="mb-3 col-md-6"><label for="national_id_file" class="form-label">National ID (Photo)</label><input type="file" name="national_id_file" class="form-control"/></div>
+                                        <div class="mb-3 col-md-6"><label for="national_id_file" class="form-label">National ID (Photo)</label><input type="file" name="national_id_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
                                         <div class="mb-3 col-md-6"><label for="kebele_id_number" class="form-label">Kebele ID Number</label><input type="text" name="kebele_id_number" class="form-control" t-att-value="employee.kebele_id"/></div>
-                                        <div class="mb-3 col-md-6"><label for="kebele_id_file" class="form-label">Kebele ID (Photo)</label><input type="file" name="kebele_id_file" class="form-control"/></div>
+                                        <div class="mb-3 col-md-6"><label for="kebele_id_file" class="form-label">Kebele ID (Photo)</label><input type="file" name="kebele_id_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
                                     </div>
                                 </div>
                                 
@@ -405,27 +418,27 @@
                                 <div class="tab-pane fade" id="contact" role="tabpanel">
                                     <div class="row">
                                         <div class="mb-3 col-md-6"><label for="work_phone" class="form-label">Work Phone</label><input type="tel" name="work_phone" class="form-control" t-att-value="employee.work_phone" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
-                                        <div class="mb-3 col-md-6"><label for="private_phone" class="form-label">Private Phone *</label><input type="tel" name="private_phone" class="form-control" t-att-value="employee.mobile_phone" required="1" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
+                                        <div class="mb-3 col-md-6"><label for="private_phone" class="form-label">Private Phone <span class="text-danger">*</span></label><input type="tel" name="private_phone" class="form-control" t-att-value="employee.mobile_phone" required="1" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
                                         <div class="mb-3 col-md-6"><label for="work_email" class="form-label">Work Email</label><input type="email" name="work_email" class="form-control" t-att-value="employee.work_email"/></div>
                                         <div class="mb-3 col-md-6"><label for="private_email" class="form-label">Private Email</label><input type="email" name="private_email" class="form-control" t-att-value="employee.private_email"/></div>
-                                        <h5 class="mt-3">Current Address *</h5>
-                                        <div class="mb-3 col-md-4"><label class="form-label">Subcity</label><input type="text" name="current_address_subcity" class="form-control" t-att-value="employee.subcity" required="1"/></div>
-                                        <div class="mb-3 col-md-4"><label class="form-label">Woreda</label><input type="text" name="current_address_woreda" class="form-control" t-att-value="employee.woreda" required="1"/></div>
-                                        <div class="mb-3 col-md-4"><label class="form-label">House No.</label><input type="text" name="current_address_house_number" class="form-control" t-att-value="employee.house_number" required="1"/></div>
-                                        <h5 class="mt-3">Permanent Address *</h5>
-                                        <div class="mb-3 col-md-6"><label class="form-label">City</label><input type="text" name="permanent_address_city" class="form-control" t-att-value="employee.permanent_address_city" required="1"/></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">Country</label><select name="permanent_address_country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.permanent_address_country_id.id or 68)" t-esc="c.name"/></t></select></div>
+                                        <h5 class="mt-3">Current Address</h5>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Subcity <span class="text-danger">*</span></label><input type="text" name="current_address_subcity" class="form-control" t-att-value="employee.subcity" required="1"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Woreda <span class="text-danger">*</span></label><input type="text" name="current_address_woreda" class="form-control" t-att-value="employee.woreda" required="1"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">House No. <span class="text-danger">*</span></label><input type="text" name="current_address_house_number" class="form-control" t-att-value="employee.house_number" required="1"/></div>
+                                        <h5 class="mt-3">Permanent Address</h5>
+                                        <div class="mb-3 col-md-6"><label class="form-label">City <span class="text-danger">*</span></label><input type="text" name="permanent_address_city" class="form-control" t-att-value="employee.permanent_address_city" required="1"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Country <span class="text-danger">*</span></label><select name="permanent_address_country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.permanent_address_country_id.id or 68)" t-esc="c.name"/></t></select></div>
                                     </div>
                                 </div>
                                 
                                 <!-- Emergency -->
                                 <div class="tab-pane fade" id="emergency" role="tabpanel">
                                     <div class="row">
-                                        <div class="mb-3 col-md-6"><label class="form-label">Full Name *</label><input type="text" name="emergency_name" class="form-control" t-att-value="employee.emergency_contact_name" required="1"/></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">Relationship *</label><select name="emergency_relationship" class="form-select" required="1"><option value="">...</option><option value="mother" t-att-selected="employee.emergency_contact_relationship == 'mother'">Mother</option><option value="father" t-att-selected="employee.emergency_contact_relationship == 'father'">Father</option><option value="sister" t-att-selected="employee.emergency_contact_relationship == 'sister'">Sister</option><option value="brother" t-att-selected="employee.emergency_contact_relationship == 'brother'">Brother</option><option value="spouse" t-att-selected="employee.emergency_contact_relationship == 'spouse'">Spouse</option><option value="aunt" t-att-selected="employee.emergency_contact_relationship == 'aunt'">Aunt</option><option value="uncle" t-att-selected="employee.emergency_contact_relationship == 'uncle'">Uncle</option><option value="son" t-att-selected="employee.emergency_contact_relationship == 'son'">Son</option><option value="daughter" t-att-selected="employee.emergency_contact_relationship == 'daughter'">Daughter</option><option value="other" t-att-selected="employee.emergency_contact_relationship == 'other'">Other</option></select></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">City *</label><input type="text" name="emergency_address_city" class="form-control" t-att-value="employee.emergency_contact_address_city" required="1"/></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">Country *</label><select name="emergency_address_country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.emergency_contact_address_country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
-                                        <div class="mb-3 col-md-12"><label class="form-label">Phone Number *</label><input type="tel" name="emergency_phone" class="form-control" t-att-value="employee.emergency_contact_phone" required="1" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Full Name <span class="text-danger">*</span></label><input type="text" name="emergency_name" class="form-control" t-att-value="employee.emergency_contact_name" required="1"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Relationship <span class="text-danger">*</span></label><select name="emergency_relationship" class="form-select" required="1"><option value="">...</option><option value="mother" t-att-selected="employee.emergency_contact_relationship == 'mother'">Mother</option><option value="father" t-att-selected="employee.emergency_contact_relationship == 'father'">Father</option><option value="sister" t-att-selected="employee.emergency_contact_relationship == 'sister'">Sister</option><option value="brother" t-att-selected="employee.emergency_contact_relationship == 'brother'">Brother</option><option value="spouse" t-att-selected="employee.emergency_contact_relationship == 'spouse'">Spouse</option><option value="aunt" t-att-selected="employee.emergency_contact_relationship == 'aunt'">Aunt</option><option value="uncle" t-att-selected="employee.emergency_contact_relationship == 'uncle'">Uncle</option><option value="son" t-att-selected="employee.emergency_contact_relationship == 'son'">Son</option><option value="daughter" t-att-selected="employee.emergency_contact_relationship == 'daughter'">Daughter</option><option value="other" t-att-selected="employee.emergency_contact_relationship == 'other'">Other</option></select></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">City <span class="text-danger">*</span></label><input type="text" name="emergency_address_city" class="form-control" t-att-value="employee.emergency_contact_address_city" required="1"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Country <span class="text-danger">*</span></label><select name="emergency_address_country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.emergency_contact_address_country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
+                                        <div class="mb-3 col-md-12"><label class="form-label">Phone Number <span class="text-danger">*</span></label><input type="tel" name="emergency_phone" class="form-control" t-att-value="employee.emergency_contact_phone" required="1" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
                                     </div>
                                 </div>
                                 
@@ -440,12 +453,12 @@
                                                 </div>
                                                 <hr/>
                                                 <div class="row">
-                                                    <div class="mb-3 col-md-6"><label class="form-label">Bank Name *</label><select t-attf-name="bank_name_#{acc_index}" class="form-select" required="1"><t t-foreach="banks" t-as="b"><option t-att-value="b.id" t-att-selected="b.id == acc.bank_id.id" t-esc="b.name"/></t></select></div>
-                                                    <div class="mb-3 col-md-6"><label class="form-label">Bank Country *</label><select t-attf-name="bank_country_id_#{acc_index}" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == acc.bank_country_id.id" t-esc="c.name"/></t></select></div>
-                                                    <div class="mb-3 col-md-6"><label class="form-label">Account Number *</label><input type="text" t-attf-name="bank_account_number_#{acc_index}" class="form-control" t-att-value="acc.account_number" required="1"/></div>
-                                                    <div class="mb-3 col-md-6"><label class="form-label">Currency *</label><select t-attf-name="bank_currency_id_#{acc_index}" class="form-select" required="1"><t t-foreach="currencies" t-as="curr"><option t-att-value="curr.id" t-att-selected="curr.id == acc.currency_id.id" t-esc="curr.name"/></t></select></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Bank Name <span class="text-danger">*</span></label><select t-attf-name="bank_name_#{acc_index}" class="form-select" required="1"><t t-foreach="banks" t-as="b"><option t-att-value="b.id" t-att-selected="b.id == acc.bank_id.id" t-esc="b.name"/></t></select></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Bank Country <span class="text-danger">*</span></label><select t-attf-name="bank_country_id_#{acc_index}" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == acc.bank_country_id.id" t-esc="c.name"/></t></select></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Account Number <span class="text-danger">*</span></label><input type="text" t-attf-name="bank_account_number_#{acc_index}" class="form-control" t-att-value="acc.account_number" required="1"/></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Currency <span class="text-danger">*</span></label><select t-attf-name="bank_currency_id_#{acc_index}" class="form-select" required="1"><t t-foreach="currencies" t-as="curr"><option t-att-value="curr.id" t-att-selected="curr.id == acc.currency_id.id" t-esc="curr.name"/></t></select></div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Account Holder</label><input type="text" t-attf-name="bank_account_holder_#{acc_index}" class="form-control" t-att-value="acc.account_holder_name or employee.name"/></div>
-                                                    <div class="mb-3 col-md-6"><label class="form-label">Account Type *</label><select t-attf-name="bank_account_type_#{acc_index}" class="form-select" required="1">
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Account Type <span class="text-danger">*</span></label><select t-attf-name="bank_account_type_#{acc_index}" class="form-select" required="1">
                                                         <option value="salary" t-att-selected="acc.account_type == 'salary'">Salary Account</option>
                                                         <option value="saving" t-att-selected="acc.account_type == 'saving'">Saving Account</option>
                                                         <option value="cash_indemnity" t-att-selected="acc.account_type == 'cash_indemnity'">Cash Indemnity</option>
@@ -475,11 +488,11 @@
                                                 </div>
                                                 <hr/>
                                                 <div class="row">
-                                                    <div class="mb-3 col-md-4"><label class="form-label">Full Name *</label><input type="text" t-attf-name="family_full_name_#{fam_index}" class="form-control" t-att-value="fam.full_name" required="1"/></div>
-                                                    <div class="mb-3 col-md-4"><label class="form-label">Relationship *</label><select t-attf-name="family_relationship_#{fam_index}" class="form-select" required="1"><option value="mother" t-att-selected="fam.relationship == 'mother'">Mother</option><option value="father" t-att-selected="fam.relationship == 'father'">Father</option><option value="sister" t-att-selected="fam.relationship == 'sister'">Sister</option><option value="brother" t-att-selected="fam.relationship == 'brother'">Brother</option><option value="spouse" t-att-selected="fam.relationship == 'spouse'">Spouse</option><option value="aunt" t-att-selected="fam.relationship == 'aunt'">Aunt</option><option value="uncle" t-att-selected="fam.relationship == 'uncle'">Uncle</option><option value="son" t-att-selected="fam.relationship == 'son'">Son</option><option value="daughter" t-att-selected="fam.relationship == 'daughter'">Daughter</option><option value="other" t-att-selected="fam.relationship == 'other'">Other</option></select></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Full Name <span class="text-danger">*</span></label><input type="text" t-attf-name="family_full_name_#{fam_index}" class="form-control" t-att-value="fam.full_name" required="1"/></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Relationship <span class="text-danger">*</span></label><select t-attf-name="family_relationship_#{fam_index}" class="form-select" required="1"><option value="mother" t-att-selected="fam.relationship == 'mother'">Mother</option><option value="father" t-att-selected="fam.relationship == 'father'">Father</option><option value="sister" t-att-selected="fam.relationship == 'sister'">Sister</option><option value="brother" t-att-selected="fam.relationship == 'brother'">Brother</option><option value="spouse" t-att-selected="fam.relationship == 'spouse'">Spouse</option><option value="aunt" t-att-selected="fam.relationship == 'aunt'">Aunt</option><option value="uncle" t-att-selected="fam.relationship == 'uncle'">Uncle</option><option value="son" t-att-selected="fam.relationship == 'son'">Son</option><option value="daughter" t-att-selected="fam.relationship == 'daughter'">Daughter</option><option value="other" t-att-selected="fam.relationship == 'other'">Other</option></select></div>
                                                     <div class="mb-3 col-md-4"><label class="form-label">Contact Number</label><input type="tel" t-attf-name="family_contact_#{fam_index}" class="form-control" t-att-value="fam.contact_number"/></div>
-                                                    <div class="mb-3 col-md-4"><label class="form-label">Gender *</label><select t-attf-name="family_gender_#{fam_index}" class="form-select" required="1"><option value="male" t-att-selected="fam.gender == 'male'">Male</option><option value="female" t-att-selected="fam.gender == 'female'">Female</option></select></div>
-                                                    <div class="mb-3 col-md-4"><label class="form-label">Nationality *</label><select t-attf-name="family_nationality_#{fam_index}" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == fam.nationality_id.id" t-esc="c.name"/></t></select></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Gender <span class="text-danger">*</span></label><select t-attf-name="family_gender_#{fam_index}" class="form-select" required="1"><option value="male" t-att-selected="fam.gender == 'male'">Male</option><option value="female" t-att-selected="fam.gender == 'female'">Female</option></select></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">Nationality <span class="text-danger">*</span></label><select t-attf-name="family_nationality_#{fam_index}" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == fam.nationality_id.id" t-esc="c.name"/></t></select></div>
                                                     <div class="mb-3 col-md-2"><label class="form-label">Dependent?</label><select t-attf-name="family_dependent_#{fam_index}" class="form-select"><option value="no" t-att-selected="not fam.dependent">No</option><option value="yes" t-att-selected="fam.dependent">Yes</option></select></div>
                                                     <div class="mb-3 col-md-2"><label class="form-label">Insured?</label><select t-attf-name="family_insured_#{fam_index}" class="form-select"><option value="no" t-att-selected="not fam.insured">No</option><option value="yes" t-att-selected="fam.insured">Yes</option></select></div>
                                                 </div>
@@ -502,32 +515,73 @@
                                                 </div>
                                                 <hr/>
                                                 <div class="row">
-                                                    <div class="mb-3 col-md-6"><label class="form-label">Type of Institution *</label><select t-attf-name="edu_institution_type_#{edu_index}" class="form-select" required="1"><option value="high_school" t-att-selected="edu.type_of_institution == 'high_school'">High School</option><option value="tvet" t-att-selected="edu.type_of_institution == 'tvet'">TVET</option><option value="college" t-att-selected="edu.type_of_institution == 'college'">College</option><option value="university" t-att-selected="edu.type_of_institution == 'university'">University</option></select></div>
-                                                    <div class="mb-3 col-md-6"><label class="form-label">School/University *</label><input type="text" t-attf-name="edu_school_#{edu_index}" class="form-control" t-att-value="edu.school" required="1"/></div>
-                                                    <div class="mb-3 col-md-6"><label class="form-label">Level of Education *</label><select t-attf-name="edu_level_#{edu_index}" class="form-select" required="1"><option value="high_school" t-att-selected="edu.certificate_level == 'high_school'">High School</option><option value="diploma" t-att-selected="edu.certificate_level == 'diploma'">Diploma</option><option value="bachelor" t-att-selected="edu.certificate_level == 'bachelor'">Bachelor's Degree</option><option value="master" t-att-selected="edu.certificate_level == 'master'">Master's Degree</option><option value="phd" t-att-selected="edu.certificate_level == 'phd'">PhD</option><option value="other" t-att-selected="edu.certificate_level == 'other'">Other</option></select></div>
-                                                    <div class="mb-3 col-md-6"><label class="form-label">Field of Study *</label><input type="text" t-attf-name="edu_field_#{edu_index}" class="form-control" t-att-value="edu.field_of_study" required="1"/></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Type of Institution <span class="text-danger">*</span></label><select t-attf-name="edu_institution_type_#{edu_index}" class="form-select" required="1"><option value="high_school" t-att-selected="edu.type_of_institution == 'high_school'">High School</option><option value="tvet" t-att-selected="edu.type_of_institution == 'tvet'">TVET</option><option value="college" t-att-selected="edu.type_of_institution == 'college'">College</option><option value="university" t-att-selected="edu.type_of_institution == 'university'">University</option></select></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">School/University <span class="text-danger">*</span></label><input type="text" t-attf-name="edu_school_#{edu_index}" class="form-control" t-att-value="edu.school" required="1"/></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Level of Education <span class="text-danger">*</span></label><select t-attf-name="edu_level_#{edu_index}" class="form-select" required="1"><option value="high_school" t-att-selected="edu.certificate_level == 'high_school'">High School</option><option value="diploma" t-att-selected="edu.certificate_level == 'diploma'">Diploma</option><option value="bachelor" t-att-selected="edu.certificate_level == 'bachelor'">Bachelor's Degree</option><option value="master" t-att-selected="edu.certificate_level == 'master'">Master's Degree</option><option value="phd" t-att-selected="edu.certificate_level == 'phd'">PhD</option><option value="other" t-att-selected="edu.certificate_level == 'other'">Other</option></select></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Field of Study <span class="text-danger">*</span></label><input type="text" t-attf-name="edu_field_#{edu_index}" class="form-control" t-att-value="edu.field_of_study" required="1"/></div>
                                                     <div class="mb-3 col-md-4">
-                                                        <label class="form-label">Start Date (DD/MM/YYYY) *</label>
+                                                        <label class="form-label">Start Date (DD/MM/YYYY) <span class="text-danger">*</span></label>
                                                         <input type="text" t-attf-name="edu_start_date_#{edu_index}" 
                                                             class="form-control ahadu-datepicker" 
                                                             placeholder="DD/MM/YYYY"
                                                             t-att-value="edu.start_date.strftime('%d/%m/%Y') if edu.start_date else ''" required="1"/>
                                                     </div>
                                                     <div class="mb-3 col-md-4">
-                                                        <label class="form-label">Graduation Date (DD/MM/YYYY) *</label>
+                                                        <label class="form-label">Graduation Date (DD/MM/YYYY) <span class="text-danger">*</span></label>
                                                         <input type="text" t-attf-name="edu_end_date_#{edu_index}" 
                                                             class="form-control ahadu-datepicker" 
                                                             placeholder="DD/MM/YYYY"
                                                             t-att-value="edu.end_date.strftime('%d/%m/%Y') if edu.end_date else ''" required="1"/>
                                                     </div>
-                                                    <div class="mb-3 col-md-4"><label class="form-label">CGPA *</label><input type="number" step="0.01" t-attf-name="edu_cgpa_#{edu_index}" class="form-control" t-att-value="edu.cgpa" required="1"/></div>
-                                                    <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG)</label><input type="file" t-attf-name="edu_certificate_#{edu_index}" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/><t t-if="edu.certification_filename"><small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="edu.certification_filename"/></small><input type="hidden" t-attf-name="edu_keep_file_#{edu_index}" value="1"/></t></div>
+                                                    <div class="mb-3 col-md-4"><label class="form-label">CGPA <span class="text-danger">*</span></label><input type="number" step="0.01" t-attf-name="edu_cgpa_#{edu_index}" class="form-control" t-att-value="edu.cgpa" required="1"/></div>
+                                                    <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG) <span class="text-danger">*</span></label><input type="file" t-attf-name="edu_certificate_#{edu_index}" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/><t t-if="edu.certification_filename"><small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="edu.certification_filename"/></small><input type="hidden" t-attf-name="edu_keep_file_#{edu_index}" value="1"/></t></div>
                                                 </div>
                                             </div>
                                         </t>
                                     </div>
                                     <button type="button" class="btn btn-secondary mt-2" onclick="addEducationRow(false)">
                                         <i class="fa fa-plus"/> Add Education
+                                    </button>
+                                </div>
+
+                                <!-- Previous Experience -->
+                                <div class="tab-pane fade" id="experience" role="tabpanel">
+                                    <div id="experience_lines_container">
+                                        <t t-foreach="employee.experience_ids" t-as="exp_rec">
+                                            <div class="experience-row border p-3 mb-3 rounded">
+                                                <div class="row">
+                                                    <div class="col-11"><h5>Experience Record <t t-esc="exp_rec_index + 1"/></h5></div>
+                                                    <div class="col-1 text-end"><button type="button" class="btn-close" onclick="this.closest('.experience-row').remove();"/></div>
+                                                </div>
+                                                <hr/>
+                                                <div class="row">
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Institution / Company</label><input type="text" t-attf-name="exp_company_#{exp_rec_index}" class="form-control" t-att-value="exp_rec.company_name"/></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Job Title / Position</label><input type="text" t-attf-name="exp_job_title_#{exp_rec_index}" class="form-control" t-att-value="exp_rec.job_title"/></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Location</label><input type="text" t-attf-name="exp_location_#{exp_rec_index}" class="form-control" t-att-value="exp_rec.location"/></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Previous Salary (CTC)</label><input type="number" step="0.01" t-attf-name="exp_salary_#{exp_rec_index}" class="form-control" t-att-value="exp_rec.previous_salary"/></div>
+                                                    <div class="mb-3 col-md-6">
+                                                        <label class="form-label">Start Date (DD/MM/YYYY)</label>
+                                                        <input type="text" t-attf-name="exp_start_date_#{exp_rec_index}" 
+                                                            class="form-control ahadu-datepicker" 
+                                                            placeholder="DD/MM/YYYY"
+                                                            t-att-value="exp_rec.start_date.strftime('%d/%m/%Y') if exp_rec.start_date else ''"/>
+                                                    </div>
+                                                    <div class="mb-3 col-md-6">
+                                                        <label class="form-label">End Date (DD/MM/YYYY)</label>
+                                                        <input type="text" t-attf-name="exp_end_date_#{exp_rec_index}" 
+                                                            class="form-control ahadu-datepicker" 
+                                                            placeholder="DD/MM/YYYY"
+                                                            t-att-value="exp_rec.end_date.strftime('%d/%m/%Y') if exp_rec.end_date else ''"/>
+                                                    </div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Reason for Leaving</label><input type="text" t-attf-name="exp_reason_#{exp_rec_index}" class="form-control" t-att-value="exp_rec.reason_for_leaving"/></div>
+                                                    <div class="mb-3 col-md-6"><label class="form-label">Job Description</label><textarea t-attf-name="exp_description_#{exp_rec_index}" class="form-control" rows="2"><t t-esc="exp_rec.job_description or ''"/></textarea></div>
+                                                    <div class="mb-3 col-md-12"><label class="form-label">Experience Letter/Proof (PDF, PNG, JPG)</label><input type="file" t-attf-name="exp_attachment_#{exp_rec_index}" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/><t t-if="exp_rec.attachment_filename"><small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="exp_rec.attachment_filename"/></small><input type="hidden" t-attf-name="exp_keep_file_#{exp_rec_index}" value="1"/></t></div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <button type="button" class="btn btn-secondary mt-2" onclick="addExperienceRow(false)">
+                                        <i class="fa fa-plus"/> Add Experience
                                     </button>
                                 </div>
 
@@ -548,7 +602,7 @@
                                                 placeholder="DD/MM/YYYY" t-att-value="employee.passport_expiry_date.strftime('%d/%m/%Y') if employee.passport_expiry_date else ''"/>
                                         </div>
                                         <div class="mb-3 col-md-6"><label class="form-label">ENCR Required?</label><select name="encr_required" class="form-select"><option value="">...</option><option value="yes" t-att-selected="employee.encr_required == 'yes'">Yes</option><option value="no" t-att-selected="employee.encr_required == 'no'">No</option></select></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">Upload Passport</label><input type="file" name="passport_file" class="form-control"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Upload Passport</label><input type="file" name="passport_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
                                     </div>
                                 </div>
                                 
@@ -584,7 +638,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="mb-3 col-md-12"><label class="form-label">Upload Document</label><input type="file" name="cost_sharing_document" class="form-control"/></div>
+                                            <div class="mb-3 col-md-12"><label class="form-label">Upload Document</label><input type="file" name="cost_sharing_document" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
                                         </div>
                                     </div>
                                 </div>
@@ -597,7 +651,8 @@
                                             <div class="form-check">
                                                 <input type="checkbox" name="declaration_confirmed" id="declaration_confirmed" class="form-check-input" required="1"/>
                                                 <label class="form-check-label fw-bold" for="declaration_confirmed" style="font-size: 1.1rem;">
-                                                    I confirm that all the information provided is accurate, and complete to the best of my knowledge. *
+                                                    I confirm that all the information provided is accurate, and complete to the best of my knowledge. <span class="text-danger">*</span>
+                                                    NOTE, YOU ARE STRICTLY OBLIGATED TO REATTACH YOUR EDUCATIONAL CERTIFICATION UNDER THE EDUCATION DETAILS AND YOUR PREVIOUS EXPERIENCE IF ANY!
                                                 </label>
                                             </div>
                                         </div>
@@ -628,15 +683,15 @@
                             <input type="text" class="form-control" value="Ahadu Bank" readonly="1"/>
                             <input type="hidden" name="bank_name_" t-att-value="ahadu_bank.id if ahadu_bank else ''"/>
                         </div>
-                        <div class="mb-3 col-md-6"><label class="form-label">Bank Country *</label><select name="bank_country_id_" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == default_country_id" t-esc="c.name"/></t></select></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Bank Country <span class="text-danger">*</span></label><select name="bank_country_id_" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == default_country_id" t-esc="c.name"/></t></select></div>
                         <div class="mb-3 col-md-6">
-                            <label class="form-label">Account Number (13 Digits) *</label>
+                            <label class="form-label">Account Number (13 Digits) <span class="text-danger">*</span></label>
                             <input type="text" name="bank_account_number_" class="form-control" 
                                 required="1" maxlength="13" minlength="13" pattern="\d{13}"/>
                         </div>
-                        <div class="mb-3 col-md-6"><label class="form-label">Currency *</label><select name="bank_currency_id_" class="form-select" required="1"><t t-foreach="currencies" t-as="curr"><option t-att-value="curr.id" t-esc="curr.name"/></t></select></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Currency <span class="text-danger">*</span></label><select name="bank_currency_id_" class="form-select" required="1"><t t-foreach="currencies" t-as="curr"><option t-att-value="curr.id" t-esc="curr.name"/></t></select></div>
                         <div class="mb-3 col-md-6"><label class="form-label">Account Holder</label><input type="text" name="bank_account_holder_" class="form-control" t-att-value="employee.name"/></div>
-                        <div class="mb-3 col-md-6"><label class="form-label">Account Type *</label><select name="bank_account_type_" class="form-select" required="1">
+                        <div class="mb-3 col-md-6"><label class="form-label">Account Type <span class="text-danger">*</span></label><select name="bank_account_type_" class="form-select" required="1">
                             <option value="salary">Salary Account</option>
                             <option value="saving">Saving Account</option>
                             <option value="cash_indemnity">Cash Indemnity Account</option>
@@ -656,11 +711,11 @@
                     </div>
                     <hr/>
                     <div class="row">
-                        <div class="mb-3 col-md-4"><label class="form-label">Full Name *</label><input type="text" name="family_full_name_" class="form-control" required="1"/></div>
-                        <div class="mb-3 col-md-4"><label class="form-label">Relationship *</label><select name="family_relationship_" class="form-select" required="1"><option value="">...</option><option value="mother">Mother</option><option value="father">Father</option><option value="sister">Sister</option><option value="brother">Brother</option><option value="spouse">Spouse</option><option value="aunt">Aunt</option><option value="uncle">Uncle</option><option value="son">Son</option><option value="daughter">Daughter</option><option value="other">Other</option></select></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Full Name <span class="text-danger">*</span></label><input type="text" name="family_full_name_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Relationship <span class="text-danger">*</span></label><select name="family_relationship_" class="form-select" required="1"><option value="">...</option><option value="mother">Mother</option><option value="father">Father</option><option value="sister">Sister</option><option value="brother">Brother</option><option value="spouse">Spouse</option><option value="aunt">Aunt</option><option value="uncle">Uncle</option><option value="son">Son</option><option value="daughter">Daughter</option><option value="other">Other</option></select></div>
                         <div class="mb-3 col-md-4"><label class="form-label">Contact Number</label><input type="tel" name="family_contact_" class="form-control"/></div>
-                        <div class="mb-3 col-md-4"><label class="form-label">Gender *</label><select name="family_gender_" class="form-select" required="1"><option value="">...</option><option value="male">Male</option><option value="female">Female</option></select></div>
-                        <div class="mb-3 col-md-4"><label class="form-label">Nationality *</label><select name="family_nationality_" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == default_country_id" t-esc="c.name"/></t></select></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Gender <span class="text-danger">*</span></label><select name="family_gender_" class="form-select" required="1"><option value="">...</option><option value="male">Male</option><option value="female">Female</option></select></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">Nationality <span class="text-danger">*</span></label><select name="family_nationality_" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == default_country_id" t-esc="c.name"/></t></select></div>
                         <div class="mb-3 col-md-2"><label class="form-label">Dependent?</label><select name="family_dependent_" class="form-select"><option value="no">No</option><option value="yes">Yes</option></select></div>
                         <div class="mb-3 col-md-2"><label class="form-label">Insured?</label><select name="family_insured_" class="form-select"><option value="no">No</option><option value="yes">Yes</option></select></div>
                     </div>
@@ -675,20 +730,47 @@
                     </div>
                     <hr/>
                     <div class="row">
-                        <div class="mb-3 col-md-6"><label class="form-label">Type of Institution *</label><select name="edu_institution_type_" class="form-select" required="1"><option value="">...</option><option value="high_school">High School</option><option value="tvet">TVET</option><option value="college">College</option><option value="university">University</option></select></div>
-                        <div class="mb-3 col-md-6"><label class="form-label">School/University *</label><input type="text" name="edu_school_" class="form-control" required="1"/></div>
-                        <div class="mb-3 col-md-6"><label class="form-label">Level of Education *</label><select name="edu_level_" class="form-select" required="1"><option value="">...</option><option value="high_school">High School</option><option value="diploma">Diploma</option><option value="bachelor">Bachelor's Degree</option><option value="master">Master's Degree</option><option value="phd">PhD</option><option value="other">Other</option></select></div>
-                        <div class="mb-3 col-md-6"><label class="form-label">Field of Study *</label><input type="text" name="edu_field_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Type of Institution <span class="text-danger">*</span></label><select name="edu_institution_type_" class="form-select" required="1"><option value="">...</option><option value="high_school">High School</option><option value="tvet">TVET</option><option value="college">College</option><option value="university">University</option></select></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">School/University <span class="text-danger">*</span></label><input type="text" name="edu_school_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Level of Education <span class="text-danger">*</span></label><select name="edu_level_" class="form-select" required="1"><option value="">...</option><option value="high_school">High School</option><option value="diploma">Diploma</option><option value="bachelor">Bachelor's Degree</option><option value="master">Master's Degree</option><option value="phd">PhD</option><option value="other">Other</option></select></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Field of Study <span class="text-danger">*</span></label><input type="text" name="edu_field_" class="form-control" required="1"/></div>
                         <div class="mb-3 col-md-4">
-                            <label class="form-label">Start Date (DD/MM/YYYY) *</label>
+                            <label class="form-label">Start Date (DD/MM/YYYY) <span class="text-danger">*</span></label>
                             <input type="text" name="edu_start_date_" class="form-control ahadu-datepicker" placeholder="DD/MM/YYYY" required="1"/>
                         </div>
                         <div class="mb-3 col-md-4">
-                            <label class="form-label">Graduation Date (DD/MM/YYYY) *</label>
+                            <label class="form-label">Graduation Date (DD/MM/YYYY) <span class="text-danger">*</span></label>
                             <input type="text" name="edu_end_date_" class="form-control ahadu-datepicker" placeholder="DD/MM/YYYY" required="1"/>
                         </div>
-                        <div class="mb-3 col-md-4"><label class="form-label">CGPA *</label><input type="number" step="0.01" name="edu_cgpa_" class="form-control" required="1"/></div>
-                        <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG) *</label><input type="file" name="edu_certificate_" class="form-control" accept=".pdf,.png,.jpg,.jpeg" required="1"/></div>
+                        <div class="mb-3 col-md-4"><label class="form-label">CGPA <span class="text-danger">*</span></label><input type="number" step="0.01" name="edu_cgpa_" class="form-control" required="1"/></div>
+                        <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG) <span class="text-danger">*</span></label><input type="file" name="edu_certificate_" class="form-control" accept=".pdf,.png,.jpg,.jpeg" required="1"/></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="experience_row_template" class="d-none">
+                 <div class="experience-row border p-3 mb-3 rounded">
+                    <div class="row">
+                        <div class="col-11"><h5>New Experience Record</h5></div>
+                        <div class="col-1 text-end"><button type="button" class="btn-close" aria-label="Close" onclick="this.closest('.experience-row').remove();"/></div>
+                    </div>
+                    <hr/>
+                    <div class="row">
+                        <div class="mb-3 col-md-6"><label class="form-label">Institution / Company</label><input type="text" name="exp_company_" class="form-control"/></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Job Title / Position</label><input type="text" name="exp_job_title_" class="form-control"/></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Location</label><input type="text" name="exp_location_" class="form-control"/></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Previous Salary (CTC)</label><input type="number" step="0.01" name="exp_salary_" class="form-control"/></div>
+                        <div class="mb-3 col-md-6">
+                            <label class="form-label">Start Date (DD/MM/YYYY)</label>
+                            <input type="text" name="exp_start_date_" class="form-control ahadu-datepicker" placeholder="DD/MM/YYYY"/>
+                        </div>
+                        <div class="mb-3 col-md-6">
+                            <label class="form-label">End Date (DD/MM/YYYY)</label>
+                            <input type="text" name="exp_end_date_" class="form-control ahadu-datepicker" placeholder="DD/MM/YYYY"/>
+                        </div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Reason for Leaving</label><input type="text" name="exp_reason_" class="form-control"/></div>
+                        <div class="mb-3 col-md-6"><label class="form-label">Job Description</label><textarea name="exp_description_" class="form-control" rows="2"></textarea></div>
+                        <div class="mb-3 col-md-12"><label class="form-label">Experience Letter/Proof (PDF, PNG, JPG)</label><input type="file" name="exp_attachment_" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
                     </div>
                 </div>
             </div>
@@ -712,6 +794,7 @@
                     let bankCounter = <t t-esc="len(employee.bank_account_ids)"/>;
                     let familyCounter = <t t-esc="len(employee.family_ids)"/>;
                     let educationCounter = <t t-esc="len(employee.education_ids)"/>;
+                    let experienceCounter = <t t-esc="len(employee.experience_ids)"/>;
 
                     const prefix = 'ahadu_onboarding_';
                     const form = document.getElementById('ahadu_onboarding_form');
@@ -895,8 +978,8 @@
                             });
                         }
 
-                        // Re-init Datepicker if it is an education row
-                        if (type === 'education') {
+                        // Re-init Datepicker if it is an education or experience row
+                        if (type === 'education' || type === 'experience') {
                             setTimeout(function() {
                                 if (window.ahaduDatepickerInit) {
                                     window.ahaduDatepickerInit(document);
@@ -943,6 +1026,11 @@
                         educationCounter++;
                     }
 
+                    window.addExperienceRow = function(isUserAction = true) {
+                        addDynamicRow('experience', experienceCounter, isUserAction);
+                        experienceCounter++;
+                    }
+
                     if (form) {
                         // Bind Input Listeners function
                         function bindInputListeners(scope) {
@@ -959,7 +1047,7 @@
 
                         // --- 2. Restore Dynamic Rows ---
                         let restoredCount = 0;
-                        ['bank', 'family', 'education'].forEach(type => {
+                        ['bank', 'family', 'education', 'experience'].forEach(type => {
                             const key = prefix + type + '_indices';
                             const savedIndices = localStorage.getItem(key);
                             if (savedIndices) {
@@ -971,13 +1059,14 @@
                                     if (type === 'bank' &amp;&amp; indexInt >= bankCounter) bankCounter = indexInt + 1;
                                     if (type === 'family' &amp;&amp; indexInt >= familyCounter) familyCounter = indexInt + 1;
                                     if (type === 'education' &amp;&amp; indexInt >= educationCounter) educationCounter = indexInt + 1;
+                                    if (type === 'experience' &amp;&amp; indexInt >= experienceCounter) experienceCounter = indexInt + 1;
                                     restoredCount++;
                                 });
                             }
                         });
 
                         // Bind close button event listeners on existing server-rendered rows
-                        document.querySelectorAll('.bank-row, .family-row, .education-row').forEach(rowEl => {
+                        document.querySelectorAll('.bank-row, .family-row, .education-row, .experience-row').forEach(rowEl => {
                             const closeBtn = rowEl.querySelector('.btn-close');
                             if (closeBtn) {
                                 closeBtn.removeAttribute('onclick');
@@ -987,6 +1076,7 @@
                                     if (rowEl.classList.contains('bank-row')) type = 'bank';
                                     else if (rowEl.classList.contains('family-row')) type = 'family';
                                     else if (rowEl.classList.contains('education-row')) type = 'education';
+                                    else if (rowEl.classList.contains('experience-row')) type = 'experience';
                                     if (type) {
                                         window.removeRow(rowEl, type);
                                     }
@@ -1011,6 +1101,12 @@
                         const activeEducationIndices = localStorage.getItem(prefix + 'education_indices');
                         if (serverEducationCount === 0 &amp;&amp; !activeEducationIndices) {
                             window.addEducationRow(true);
+                        }
+
+                        const serverExperienceCount = <t t-esc="len(employee.experience_ids)"/>;
+                        const activeExperienceIndices = localStorage.getItem(prefix + 'experience_indices');
+                        if (serverExperienceCount === 0 &amp;&amp; !activeExperienceIndices) {
+                            window.addExperienceRow(true);
                         }
 
                         // --- 3. Restore Input Values ---
@@ -1076,6 +1172,7 @@
                                 const bankRows = document.getElementById('bank_lines_container').querySelectorAll('.bank-row');
                                 const familyRows = document.getElementById('family_lines_container').querySelectorAll('.family-row');
                                 const eduRows = document.getElementById('education_lines_container').querySelectorAll('.education-row');
+                                const expRows = document.getElementById('experience_lines_container').querySelectorAll('.experience-row');
 
                                 const missingFieldLabels = [];
                                 const invalidFields = [];
@@ -1092,6 +1189,10 @@
                                 if (eduRows.length === 0) {
                                     missingFieldLabels.push('Education Record (Add at least one education record)');
                                     if (!firstEmptyContainerTab) firstEmptyContainerTab = 'education';
+                                }
+                                if (expRows.length === 0) {
+                                    missingFieldLabels.push('Experience Record (Add at least one experience record)');
+                                    if (!firstEmptyContainerTab) firstEmptyContainerTab = 'experience';
                                 }
 
                                 // Gather standard input validation issues
@@ -1217,84 +1318,6 @@
                     }
                 });
             </script>
-        </t>
-    </template>
-
-    <template id="onboarding_no_employee" name="No Employee Record">
-        <t t-call="website.layout">
-             <div id="wrap">
-                <div class="container py-5">
-                     <div class="alert alert-danger text-center" role="alert">
-                        <h4 class="alert-heading">Access Denied</h4>
-                        <p>Your user account is not linked to an employee record in the system. Please contact HR.</p>
-                        <a href="/my/dashboard" class="btn btn-primary">Back to Dashboard</a>
-                    </div>
-                </div>
-            </div>
-        </t>
-    </template>
-
-    <template id="onboarding_submit_success" name="Onboarding Submitted">
-        <t t-call="website.layout">
-            <div id="wrap">
-                <div class="container py-5">
-                    <div class="alert alert-success text-center" role="alert">
-                        <h4 class="alert-heading">Thank You!</h4>
-                        <p>Your profile update request has been submitted for approval by the HR department.</p>
-                        <p class="mb-0">You will be notified once it has been processed.</p>
-                        <hr/>
-                        <a href="/my/dashboard" class="btn btn-success">Return to Dashboard</a>
-                    </div>
-                </div>
-            </div>
-        </t>
-    </template>
-    <template id="submission_error" name="Submission Error">
-        <t t-call="website.layout">
-            <div id="wrap">
-                <div class="container py-5">
-                    <div class="alert alert-danger" role="alert">
-                        <h4 class="alert-heading">Submission Failed</h4>
-                        <p>An error occurred while processing your request:</p>
-                        <p class="font-monospace bg-light p-2 border"><t t-esc="error_message"/></p>
-                        <hr/>
-                        <a href="javascript:history.back()" class="btn btn-secondary">Go Back and Fix</a>
-                    </div>
-                </div>
-            </div>
-        </t>
-    </template>
-    <template id="resignation_submit_form" name="Submit Resignation">
-        <t t-call="website.layout">
-            <div class="container py-5">
-                <div class="col-md-8 mx-auto">
-                    <h3>Submit Resignation</h3>
-                    <form action="/my/resignation/submit" method="post">
-                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                        
-                        <div class="row">
-                            <div class="mb-3 col-md-6">
-                                <label class="form-label">Resignation Date *</label>
-                                <input type="text" name="resignation_date" class="form-control ahadu-datepicker" 
-                                    required="1" placeholder="DD/MM/YYYY"
-                                    t-att-value="datetime.date.today().strftime('%d/%m/%Y')"/>
-                            </div>
-
-                            <div class="mb-3 col-md-6">
-                                <label class="form-label">Proposed Last Working Day *</label>
-                                <input type="text" name="last_day" class="form-control ahadu-datepicker" required="1" placeholder="DD/MM/YYYY"/>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Reason</label>
-                            <textarea name="reason" class="form-control" rows="4" required="1"></textarea>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary">Submit Resignation</button>
-                    </form>
-                </div>
-            </div>
         </t>
     </template>
 </odoo>

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from odoo import http, fields, _
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal
@@ -47,10 +48,14 @@ class AhaduSelfServicePortal(CustomerPortal):
 
     def _get_lang_list(self):
         """
-        Bypasses default active filtering to fetch all world languages 
+        Bypasses default active filtering to fetch all world languages
         available in Odoo's core system, sorted alphabetically by name.
         """
-        return request.env["res.lang"].with_context(active_test=False).search([], order="name")
+        return (
+            request.env["res.lang"]
+            .with_context(active_test=False)
+            .search([], order="name")
+        )
 
     def _get_bank_list(self):
         return request.env["res.bank"].search([])
@@ -174,7 +179,9 @@ class AhaduSelfServicePortal(CustomerPortal):
                 "reason": kw.get("reason"),
             }
 
-            if kw.get("document_file"):
+            if kw.get("document_file") and getattr(
+                kw.get("document_file"), "filename", ""
+            ):
                 file_content = kw.get("document_file").read()
                 vals["document_file"] = base64.b64encode(file_content)
                 vals["document_filename"] = kw.get("document_file").filename
@@ -197,86 +204,6 @@ class AhaduSelfServicePortal(CustomerPortal):
                     "status_message": _("An error occurred: %s", e),
                 },
             )
-
-    @http.route(["/my/resignation"], type="http", auth="user", website=True)
-    def resignation_form(self, **kw):
-        employee = request.env.user.employee_id
-        if not employee:
-            return request.render("ahadu_hr_self_service.onboarding_no_employee")
-
-        # Check if there is already a pending resignation
-        existing = request.env["hr.employee.resignation"].search(
-            [
-                ("employee_id", "=", employee.id),
-                ("state", "in", ["draft", "submitted"]),
-            ],
-            limit=1,
-        )
-
-        values = {
-            "employee": employee,
-            "existing_request": existing,
-            "page_name": "resignation",
-        }
-        return request.render("ahadu_hr_self_service.resignation_submit_form", values)
-
-    @http.route(
-        ["/my/resignation/submit"],
-        type="http",
-        auth="user",
-        website=True,
-        methods=["POST"],
-        csrf=True,
-    )
-    def resignation_submit(self, **kw):
-        employee = request.env.user.employee_id
-
-        res_date = kw.get("resignation_date")
-        last_day = kw.get("last_day")
-
-        if not res_date or not last_day:
-            return request.render(
-                "website.http_error",
-                {
-                    "status_code": "Submission Error",
-                    "status_message": "Both Resignation Date and Last Working Day are required."
-                },
-            )
-
-        try:
-            parsed_res_date = self._parse_portal_date(res_date)
-            parsed_last_day = self._parse_portal_date(last_day)
-        except Exception:
-            return request.render(
-                "website.http_error",
-                {
-                    "status_code": "Submission Error",
-                    "status_message": "Invalid date format. Please use DD/MM/YYYY."
-                },
-            )
-
-        vals = {
-            "employee_id": employee.id,
-            "reason": kw.get("reason"),
-            "proposed_last_working_day": parsed_last_day,
-            "resignation_date": parsed_res_date,
-        }
-        res_req = request.env["hr.employee.resignation"].sudo().create(vals)
-        res_req.sudo().action_submit()
-        return request.redirect("/my/dashboard?resignation_success=1")
-
-    @http.route(
-        ["/my/resignation/withdraw/<int:res_id>"],
-        type="http",
-        auth="user",
-        website=True,
-        csrf=True,
-    )
-    def resignation_withdraw(self, res_id, **kw):
-        res_req = request.env["hr.employee.resignation"].browse(res_id)
-        if res_req.employee_id.user_id == request.env.user:
-            res_req.action_withdraw()
-        return request.redirect("/my/dashboard?withdrawn=1")
 
     @http.route(["/my/resignation"], type="http", auth="user", website=True)
     def resignation_request_form(self, **kw):
@@ -322,8 +249,8 @@ class AhaduSelfServicePortal(CustomerPortal):
 
             vals = {
                 "employee_id": employee.id,
-                "resignation_date": res_date,
-                "proposed_last_working_day": last_day,
+                "resignation_date": self._parse_portal_date(res_date),
+                "proposed_last_working_day": self._parse_portal_date(last_day),
                 "reason": kw.get("reason"),
             }
 
@@ -346,6 +273,19 @@ class AhaduSelfServicePortal(CustomerPortal):
             )
 
     @http.route(
+        ["/my/resignation/withdraw/<int:res_id>"],
+        type="http",
+        auth="user",
+        website=True,
+        csrf=True,
+    )
+    def resignation_withdraw(self, res_id, **kw):
+        res_req = request.env["hr.employee.resignation"].browse(res_id)
+        if res_req.employee_id.user_id == request.env.user:
+            res_req.action_withdraw()
+        return request.redirect("/my/dashboard?withdrawn=1")
+
+    @http.route(
         ["/my/onboarding/submit"],
         type="http",
         auth="user",
@@ -357,11 +297,15 @@ class AhaduSelfServicePortal(CustomerPortal):
         employee = request.env.user.employee_id
         if not employee:
             return request.make_response(
-                json.dumps({
-                    "success": False, 
-                    "error": _("Your user account is not linked to an employee record.")
-                }),
-                headers=[("Content-Type", "application/json")]
+                json.dumps(
+                    {
+                        "success": False,
+                        "error": _(
+                            "Your user account is not linked to an employee record."
+                        ),
+                    }
+                ),
+                headers=[("Content-Type", "application/json")],
             )
 
         try:
@@ -376,6 +320,15 @@ class AhaduSelfServicePortal(CustomerPortal):
             def safe_int(val):
                 return int(val) if val and str(val).isdigit() else False
 
+            # Safe many-to-many languages parsing (supports arrays or comma-delimited strings)
+            lang_ids_list = []
+            raw_langs = request.httprequest.form.getlist("language_ids")
+            for rl in raw_langs:
+                for part in rl.split(","):
+                    part = part.strip()
+                    if part.isdigit():
+                        lang_ids_list.append(int(part))
+
             vals = {
                 "employee_id": employee.id,
                 # Personal Info
@@ -388,16 +341,7 @@ class AhaduSelfServicePortal(CustomerPortal):
                 "subcity": kw.get("subcity"),
                 "marital": kw.get("marital"),
                 "wedding_date": self._parse_portal_date(kw.get("wedding_date")) or None,
-                "language_ids": [
-                    (
-                        6,
-                        0,
-                        [
-                            int(lang)
-                            for lang in request.httprequest.form.getlist("language_ids")
-                        ],
-                    )
-                ],
+                "language_ids": [(6, 0, lang_ids_list)],
                 "blood_group": kw.get("blood_group"),
                 "physical_challenge": kw.get("physical_challenge"),
                 "physical_challenge_detail": kw.get("physical_challenge_detail"),
@@ -442,20 +386,28 @@ class AhaduSelfServicePortal(CustomerPortal):
                 "cost_sharing_amount": float(kw.get("cost_sharing_amount") or 0.0),
             }
 
-            # File Uploads
-            if kw.get("national_id_file"):
+            # File Uploads with validation check on filename to prevent clearing of existing records
+            if kw.get("national_id_file") and getattr(
+                kw.get("national_id_file"), "filename", ""
+            ):
                 f = kw.get("national_id_file")
                 vals["national_id_file"] = base64.b64encode(f.read())
                 vals["national_id_filename"] = f.filename
-            if kw.get("kebele_id_file"):
+            if kw.get("kebele_id_file") and getattr(
+                kw.get("kebele_id_file"), "filename", ""
+            ):
                 f = kw.get("kebele_id_file")
                 vals["kebele_id_file"] = base64.b64encode(f.read())
                 vals["kebele_id_filename"] = f.filename
-            if kw.get("passport_file"):
+            if kw.get("passport_file") and getattr(
+                kw.get("passport_file"), "filename", ""
+            ):
                 f = kw.get("passport_file")
                 vals["passport_file"] = base64.b64encode(f.read())
                 vals["passport_filename"] = f.filename
-            if kw.get("cost_sharing_document"):
+            if kw.get("cost_sharing_document") and getattr(
+                kw.get("cost_sharing_document"), "filename", ""
+            ):
                 f = kw.get("cost_sharing_document")
                 vals["cost_sharing_document"] = base64.b64encode(f.read())
                 vals["cost_sharing_document_filename"] = f.filename
@@ -524,7 +476,6 @@ class AhaduSelfServicePortal(CustomerPortal):
                     edu_cert_file = kw.get(f"edu_certificate_{idx}")
                     keep_file = kw.get(f"edu_keep_file_{idx}")
 
-                    # Basic values
                     line_vals = {
                         "type_of_institution": kw.get(f"edu_institution_type_{idx}"),
                         "school": kw.get(f"edu_school_{idx}"),
@@ -539,18 +490,78 @@ class AhaduSelfServicePortal(CustomerPortal):
                         ),
                     }
 
-                    # File handling
-                    if edu_cert_file:
+                    # Safely bind file content or pull from existing record to avoid database constraint failures
+                    if edu_cert_file and getattr(edu_cert_file, "filename", ""):
                         line_vals["certification_attachment"] = base64.b64encode(
                             edu_cert_file.read()
                         )
                         line_vals["certification_filename"] = edu_cert_file.filename
-                    elif keep_file:
-                        pass
+                    elif keep_file and str(keep_file).isdigit():
+                        existing_edu = (
+                            request.env["hr.employee.education"]
+                            .sudo()
+                            .browse(int(keep_file))
+                        )
+                        if existing_edu.exists():
+                            line_vals["certification_attachment"] = (
+                                existing_edu.certification_attachment
+                            )
+                            line_vals["certification_filename"] = (
+                                existing_edu.certification_filename
+                            )
 
                     education_vals.append((0, 0, line_vals))
             if education_vals:
                 vals["education_ids"] = education_vals
+
+            # 5. Handle Dynamic Previous Experience Rows
+            experience_vals = []
+            exp_keys = [k for k in kw.keys() if k.startswith("exp_company_")]
+            for key in exp_keys:
+                idx = key.split("_")[-1]
+                if kw.get(f"exp_company_{idx}"):
+                    exp_attachment_file = kw.get(f"exp_attachment_{idx}")
+                    keep_file = kw.get(f"exp_keep_file_{idx}")
+
+                    line_vals = {
+                        "company_name": kw.get(f"exp_company_{idx}"),
+                        "job_title": kw.get(f"exp_job_title_{idx}"),
+                        "location": kw.get(f"exp_location_{idx}"),
+                        "previous_salary": float(kw.get(f"exp_salary_{idx}") or 0.0),
+                        "start_date": self._parse_portal_date(
+                            kw.get(f"exp_start_date_{idx}")
+                        ),
+                        "end_date": self._parse_portal_date(
+                            kw.get(f"exp_end_date_{idx}")
+                        )
+                        or None,
+                        "reason_for_leaving": kw.get(f"exp_reason_{idx}"),
+                        "job_description": kw.get(f"exp_description_{idx}"),
+                    }
+
+                    # Safely bind experience proof file content or pull from existing record
+                    if exp_attachment_file and getattr(
+                        exp_attachment_file, "filename", ""
+                    ):
+                        line_vals["attachment"] = base64.b64encode(
+                            exp_attachment_file.read()
+                        )
+                        line_vals["attachment_filename"] = exp_attachment_file.filename
+                    elif keep_file and str(keep_file).isdigit():
+                        existing_exp = (
+                            request.env["hr.employee.experience"]
+                            .sudo()
+                            .browse(int(keep_file))
+                        )
+                        if existing_exp.exists():
+                            line_vals["attachment"] = existing_exp.attachment
+                            line_vals["attachment_filename"] = (
+                                existing_exp.attachment_filename
+                            )
+
+                    experience_vals.append((0, 0, line_vals))
+            if experience_vals:
+                vals["experience_ids"] = experience_vals
 
             # Create Record
             onboarding_request = (
@@ -559,23 +570,17 @@ class AhaduSelfServicePortal(CustomerPortal):
             onboarding_request.sudo().action_submit()
 
             return request.make_response(
-                json.dumps({
-                    "success": True, 
-                    "redirect": "/my/onboarding/success"
-                }),
-                headers=[("Content-Type", "application/json")]
+                json.dumps({"success": True, "redirect": "/my/onboarding/success"}),
+                headers=[("Content-Type", "application/json")],
             )
 
         except (ValidationError, Exception) as e:
             _logger.error("Error during onboarding submission: %s", e, exc_info=True)
             error_msg = str(e)
-            if hasattr(e, 'name'):
+            if hasattr(e, "name"):
                 error_msg = e.name
 
             return request.make_response(
-                json.dumps({
-                    "success": False, 
-                    "error": error_msg
-                }),
-                headers=[("Content-Type", "application/json")]
+                json.dumps({"success": False, "error": error_msg}),
+                headers=[("Content-Type", "application/json")],
             )

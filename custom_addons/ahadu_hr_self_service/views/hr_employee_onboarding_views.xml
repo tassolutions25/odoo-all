@@ -12,6 +12,27 @@
                 <field name="field_of_study"/>
                 <field name="end_date"/>
                 <field name="cgpa"/>
+                <!-- Shows attached certificate binary uploads directly on the onboarding card -->
+                <field name="certification_attachment" widget="binary" filename="certification_filename"/>
+                <field name="certification_filename" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_onboarding_experience_tree" model="ir.ui.view">
+        <field name="name">hr.employee.onboarding.experience.tree</field>
+        <field name="model">hr.employee.experience</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="onboarding_id" invisible="1"/>
+                <field name="company_name"/>
+                <field name="job_title"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="duration_years" readonly="1"/>
+                <field name="previous_salary"/>
+                <field name="attachment" widget="binary" filename="attachment_filename" string="Experience Letter/Proof"/>
+                <field name="attachment_filename" invisible="1"/>
             </list>
         </field>
     </record>
@@ -93,7 +114,6 @@
                                     <field name="wedding_date" invisible="marital != 'married'"/>
                                     <field name="nationality_id"/>
                                     <field name="country_id"/>
-                                    <!-- <field name="subcity"/> -->
                                     <field name="language_ids" widget="many2many_tags"/>
                                 </group>
                             </group>
@@ -102,10 +122,6 @@
                                 <field name="physical_challenge"/>
                                 <field name="physical_challenge_detail" invisible="physical_challenge != 'yes'"/>
                             </group>
-
-                            <!-- <group string="Employee Declaration" name="declaration">
-                                <field name="declaration_confirmed" readonly="1" widget="boolean_toggle"/>
-                            </group> -->
                         </page>
                         <page string="Contact &amp; ID">
                              <group>
@@ -143,7 +159,7 @@
                                 <field name="emergency_contact_address_country_id"/>
                             </group>
                             <separator string="Bank Accounts"/>
-        <field name="bank_account_ids" context="{'tree_view_ref': 'ahadu_hr_self_service.view_hr_employee_onboarding_bank_tree'}"/>
+                            <field name="bank_account_ids" context="{'tree_view_ref': 'ahadu_hr_self_service.view_hr_employee_onboarding_bank_tree'}"/>
                         </page>
                         <page string="Family Details">
                             <field name="family_ids" context="{'tree_view_ref': 'ahadu_hr_self_service.view_hr_employee_onboarding_family_tree'}"/>
@@ -151,6 +167,10 @@
                         <page string="Education History">
                             <field name="education_ids" nolabel="1"
                                    context="{'tree_view_ref': 'ahadu_hr_self_service.view_hr_employee_onboarding_education_tree'}"/>
+                        </page>
+                        <page string="Previous Experience">
+                            <field name="experience_ids" nolabel="1"
+                                   context="{'tree_view_ref': 'ahadu_hr_self_service.view_hr_employee_onboarding_experience_tree'}"/>
                         </page>
                         <page string="Passport &amp; Cost-Sharing">
                              <group string="Passport Details">
@@ -172,14 +192,14 @@
                         </page>
                         <page string="Approval History">
                             <field name="approval_line_ids" readonly="1">
-                         <list>
-                            <field name="sequence" widget="handle"/>
-                            <field name="approver_id"/>
-                            <field name="status" widget="badge" decoration-success="status == 'approved'" decoration-warning="status == 'pending'" decoration-danger="status == 'rejected'"/>
-                            <field name="approval_date"/>
-                            <field name="comments"/>
-                        </list>
-                    </field>
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="approver_id"/>
+                                    <field name="status" widget="badge" decoration-success="status == 'approved'" decoration-warning="status == 'pending'" decoration-danger="status == 'rejected'"/>
+                                    <field name="approval_date"/>
+                                    <field name="comments"/>
+                                </list>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
@@ -205,6 +225,4 @@
         <field name="res_model">hr.employee.onboarding</field>
         <field name="view_mode">list,form</field>
     </record>
-
-
 </odoo>
