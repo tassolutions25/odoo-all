@@ -130,46 +130,45 @@
         <t t-call="website.layout">
             <div id="wrap">
                 <div class="container py-5">
-                    <t t-if="pending_request">
-                         <div class="alert alert-info text-center" role="alert">
-                            <h4 class="alert-heading">Request Already Submitted!</h4>
-                            <p>You have a pending document request. You can submit a new one after the current one is processed.</p>
-                            <p>Current Status: <strong t-esc="dict(pending_request._fields['state'].selection).get(pending_request.state)"/>.</p>
-                            <a href="/my/dashboard" class="btn btn-primary">Back to Dashboard</a>
+                    <t t-if="editable_request">
+                        <div class="alert alert-info" role="alert">
+                            <h5 class="alert-heading"><i class="fa fa-edit me-2"/>Editing Existing Request</h5>
+                            <p class="mb-0">Your document request is currently in <strong><t t-esc="dict(editable_request._fields['state'].selection).get(editable_request.state)"/></strong> state. You can update and resubmit below.</p>
                         </div>
                     </t>
-                    <t t-else="">
-                        <div class="text-center mb-5">
-                            <h2>Employee Document Request</h2>
-                            <p class="lead">Please select the type of document you need and provide a reason.</p>
+                    <div class="text-center mb-5">
+                        <h2>Employee Document Request</h2>
+                        <p class="lead">Please select the type of document you need and provide a reason.</p>
+                    </div>
+                    <form action="/my/document_request/submit" method="post" enctype="multipart/form-data" class="col-md-8 mx-auto">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <t t-if="editable_request">
+                            <input type="hidden" name="doc_request_id" t-att-value="editable_request.id"/>
+                        </t>
+                        <div class="mb-3">
+                            <label for="document_type" class="form-label">Type of Document <span class="text-danger">*</span></label>
+                            <select name="document_type" class="form-select" required="1">
+                                <option value="">Select a document...</option>
+                                <option value="experience" t-att-selected="editable_request and editable_request.document_type == 'experience'">Experience Letter</option>
+                                <option value="guarantee" t-att-selected="editable_request and editable_request.document_type == 'guarantee'">Guarantee Letter</option>
+                                <option value="permanency" t-att-selected="editable_request and editable_request.document_type == 'permanency'">Permanency Letter</option>
+                                <option value="id" t-att-selected="editable_request and editable_request.document_type == 'id'">ID Card Request/Renewal</option>
+                            </select>
                         </div>
-
-                        <form action="/my/document_request/submit" method="post" enctype="multipart/form-data" class="col-md-8 mx-auto">
-                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                            <div class="mb-3">
-                                <label for="document_type" class="form-label">Type of Document <span class="text-danger">*</span></label>
-                                <select name="document_type" class="form-select" required="1">
-                                    <option value="">Select a document...</option>
-                                    <option value="experience">Experience Letter</option>
-                                    <option value="guarantee">Guarantee Letter</option>
-                                    <option value="permanency">Permanency Letter</option>
-                                    <option value="id">ID Card Request/Renewal</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="reason" class="form-label">Reason for Request <span class="text-danger">*</span></label>
-                                <textarea name="reason" class="form-control" rows="4" required="1" placeholder="Please explain why you need this document..."/>
-                            </div>
-                            <div class="mb-3">
-                                <label for="document_file" class="form-label">Attach Letter (Optional)</label>
-                                <input type="file" name="document_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/>
-                                <div class="form-text">Upload a supporting document or request letter if required.</div>
-                            </div>
-                            <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg">Submit Request</button>
-                            </div>
-                        </form>
-                    </t>
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason for Request <span class="text-danger">*</span></label>
+                            <textarea name="reason" class="form-control" rows="4" required="1" placeholder="Please explain why you need this document..."><t t-esc="editable_request.reason if editable_request else ''"/></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="document_file" class="form-label">Attach Letter (Optional)</label>
+                            <input type="file" name="document_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/>
+                            <div class="form-text">Upload a supporting document or request letter if required.</div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="/my/dashboard" class="btn btn-secondary">&#8592; Back to Dashboard</a>
+                            <button type="submit" class="btn btn-primary btn-lg">Submit Request</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </t>
@@ -195,53 +194,48 @@
         <t t-call="website.layout">
             <div id="wrap">
                 <div class="container py-5">
-                    <t t-if="pending_request">
-                         <div class="alert alert-warning text-center" role="alert">
-                            <h4 class="alert-heading">Request Already Pending</h4>
-                            <p>You have already submitted a resignation request on <span t-field="pending_request.resignation_date"/>. It is currently in state: <strong t-esc="pending_request.state"/>.</p>
-                            <a href="/my/dashboard" class="btn btn-primary">Back to Dashboard</a>
+                    <t t-if="editable_request">
+                        <div class="alert alert-info" role="alert">
+                            <h5 class="alert-heading"><i class="fa fa-edit me-2"/>Editing Existing Request</h5>
+                            <p class="mb-0">Your resignation request is currently in <strong><t t-esc="dict(editable_request._fields['state'].selection).get(editable_request.state)"/></strong> state. You can update the details below and resubmit.</p>
                         </div>
                     </t>
-                    <t t-else="">
-                        <div class="text-center mb-5">
-                            <h2>Submit Resignation</h2>
-                            <p class="lead">We are sorry to see you go. Please provide the details for your departure.</p>
+                    <div class="text-center mb-5">
+                        <h2>Submit Resignation</h2>
+                        <p class="lead">We are sorry to see you go. Please provide the details for your departure.</p>
+                    </div>
+                    <form action="/my/resignation/submit" method="post" class="col-md-8 mx-auto">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <t t-if="editable_request">
+                            <input type="hidden" name="resignation_id" t-att-value="editable_request.id"/>
+                        </t>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                <label class="form-label">Resignation Date <span class="text-danger">*</span></label>
+                                <input type="text" name="resignation_date" class="form-control ahadu-datepicker"
+                                    required="1" placeholder="DD/MM/YYYY"
+                                    t-att-value="editable_request.resignation_date.strftime('%d/%m/%Y') if editable_request and editable_request.resignation_date else datetime.date.today().strftime('%d/%m/%Y')"/>
+                                <div class="form-text">The date you are officially notifying the bank.</div>
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                <label class="form-label">Proposed Last Working Day <span class="text-danger">*</span></label>
+                                <input type="text" name="last_day" class="form-control ahadu-datepicker" required="1" placeholder="DD/MM/YYYY"
+                                    t-att-value="editable_request.proposed_last_working_day.strftime('%d/%m/%Y') if editable_request and editable_request.proposed_last_working_day else ''"/>
+                                <div class="form-text">The final day you intend to work.</div>
+                            </div>
                         </div>
-
-                        <form action="/my/resignation/submit" method="post" class="col-md-8 mx-auto">
-                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                            
-                            <div class="row">
-                                <div class="mb-3 col-md-6">
-                                    <label class="form-label">Resignation Date <span class="text-danger">*</span></label>
-                                    <input type="text" name="resignation_date" class="form-control ahadu-datepicker" 
-                                        required="1" placeholder="DD/MM/YYYY"
-                                        t-att-value="datetime.date.today().strftime('%d/%m/%Y')"/>
-                                    <div class="form-text">The date you are officially notifying the bank.</div>
-                                </div>
-
-                                <div class="mb-3 col-md-6">
-                                    <label class="form-label">Proposed Last Working Day <span class="text-danger">*</span></label>
-                                    <input type="text" name="last_day" class="form-control ahadu-datepicker" required="1" placeholder="DD/MM/YYYY"/>
-                                    <div class="form-text">The final day you intend to work.</div>
-                                </div>
-                            </div>               
-
-                            <div class="mb-3">
-                                <label class="form-label">Reason for Resignation <span class="text-danger">*</span></label>
-                                <textarea name="reason" class="form-control" rows="4" required="1" placeholder="Please provide your reason..."/>
-                            </div>
-
-                            <div class="alert alert-info border-info">
-                                <i class="fa fa-info-circle"/> <strong>Note:</strong> Your 30-day notice period and automatic archive date will be calculated based on the <u>Resignation Date</u> provided above.
-                            </div>
-
-                            <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-danger btn-lg">Submit Resignation</button>
-                                <a href="/my/dashboard" class="btn btn-link">Cancel</a>
-                            </div>
-                        </form>
-                    </t>
+                        <div class="mb-3">
+                            <label class="form-label">Reason for Resignation <span class="text-danger">*</span></label>
+                            <textarea name="reason" class="form-control" rows="4" required="1" placeholder="Please provide your reason..."><t t-esc="editable_request.reason if editable_request else ''"/></textarea>
+                        </div>
+                        <div class="alert alert-info border-info">
+                            <i class="fa fa-info-circle"/> <strong>Note:</strong> Your 30-day notice period and automatic archive date will be calculated based on the <u>Resignation Date</u> provided above.
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="/my/dashboard" class="btn btn-secondary">&#8592; Back to Dashboard</a>
+                            <button type="submit" class="btn btn-danger btn-lg">Submit Resignation</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </t>
@@ -278,25 +272,37 @@
         <t t-call="website.layout">
             <div id="wrap" class="o_onboarding_form">
                 <div class="container py-5">
-                    <t t-if="pending_request">
-                         <div class="alert alert-info text-center" role="alert">
-                            <h4 class="alert-heading">Request Submitted!</h4>
-                            <p>You have a pending profile update request. You can submit a new one after the current one is processed.</p>
-                            <p>Current Status: <strong t-esc="dict(pending_request._fields['state'].selection).get(pending_request.state)"/>.</p>
-                            <a href="/my/dashboard" class="btn btn-primary">Back to Dashboard</a>
+                    <t t-if="editable_request">
+                        <div class="alert alert-info" role="alert">
+                            <h5 class="alert-heading"><i class="fa fa-edit me-2"/>Editing Existing Request</h5>
+                            <p class="mb-0">Your profile update request is currently in <strong><t t-esc="dict(editable_request._fields['state'].selection).get(editable_request.state)"/></strong> state. You can update the details below and resubmit.</p>
                         </div>
                     </t>
-                    <t t-else="">
-                        <div class="text-center mb-5">
-                            <h2>Employee Profile Update Form</h2>
-                            <p class="lead">Please fill out or verify the information below and submit it for approval.</p>
-                            <div id="draft_alert" class="alert alert-info d-none">
-                                <i class="fa fa-info-circle"/> Restored saved draft data.
-                            </div>
+                    <t t-if="rejected_request">
+                        <div class="alert alert-danger" role="alert">
+                            <h5 class="alert-heading"><i class="fa fa-exclamation-triangle me-2"/>Previous Request Rejected</h5>
+                            <p class="mb-1">Your previous profile update request was rejected.</p>
+                            <t t-if="rejection_reason">
+                                <p class="mb-0"><strong>Reason for Rejection:</strong> <span t-esc="rejection_reason"/></p>
+                            </t>
                         </div>
+                    </t>
 
-                        <form id="ahadu_onboarding_form" action="/my/onboarding/submit" method="post" enctype="multipart/form-data" novalidate="1">
-                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <t t-set="onb_val" t-value="editable_request or employee"/>
+
+                    <div class="text-center mb-5">
+                        <h2>Employee Profile Update Form</h2>
+                        <p class="lead">Please fill out or verify the information below and submit it for approval.</p>
+                        <div id="draft_alert" class="alert alert-info d-none">
+                            <i class="fa fa-info-circle"/> Restored saved draft data.
+                        </div>
+                    </div>
+
+                    <form id="ahadu_onboarding_form" action="/my/onboarding/submit" method="post" enctype="multipart/form-data" novalidate="1">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <t t-if="editable_request">
+                            <input type="hidden" name="onboarding_id" t-att-value="editable_request.id"/>
+                        </t>
                             
                             <ul class="nav nav-tabs" id="onboardingTab" role="tablist">
                                 <li class="nav-item" role="presentation"><button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">Personal Information</button></li>
@@ -315,11 +321,11 @@
                                 <!-- Personal Info -->
                                 <div class="tab-pane fade show active" id="personal" role="tabpanel">
                                     <div class="row">
-                                        <div class="mb-3 col-md-2"><label for="salutation" class="form-label">Salutation <span class="text-danger">*</span></label><select name="salutation" class="form-select" required="1"><option value="">...</option><option value="mr" t-att-selected="employee.salutation == 'mr'">Mr.</option><option value="mrs" t-att-selected="employee.salutation == 'mrs'">Mrs.</option><option value="ms" t-att-selected="employee.salutation == 'ms'">Ms.</option><option value="dr" t-att-selected="employee.salutation == 'dr'">Dr.</option><option value="prof" t-att-selected="employee.salutation == 'prof'">Prof.</option></select></div>
-                                        <div class="mb-3 col-md-4"><label for="first_name" class="form-label">First Name</label><input type="text" class="form-control" name="first_name" t-att-value="employee.first_name" readonly="1"/></div>
-                                        <div class="mb-3 col-md-3"><label for="middle_name" class="form-label">Middle Name</label><input type="text" class="form-control" name="middle_name" t-att-value="employee.middle_name" readonly="1"/></div>
-                                        <div class="mb-3 col-md-3"><label for="last_name" class="form-label">Last Name</label><input type="text" class="form-control" name="last_name" t-att-value="employee.last_name" readonly="1"/></div>
-                                        <div class="mb-3 col-md-4"><label for="gender" class="form-label">Gender <span class="text-danger">*</span></label><select name="gender" class="form-select" required="1"><option value="">...</option><option value="male" t-att-selected="employee.gender_updated == 'male'">Male</option><option value="female" t-att-selected="employee.gender_updated == 'female'">Female</option></select></div>
+                                        <div class="mb-3 col-md-2"><label for="salutation" class="form-label">Salutation <span class="text-danger">*</span></label><select name="salutation" class="form-select" required="1"><option value="">...</option><option value="mr" t-att-selected="onb_val.salutation == 'mr'">Mr.</option><option value="mrs" t-att-selected="onb_val.salutation == 'mrs'">Mrs.</option><option value="ms" t-att-selected="onb_val.salutation == 'ms'">Ms.</option><option value="dr" t-att-selected="onb_val.salutation == 'dr'">Dr.</option><option value="prof" t-att-selected="onb_val.salutation == 'prof'">Prof.</option></select></div>
+                                        <div class="mb-3 col-md-4"><label for="first_name" class="form-label">First Name</label><input type="text" class="form-control" name="first_name" t-att-value="onb_val.first_name" readonly="1"/></div>
+                                        <div class="mb-3 col-md-3"><label for="middle_name" class="form-label">Middle Name</label><input type="text" class="form-control" name="middle_name" t-att-value="onb_val.middle_name" readonly="1"/></div>
+                                        <div class="mb-3 col-md-3"><label for="last_name" class="form-label">Last Name</label><input type="text" class="form-control" name="last_name" t-att-value="onb_val.last_name" readonly="1"/></div>
+                                        <div class="mb-3 col-md-4"><label for="gender" class="form-label">Gender <span class="text-danger">*</span></label><select name="gender" class="form-select" required="1"><option value="">...</option><option value="male" t-att-selected="onb_val.gender_updated == 'male'">Male</option><option value="female" t-att-selected="onb_val.gender_updated == 'female'">Female</option></select></div>
                                         
                                         <!-- Birthday -->
                                         <div class="mb-3 col-md-4">
@@ -329,20 +335,19 @@
                                                 placeholder="DD/MM/YYYY" 
                                                 readonly="1"
                                                 required="1"
-                                                t-att-value="employee.birthday.strftime('%d/%m/%Y') if employee.birthday else ''"/>
+                                                t-att-value="onb_val.birthday.strftime('%d/%m/%Y') if onb_val.birthday else ''"/>
                                         </div>
                                         
-                                        <div class="mb-3 col-md-4"><label for="birth_place" class="form-label">Place of Birth</label><input type="text" class="form-control" name="birth_place" t-att-value="employee.birth_place"/></div>
-                                        <div class="mb-3 col-md-3"><label for="nationality_id" class="form-label">Nationality</label><select name="nationality_id" class="form-select"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.nationality_id.id or 68)" t-esc="c.name"/></t></select></div>
-                                        <div class="mb-3 col-md-3"><label for="country_id" class="form-label">Country of Residence <span class="text-danger">*</span></label><select name="country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
-                                        <!-- <div class="mb-3 col-md-3"><label for="marital" class="form-label">Marital Status</label><select name="marital" class="form-select"><option value="">...</option><option value="single" t-att-selected="employee.marital == 'single'">Single</option><option value="married" t-att-selected="employee.marital == 'married'">Married</option><option value="cohabitant" t-att-selected="employee.marital == 'cohabitant'">Legal Cohabitant</option><option value="widower" t-att-selected="employee.marital == 'widower'">Widower</option><option value="divorced" t-att-selected="employee.marital == 'divorced'">Divorced</option></select></div> -->
-                                        <div class="mb-3 col-md-3"><label for="marital" class="form-label">Marital Status</label><select name="marital" class="form-select"><option value="">...</option><option value="single" t-att-selected="employee.marital == 'single'">Single</option><option value="married" t-att-selected="employee.marital == 'married'">Married</option><option value="widower" t-att-selected="employee.marital == 'widower'">Widower</option><option value="divorced" t-att-selected="employee.marital == 'divorced'">Divorced</option></select></div>
+                                        <div class="mb-3 col-md-4"><label for="birth_place" class="form-label">Place of Birth</label><input type="text" class="form-control" name="birth_place" t-att-value="onb_val.birth_place"/></div>
+                                        <div class="mb-3 col-md-3"><label for="nationality_id" class="form-label">Nationality</label><select name="nationality_id" class="form-select"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (onb_val.nationality_id.id or 68)" t-esc="c.name"/></t></select></div>
+                                        <div class="mb-3 col-md-3"><label for="country_id" class="form-label">Country of Residence <span class="text-danger">*</span></label><select name="country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (onb_val.country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
+                                        <div class="mb-3 col-md-3"><label for="marital" class="form-label">Marital Status</label><select name="marital" class="form-select"><option value="">...</option><option value="single" t-att-selected="onb_val.marital == 'single'">Single</option><option value="married" t-att-selected="onb_val.marital == 'married'">Married</option><option value="widower" t-att-selected="onb_val.marital == 'widower'">Widower</option><option value="divorced" t-att-selected="onb_val.marital == 'divorced'">Divorced</option></select></div>
                                         <div class="mb-3 col-md-4">
                                             <label for="wedding_date" class="form-label">Wedding Date (DD/MM/YYYY)</label>
                                             <input type="text" name="wedding_date" 
                                                 class="form-control ahadu-datepicker" 
                                                 placeholder="DD/MM/YYYY"
-                                                t-att-value="employee.wedding_date.strftime('%d/%m/%Y') if employee.wedding_date else ''"/>
+                                                t-att-value="onb_val.wedding_date.strftime('%d/%m/%Y') if onb_val.wedding_date else ''"/>
                                         </div>
                                         
                                         <!-- Languages Spoken -->
@@ -351,11 +356,11 @@
                                             <select name="language_ids" id="language_ids" multiple="multiple" required="1" class="d-none">
                                                 <t t-foreach="languages" t-as="language_rec">
                                                     <option t-att-value="language_rec.id" 
-                                                            t-att-selected="language_rec.id in employee.language_ids.ids" 
+                                                            t-att-selected="language_rec.id in onb_val.language_ids.ids" 
                                                             t-esc="language_rec.name"/>
                                                 </t>
                                             </select>
-
+ 
                                             <!-- Dropdown Interface -->
                                             <div class="dropdown" id="language_dropdown_container">
                                                 <button class="btn btn-white w-100 text-start d-flex align-items-center justify-content-between form-select" 
@@ -370,6 +375,14 @@
                                                     <li class="px-3 py-2">
                                                         <input type="text" class="form-control form-control-sm" id="langSearch" placeholder="Search language..." autocomplete="off"/>
                                                     </li>
+                                                    <li class="dropdown-item-text px-3 py-1 select-all-item">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="selectAllLanguages"/>
+                                                            <label class="form-check-label w-100 cursor-pointer text-dark" for="selectAllLanguages">
+                                                                <strong>Select/Unselect All</strong>
+                                                            </label>
+                                                        </div>
+                                                    </li>
                                                     <li><hr class="dropdown-divider"/></li>
                                                     <t t-foreach="languages" t-as="language_rec">
                                                         <li class="dropdown-item-text px-3 py-1">
@@ -377,7 +390,7 @@
                                                                 <input class="form-check-input language-checkbox" type="checkbox" 
                                                                        t-att-value="language_rec.id" 
                                                                        t-att-id="'lang_' + str(language_rec.id)"
-                                                                       t-att-checked="'checked' if language_rec.id in employee.language_ids.ids else None"/>
+                                                                       t-att-checked="'checked' if language_rec.id in onb_val.language_ids.ids else None"/>
                                                                 <label class="form-check-label w-100 cursor-pointer text-dark" t-att-for="'lang_' + str(language_rec.id)">
                                                                     <t t-esc="language_rec.name"/>
                                                                 </label>
@@ -387,29 +400,29 @@
                                                 </ul>
                                             </div>
                                         </div>
-
-                                        <div class="mb-3 col-md-4"><label for="blood_group" class="form-label">Blood Group</label><select name="blood_group" class="form-select"><option value="">...</option><option value="A+" t-att-selected="employee.blood_group == 'A+'">A+</option><option value="A-" t-att-selected="employee.blood_group == 'A-'">A-</option><option value="B+" t-att-selected="employee.blood_group == 'B+'">B+</option><option value="B-" t-att-selected="employee.blood_group == 'B-'">B-</option><option value="O+" t-att-selected="employee.blood_group == 'O+'">O+</option><option value="O-" t-att-selected="employee.blood_group == 'O-'">O-</option><option value="AB+" t-att-selected="employee.blood_group == 'AB+'">AB+</option><option value="AB-" t-att-selected="employee.blood_group == 'AB-'">AB-</option></select></div>
+ 
+                                        <div class="mb-3 col-md-4"><label for="blood_group" class="form-label">Blood Group</label><select name="blood_group" class="form-select"><option value="">...</option><option value="A+" t-att-selected="onb_val.blood_group == 'A+'">A+</option><option value="A-" t-att-selected="onb_val.blood_group == 'A-'">A-</option><option value="B+" t-att-selected="onb_val.blood_group == 'B+'">B+</option><option value="B-" t-att-selected="onb_val.blood_group == 'B-'">B-</option><option value="O+" t-att-selected="onb_val.blood_group == 'O+'">O+</option><option value="O-" t-att-selected="onb_val.blood_group == 'O-'">O-</option><option value="AB+" t-att-selected="onb_val.blood_group == 'AB+'">AB+</option><option value="AB-" t-att-selected="onb_val.blood_group == 'AB-'">AB-</option></select></div>
                                         <div class="mb-3 col-md-4">
                                             <label for="physical_challenge" class="form-label">Physical Challenge</label>
                                             <select name="physical_challenge" id="physical_challenge_select" class="form-select">
                                                 <option value="">...</option>
-                                                <option value="yes" t-att-selected="employee.physical_challenge == 'yes'">Yes</option>
-                                                <option value="no" t-att-selected="employee.physical_challenge == 'no'">No</option>
+                                                <option value="yes" t-att-selected="onb_val.physical_challenge == 'yes'">Yes</option>
+                                                <option value="no" t-att-selected="onb_val.physical_challenge == 'no'">No</option>
                                             </select>
                                         </div>
-
-                                        <div t-attf-class="mb-3 col-md-8 {{'d-none' if employee.physical_challenge != 'yes' else ''}}" id="physical_challenge_detail_div">
+ 
+                                        <div t-attf-class="mb-3 col-md-8 {{'d-none' if onb_val.physical_challenge != 'yes' else ''}}" id="physical_challenge_detail_div">
                                             <label for="physical_challenge_detail" class="form-label">Describe Challenge</label>
                                             <textarea name="physical_challenge_detail" 
                                                     id="physical_challenge_detail" 
                                                     class="form-control" 
                                                     style="min-height: 80px;" 
                                                     rows="3" 
-                                                    placeholder="Please provide details about the physical challenge..."><t t-esc="employee.physical_challenge_detail or ''"/></textarea>
+                                                    placeholder="Please provide details about the physical challenge..."><t t-esc="onb_val.physical_challenge_detail or ''"/></textarea>
                                         </div>
-                                        <div class="mb-3 col-md-6"><label for="national_id_number" class="form-label">National ID Number</label><input type="text" name="national_id_number" class="form-control" t-att-value="employee.identification_id"/></div>
+                                        <div class="mb-3 col-md-6"><label for="national_id_number" class="form-label">National ID Number</label><input type="text" name="national_id_number" class="form-control" t-att-value="onb_val.identification_id"/></div>
                                         <div class="mb-3 col-md-6"><label for="national_id_file" class="form-label">National ID (Photo)</label><input type="file" name="national_id_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
-                                        <div class="mb-3 col-md-6"><label for="kebele_id_number" class="form-label">Kebele ID Number</label><input type="text" name="kebele_id_number" class="form-control" t-att-value="employee.kebele_id"/></div>
+                                        <div class="mb-3 col-md-6"><label for="kebele_id_number" class="form-label">Kebele ID Number</label><input type="text" name="kebele_id_number" class="form-control" t-att-value="onb_val.kebele_id"/></div>
                                         <div class="mb-3 col-md-6"><label for="kebele_id_file" class="form-label">Kebele ID (Photo)</label><input type="file" name="kebele_id_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
                                     </div>
                                 </div>
@@ -417,35 +430,35 @@
                                 <!-- Contact -->
                                 <div class="tab-pane fade" id="contact" role="tabpanel">
                                     <div class="row">
-                                        <div class="mb-3 col-md-6"><label for="work_phone" class="form-label">Work Phone</label><input type="tel" name="work_phone" class="form-control" t-att-value="employee.work_phone" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
-                                        <div class="mb-3 col-md-6"><label for="private_phone" class="form-label">Private Phone <span class="text-danger">*</span></label><input type="tel" name="private_phone" class="form-control" t-att-value="employee.mobile_phone" required="1" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
-                                        <div class="mb-3 col-md-6"><label for="work_email" class="form-label">Work Email</label><input type="email" name="work_email" class="form-control" t-att-value="employee.work_email"/></div>
-                                        <div class="mb-3 col-md-6"><label for="private_email" class="form-label">Private Email</label><input type="email" name="private_email" class="form-control" t-att-value="employee.private_email"/></div>
+                                        <div class="mb-3 col-md-6"><label for="work_phone" class="form-label">Work Phone</label><input type="tel" name="work_phone" class="form-control" t-att-value="onb_val.work_phone" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
+                                        <div class="mb-3 col-md-6"><label for="private_phone" class="form-label">Private Phone <span class="text-danger">*</span></label><input type="tel" name="private_phone" class="form-control" t-att-value="onb_val.mobile_phone" required="1" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
+                                        <div class="mb-3 col-md-6"><label for="work_email" class="form-label">Work Email</label><input type="email" name="work_email" class="form-control" t-att-value="onb_val.work_email"/></div>
+                                        <div class="mb-3 col-md-6"><label for="private_email" class="form-label">Private Email</label><input type="email" name="private_email" class="form-control" t-att-value="onb_val.private_email"/></div>
                                         <h5 class="mt-3">Current Address</h5>
-                                        <div class="mb-3 col-md-4"><label class="form-label">Subcity <span class="text-danger">*</span></label><input type="text" name="current_address_subcity" class="form-control" t-att-value="employee.subcity" required="1"/></div>
-                                        <div class="mb-3 col-md-4"><label class="form-label">Woreda <span class="text-danger">*</span></label><input type="text" name="current_address_woreda" class="form-control" t-att-value="employee.woreda" required="1"/></div>
-                                        <div class="mb-3 col-md-4"><label class="form-label">House No. <span class="text-danger">*</span></label><input type="text" name="current_address_house_number" class="form-control" t-att-value="employee.house_number" required="1"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Subcity <span class="text-danger">*</span></label><input type="text" name="current_address_subcity" class="form-control" t-att-value="onb_val.subcity" required="1"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Woreda <span class="text-danger">*</span></label><input type="text" name="current_address_woreda" class="form-control" t-att-value="onb_val.woreda" required="1"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">House No.</label><input type="text" name="current_address_house_number" class="form-control" t-att-value="onb_val.house_number"/></div>
                                         <h5 class="mt-3">Permanent Address</h5>
-                                        <div class="mb-3 col-md-6"><label class="form-label">City <span class="text-danger">*</span></label><input type="text" name="permanent_address_city" class="form-control" t-att-value="employee.permanent_address_city" required="1"/></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">Country <span class="text-danger">*</span></label><select name="permanent_address_country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.permanent_address_country_id.id or 68)" t-esc="c.name"/></t></select></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">City <span class="text-danger">*</span></label><input type="text" name="permanent_address_city" class="form-control" t-att-value="onb_val.permanent_address_city" required="1"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Country <span class="text-danger">*</span></label><select name="permanent_address_country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (onb_val.permanent_address_country_id.id or 68)" t-esc="c.name"/></t></select></div>
                                     </div>
                                 </div>
                                 
                                 <!-- Emergency -->
                                 <div class="tab-pane fade" id="emergency" role="tabpanel">
                                     <div class="row">
-                                        <div class="mb-3 col-md-6"><label class="form-label">Full Name <span class="text-danger">*</span></label><input type="text" name="emergency_name" class="form-control" t-att-value="employee.emergency_contact_name" required="1"/></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">Relationship <span class="text-danger">*</span></label><select name="emergency_relationship" class="form-select" required="1"><option value="">...</option><option value="mother" t-att-selected="employee.emergency_contact_relationship == 'mother'">Mother</option><option value="father" t-att-selected="employee.emergency_contact_relationship == 'father'">Father</option><option value="sister" t-att-selected="employee.emergency_contact_relationship == 'sister'">Sister</option><option value="brother" t-att-selected="employee.emergency_contact_relationship == 'brother'">Brother</option><option value="spouse" t-att-selected="employee.emergency_contact_relationship == 'spouse'">Spouse</option><option value="aunt" t-att-selected="employee.emergency_contact_relationship == 'aunt'">Aunt</option><option value="uncle" t-att-selected="employee.emergency_contact_relationship == 'uncle'">Uncle</option><option value="son" t-att-selected="employee.emergency_contact_relationship == 'son'">Son</option><option value="daughter" t-att-selected="employee.emergency_contact_relationship == 'daughter'">Daughter</option><option value="other" t-att-selected="employee.emergency_contact_relationship == 'other'">Other</option></select></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">City <span class="text-danger">*</span></label><input type="text" name="emergency_address_city" class="form-control" t-att-value="employee.emergency_contact_address_city" required="1"/></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">Country <span class="text-danger">*</span></label><select name="emergency_address_country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (employee.emergency_contact_address_country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
-                                        <div class="mb-3 col-md-12"><label class="form-label">Phone Number <span class="text-danger">*</span></label><input type="tel" name="emergency_phone" class="form-control" t-att-value="employee.emergency_contact_phone" required="1" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Full Name <span class="text-danger">*</span></label><input type="text" name="emergency_name" class="form-control" t-att-value="onb_val.emergency_contact_name" required="1"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Relationship <span class="text-danger">*</span></label><select name="emergency_relationship" class="form-select" required="1"><option value="">...</option><option value="mother" t-att-selected="onb_val.emergency_contact_relationship == 'mother'">Mother</option><option value="father" t-att-selected="onb_val.emergency_contact_relationship == 'father'">Father</option><option value="sister" t-att-selected="onb_val.emergency_contact_relationship == 'sister'">Sister</option><option value="brother" t-att-selected="onb_val.emergency_contact_relationship == 'brother'">Brother</option><option value="spouse" t-att-selected="onb_val.emergency_contact_relationship == 'spouse'">Spouse</option><option value="aunt" t-att-selected="onb_val.emergency_contact_relationship == 'aunt'">Aunt</option><option value="uncle" t-att-selected="onb_val.emergency_contact_relationship == 'uncle'">Uncle</option><option value="son" t-att-selected="onb_val.emergency_contact_relationship == 'son'">Son</option><option value="daughter" t-att-selected="onb_val.emergency_contact_relationship == 'daughter'">Daughter</option><option value="other" t-att-selected="onb_val.emergency_contact_relationship == 'other'">Other</option></select></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">City <span class="text-danger">*</span></label><input type="text" name="emergency_address_city" class="form-control" t-att-value="onb_val.emergency_contact_address_city" required="1"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Country <span class="text-danger">*</span></label><select name="emergency_address_country_id" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == (onb_val.emergency_contact_address_country_id.id or default_country_id)" t-esc="c.name"/></t></select></div>
+                                        <div class="mb-3 col-md-12"><label class="form-label">Phone Number <span class="text-danger">*</span></label><input type="tel" name="emergency_phone" class="form-control" t-att-value="onb_val.emergency_contact_phone" required="1" pattern="^(\+251|0)(9|7)\d{8}$" title="Format: 0912345678 or +251912345678"/></div>
                                     </div>
                                 </div>
                                 
                                 <!-- Bank Details -->
                                 <div class="tab-pane fade" id="bank" role="tabpanel">
                                     <div id="bank_lines_container">
-                                        <t t-foreach="employee.bank_account_ids" t-as="acc">
+                                        <t t-foreach="onb_val.bank_account_ids" t-as="acc">
                                             <div class="bank-row border p-3 mb-3 rounded">
                                                 <div class="row">
                                                     <div class="col-11"><h5>Bank Account <t t-esc="acc_index + 1"/></h5></div>
@@ -457,7 +470,8 @@
                                                     <div class="mb-3 col-md-6"><label class="form-label">Bank Country <span class="text-danger">*</span></label><select t-attf-name="bank_country_id_#{acc_index}" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == acc.bank_country_id.id" t-esc="c.name"/></t></select></div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Account Number <span class="text-danger">*</span></label><input type="text" t-attf-name="bank_account_number_#{acc_index}" class="form-control" t-att-value="acc.account_number" required="1"/></div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Currency <span class="text-danger">*</span></label><select t-attf-name="bank_currency_id_#{acc_index}" class="form-select" required="1"><t t-foreach="currencies" t-as="curr"><option t-att-value="curr.id" t-att-selected="curr.id == acc.currency_id.id" t-esc="curr.name"/></t></select></div>
-                                                    <div class="mb-3 col-md-6"><label class="form-label">Account Holder</label><input type="text" t-attf-name="bank_account_holder_#{acc_index}" class="form-control" t-att-value="acc.account_holder_name or employee.name"/></div>
+                                                    <!-- <div class="mb-3 col-md-6"><label class="form-label">Account Holder</label><input type="text" t-attf-name="bank_account_holder_#{acc_index}" class="form-control" t-att-value="acc.account_holder_name or onb_val.employee_id.name"/></div> -->
+                                                    <input type="text" t-attf-name="bank_account_holder_#{acc_index}" class="form-control" t-att-value="acc.account_holder_name or employee.name"/>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Account Type <span class="text-danger">*</span></label><select t-attf-name="bank_account_type_#{acc_index}" class="form-select" required="1">
                                                         <option value="salary" t-att-selected="acc.account_type == 'salary'">Salary Account</option>
                                                         <option value="saving" t-att-selected="acc.account_type == 'saving'">Saving Account</option>
@@ -478,7 +492,7 @@
                                 <!-- Family Details -->
                                 <div class="tab-pane fade" id="family" role="tabpanel">
                                     <div id="family_lines_container">
-                                        <t t-foreach="employee.family_ids" t-as="fam">
+                                        <t t-foreach="onb_val.family_ids" t-as="fam">
                                             <div class="family-row border p-3 mb-3 rounded">
                                                 <div class="row">
                                                     <div class="col-11"><h5>Family Member <t t-esc="fam_index + 1"/></h5></div>
@@ -503,11 +517,11 @@
                                         <i class="fa fa-plus"/> Add Family Member
                                     </button>
                                 </div>
-
+ 
                                 <!-- Education Details -->
                                 <div class="tab-pane fade" id="education" role="tabpanel">
                                     <div id="education_lines_container">
-                                        <t t-foreach="employee.education_ids" t-as="edu">
+                                        <t t-foreach="onb_val.education_ids" t-as="edu">
                                             <div class="education-row border p-3 mb-3 rounded">
                                                 <div class="row">
                                                     <div class="col-11"><h5>Education Record <t t-esc="edu_index + 1"/></h5></div>
@@ -543,11 +557,11 @@
                                         <i class="fa fa-plus"/> Add Education
                                     </button>
                                 </div>
-
+ 
                                 <!-- Previous Experience -->
                                 <div class="tab-pane fade" id="experience" role="tabpanel">
                                     <div id="experience_lines_container">
-                                        <t t-foreach="employee.experience_ids" t-as="exp_rec">
+                                        <t t-foreach="onb_val.experience_ids" t-as="exp_rec">
                                             <div class="experience-row border p-3 mb-3 rounded">
                                                 <div class="row">
                                                     <div class="col-11"><h5>Experience Record <t t-esc="exp_rec_index + 1"/></h5></div>
@@ -569,7 +583,7 @@
                                                     <div class="mb-3 col-md-6">
                                                         <label class="form-label">End Date (DD/MM/YYYY)</label>
                                                         <input type="text" t-attf-name="exp_end_date_#{exp_rec_index}" 
-                                                            class="form-control ahadu-datepicker" 
+                                                            class="form-control ahadu-datepicker"  
                                                             placeholder="DD/MM/YYYY"
                                                             t-att-value="exp_rec.end_date.strftime('%d/%m/%Y') if exp_rec.end_date else ''"/>
                                                     </div>
@@ -588,20 +602,20 @@
                                 <!-- Passport Details -->
                                 <div class="tab-pane fade" id="passport" role="tabpanel">
                                     <div class="row">
-                                        <div class="mb-3 col-md-6"><label class="form-label">Name as on Passport</label><input type="text" name="passport_name" class="form-control" t-att-value="employee.passport_name"/></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">Passport Number</label><input type="text" name="passport_number" class="form-control" t-att-value="employee.passport_id"/></div>
-                                        <div class="mb-3 col-md-4"><label class="form-label">Place Issued</label><input type="text" name="passport_issue_place" class="form-control" t-att-value="employee.passport_issue_place"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Name as on Passport</label><input type="text" name="passport_name" class="form-control" t-att-value="onb_val.passport_name"/></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">Passport Number</label><input type="text" name="passport_number" class="form-control" t-att-value="onb_val.passport_id"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Place Issued</label><input type="text" name="passport_issue_place" class="form-control" t-att-value="onb_val.passport_issue_place"/></div>
                                         <div class="mb-3 col-md-4">
                                             <label class="form-label">Issued Date (DD/MM/YYYY)</label>
                                             <input type="text" name="passport_issue_date" class="form-control ahadu-datepicker" 
-                                                placeholder="DD/MM/YYYY" t-att-value="employee.passport_issue_date.strftime('%d/%m/%Y') if employee.passport_issue_date else ''"/>
+                                                placeholder="DD/MM/YYYY" t-att-value="onb_val.passport_issue_date.strftime('%d/%m/%Y') if onb_val.passport_issue_date else ''"/>
                                         </div>
                                         <div class="mb-3 col-md-4">
                                             <label class="form-label">Expiry Date (DD/MM/YYYY)</label>
                                             <input type="text" name="passport_expiry_date" class="form-control ahadu-datepicker" 
-                                                placeholder="DD/MM/YYYY" t-att-value="employee.passport_expiry_date.strftime('%d/%m/%Y') if employee.passport_expiry_date else ''"/>
+                                                placeholder="DD/MM/YYYY" t-att-value="onb_val.passport_expiry_date.strftime('%d/%m/%Y') if onb_val.passport_expiry_date else ''"/>
                                         </div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">ENCR Required?</label><select name="encr_required" class="form-select"><option value="">...</option><option value="yes" t-att-selected="employee.encr_required == 'yes'">Yes</option><option value="no" t-att-selected="employee.encr_required == 'no'">No</option></select></div>
+                                        <div class="mb-3 col-md-6"><label class="form-label">ENCR Required?</label><select name="encr_required" class="form-select"><option value="">...</option><option value="yes" t-att-selected="onb_val.encr_required == 'yes'">Yes</option><option value="no" t-att-selected="onb_val.encr_required == 'no'">No</option></select></div>
                                         <div class="mb-3 col-md-6"><label class="form-label">Upload Passport</label><input type="file" name="passport_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
                                     </div>
                                 </div>
@@ -614,27 +628,27 @@
                                             <select name="cost_sharing_institution" class="form-select" 
                                                     onchange="this.value == 'government' ? document.getElementById('cost_sharing_details_div').classList.remove('d-none') : document.getElementById('cost_sharing_details_div').classList.add('d-none');">
                                                 <option value="">...</option>
-                                                <option value="government" t-att-selected="employee.cost_sharing_institution == 'government'">Government</option>
-                                                <option value="private" t-att-selected="employee.cost_sharing_institution == 'private'">Private</option>
+                                                <option value="government" t-att-selected="onb_val.cost_sharing_institution == 'government'">Government</option>
+                                                <option value="private" t-att-selected="onb_val.cost_sharing_institution == 'private'">Private</option>
                                             </select>
                                         </div>
                                         
-                                        <div id="cost_sharing_details_div" t-attf-class="row col-md-8 #{'d-none' if employee.cost_sharing_institution != 'government' else ''}">
+                                        <div id="cost_sharing_details_div" t-attf-class="row col-md-8 #{'d-none' if onb_val.cost_sharing_institution != 'government' else ''}">
                                             <div class="mb-3 col-md-6">
                                                 <label class="form-label">Status</label>
                                                 <select name="cost_sharing_status" class="form-select">
                                                     <option value="">...</option>
-                                                    <option value="paid" t-att-selected="employee.cost_sharing_status == 'paid'">Paid</option>
-                                                    <option value="unpaid" t-att-selected="employee.cost_sharing_status == 'unpaid'">Unpaid</option>
-                                                    <option value="na" t-att-selected="employee.cost_sharing_status == 'na'">N/A</option>
+                                                    <option value="paid" t-att-selected="onb_val.cost_sharing_status == 'paid'">Paid</option>
+                                                    <option value="unpaid" t-att-selected="onb_val.cost_sharing_status == 'unpaid'">Unpaid</option>
+                                                    <option value="na" t-att-selected="onb_val.cost_sharing_status == 'na'">N/A</option>
                                                 </select>
                                             </div>
                                             
                                             <div class="mb-3 col-md-6">
                                                 <label class="form-label">Commitment Amount</label>
                                                 <div class="input-group">
-                                                    <input type="number" step="0.01" name="cost_sharing_amount" class="form-control" t-att-value="employee.cost_sharing_amount"/>
-                                                    <span class="input-group-text"><t t-esc="employee.currency_id.symbol if employee.currency_id else 'ETB'"/></span>
+                                                    <input type="number" step="0.01" name="cost_sharing_amount" class="form-control" t-att-value="onb_val.cost_sharing_amount"/>
+                                                    <span class="input-group-text"><t t-esc="onb_val.currency_id.symbol if onb_val.currency_id else 'ETB'"/></span>
                                                 </div>
                                             </div>
 
@@ -660,11 +674,11 @@
                                 </div>
                             </div>
                             
-                            <div class="text-center mt-4">
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <a href="/my/dashboard" class="btn btn-secondary">&#8592; Back to Dashboard</a>
                                 <button type="submit" id="btn_submit_onboarding" class="btn btn-primary btn-lg">Submit for Approval</button>
                             </div>
                         </form>
-                    </t>
                 </div>
             </div>
 
@@ -791,10 +805,10 @@
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     // 1. Initial Counters from Server
-                    let bankCounter = <t t-esc="len(employee.bank_account_ids)"/>;
-                    let familyCounter = <t t-esc="len(employee.family_ids)"/>;
-                    let educationCounter = <t t-esc="len(employee.education_ids)"/>;
-                    let experienceCounter = <t t-esc="len(employee.experience_ids)"/>;
+                    let bankCounter = <t t-esc="len(onb_val.bank_account_ids)"/>;
+                    let familyCounter = <t t-esc="len(onb_val.family_ids)"/>;
+                    let educationCounter = <t t-esc="len(onb_val.education_ids)"/>;
+                    let experienceCounter = <t t-esc="len(onb_val.experience_ids)"/>;
 
                     const prefix = 'ahadu_onboarding_';
                     const form = document.getElementById('ahadu_onboarding_form');
@@ -810,16 +824,19 @@
                     const hiddenSelect = document.getElementById('language_ids');
                     const selectedLabel = document.getElementById('selected_languages_label');
                     const langSearch = document.getElementById('langSearch');
+                    const selectAllCb = document.getElementById('selectAllLanguages');
 
                     function updateSelectedLanguages() {
                         const selectedText = [];
                         const selectedIds = [];
+                        let checkedCount = 0;
                         
                         checkboxes.forEach(cb => {
                             if (cb.checked) {
                                 const label = document.querySelector('label[for="' + cb.id + '"]');
                                 if (label) selectedText.push(label.textContent.trim());
                                 selectedIds.push(cb.value);
+                                checkedCount++;
                             }
                         });
 
@@ -839,6 +856,11 @@
                             selectedLabel.textContent = selectedText.length + " languages selected";
                         }
 
+                        // Sync Select/Unselect All checkbox state
+                        if (selectAllCb) {
+                            selectAllCb.checked = checkboxes.length > 0 &amp;&amp; checkedCount === checkboxes.length;
+                        }
+
                         // Save selections to LocalStorage draft
                         localStorage.setItem('ahadu_onboarding_language_ids', selectedIds.join(','));
                     }
@@ -848,11 +870,26 @@
                         cb.addEventListener('change', updateSelectedLanguages);
                     });
 
+                    // Select/Unselect All click handler
+                    if (selectAllCb) {
+                        selectAllCb.addEventListener('change', function() {
+                            const checkedState = this.checked;
+                            checkboxes.forEach(cb => {
+                                const listItem = cb.closest('li.dropdown-item-text');
+                                const isVisible = listItem ? !listItem.classList.contains('d-none') : true;
+                                if (isVisible) {
+                                    cb.checked = checkedState;
+                                }
+                            });
+                            updateSelectedLanguages();
+                        });
+                    }
+
                     // Search/Filter utility within custom dropdown
                     if (langSearch) {
                         langSearch.addEventListener('input', function() {
                             const query = this.value.toLowerCase();
-                            document.querySelectorAll('#language_dropdown_menu li.dropdown-item-text').forEach(item => {
+                            document.querySelectorAll('#language_dropdown_menu li.dropdown-item-text:not(.select-all-item)').forEach(item => {
                                 const text = item.textContent.toLowerCase();
                                 if (text.includes(query)) {
                                     item.classList.remove('d-none');
@@ -1085,48 +1122,59 @@
                         });
 
                         // If no server-rendered rows AND no dynamic rows restored, auto-add a default row
-                        const serverBankCount = <t t-esc="len(employee.bank_account_ids)"/>;
+                        const serverBankCount = <t t-esc="len(onb_val.bank_account_ids)"/>;
                         const activeBankIndices = localStorage.getItem(prefix + 'bank_indices');
                         if (serverBankCount === 0 &amp;&amp; !activeBankIndices) {
                             window.addBankRow(true);
                         }
 
-                        const serverFamilyCount = <t t-esc="len(employee.family_ids)"/>;
+                        const serverFamilyCount = <t t-esc="len(onb_val.family_ids)"/>;
                         const activeFamilyIndices = localStorage.getItem(prefix + 'family_indices');
                         if (serverFamilyCount === 0 &amp;&amp; !activeFamilyIndices) {
                             window.addFamilyRow(true);
                         }
 
-                        const serverEducationCount = <t t-esc="len(employee.education_ids)"/>;
+                        const serverEducationCount = <t t-esc="len(onb_val.education_ids)"/>;
                         const activeEducationIndices = localStorage.getItem(prefix + 'education_indices');
                         if (serverEducationCount === 0 &amp;&amp; !activeEducationIndices) {
                             window.addEducationRow(true);
                         }
 
-                        const serverExperienceCount = <t t-esc="len(employee.experience_ids)"/>;
+                        const serverExperienceCount = <t t-esc="len(onb_val.experience_ids)"/>;
                         const activeExperienceIndices = localStorage.getItem(prefix + 'experience_indices');
                         if (serverExperienceCount === 0 &amp;&amp; !activeExperienceIndices) {
                             window.addExperienceRow(true);
                         }
 
-                        // --- 3. Restore Input Values ---
-                        const allInputs = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
-                        allInputs.forEach(input => {
-                            const savedVal = localStorage.getItem(prefix + input.name);
-                            if (savedVal !== null &amp;&amp; input.name !== 'birthday') {
-                                input.value = savedVal;
+                        // Check if we are in edit mode (i.e. editing an existing draft/submitted request)
+                        const editMode = form.querySelector('input[name="onboarding_id"]') !== null;
+                        if (editMode) {
+                            // Clear onboarding draft localStorage keys to prevent stale overrides
+                            Object.keys(localStorage).forEach(key => {
+                                if (key.startsWith(prefix) || key === 'ahadu_onboarding_language_ids') {
+                                    localStorage.removeItem(key);
+                                }
+                            });
+                        } else {
+                            // --- 3. Restore Input Values ---
+                            const allInputs = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
+                            allInputs.forEach(input => {
+                                const savedVal = localStorage.getItem(prefix + input.name);
+                                if (savedVal !== null &amp;&amp; input.name !== 'birthday') {
+                                    input.value = savedVal;
+                                    restoredCount++;
+                                }
+                            });
+
+                            // Restore Draft Languages Spoken Selections
+                            const savedLangs = localStorage.getItem('ahadu_onboarding_language_ids');
+                            if (savedLangs) {
+                                const savedIds = savedLangs.split(',');
+                                checkboxes.forEach(cb => {
+                                    cb.checked = savedIds.includes(cb.value);
+                                });
                                 restoredCount++;
                             }
-                        });
-
-                        // Restore Draft Languages Spoken Selections
-                        const savedLangs = localStorage.getItem('ahadu_onboarding_language_ids');
-                        if (savedLangs) {
-                            const savedIds = savedLangs.split(',');
-                            checkboxes.forEach(cb => {
-                                cb.checked = savedIds.includes(cb.value);
-                            });
-                            restoredCount++;
                         }
 
                         // Synchronize state, apply display rules and compute labels

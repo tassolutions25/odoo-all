@@ -117,15 +117,33 @@ class AhaduSelfServicePortal(CustomerPortal):
         if not employee:
             return request.render("ahadu_hr_self_service.onboarding_no_employee")
 
-        pending_request = request.env["hr.employee.onboarding"].search(
-            [("employee_id", "=", employee.id), ("state", "=", "submitted")],
+        # Get the latest request overall to determine the state shown to the employee
+        latest_request = request.env["hr.employee.onboarding"].search(
+            [("employee_id", "=", employee.id)],
+            order="create_date desc",
             limit=1,
         )
+
+        editable_request = None
+        rejected_request = None
+        rejection_reason = ""
+
+        if latest_request:
+            if latest_request.state in ["draft", "submitted"]:
+                editable_request = latest_request
+            elif latest_request.state == "rejected":
+                rejected_request = latest_request
+                rejected_lines = latest_request.approval_line_ids.filtered(
+                    lambda l: l.status == "rejected"
+                )
+                rejection_reason = rejected_lines[-1].comments if rejected_lines else ""
 
         values = {
             "employee": employee,
             "page_name": "onboarding",
-            "pending_request": pending_request,
+            "editable_request": editable_request,
+            "rejected_request": rejected_request,
+            "rejection_reason": rejection_reason,
             "countries": self._get_country_list(),
             "languages": self._get_lang_list(),
             "banks": self._get_bank_list(),
@@ -145,16 +163,19 @@ class AhaduSelfServicePortal(CustomerPortal):
         if not employee:
             return request.render("ahadu_hr_self_service.onboarding_no_employee")
 
-        pending_request = request.env["hr.document.request"].search(
-            [
-                ("employee_id", "=", employee.id),
-                ("state", "in", ["draft", "submitted"]),
-            ],
+        # Get the latest request overall to determine the state shown to the employee
+        latest_request = request.env["hr.document.request"].search(
+            [("employee_id", "=", employee.id)],
+            order="create_date desc",
             limit=1,
         )
 
+        editable_request = None
+        if latest_request and latest_request.state in ["draft", "submitted"]:
+            editable_request = latest_request
+
         values = {
-            "pending_request": pending_request,
+            "editable_request": editable_request,
             "page_name": "document_request",
         }
         return request.render("ahadu_hr_self_service.document_request_form", values)
@@ -186,7 +207,21 @@ class AhaduSelfServicePortal(CustomerPortal):
                 vals["document_file"] = base64.b64encode(file_content)
                 vals["document_filename"] = kw.get("document_file").filename
 
-            doc_request = request.env["hr.document.request"].sudo().create(vals)
+            # Update existing draft/submitted record if in edit flow; else create new
+            existing_id = kw.get("doc_request_id")
+            existing_record = None
+            if existing_id and str(existing_id).isdigit():
+                rec = request.env["hr.document.request"].sudo().browse(int(existing_id))
+                if rec.exists() and rec.employee_id.id == employee.id and rec.state in ["draft", "submitted"]:
+                    existing_record = rec
+
+            if existing_record:
+                existing_record.write({"state": "draft"})
+                existing_record.approval_line_ids.unlink()
+                existing_record.write(vals)
+                doc_request = existing_record
+            else:
+                doc_request = request.env["hr.document.request"].sudo().create(vals)
             doc_request.sudo().action_submit()
 
             return request.render(
@@ -211,17 +246,19 @@ class AhaduSelfServicePortal(CustomerPortal):
         if not employee:
             return request.render("ahadu_hr_self_service.onboarding_no_employee")
 
-        # Check for existing pending request
-        pending_request = request.env["hr.employee.resignation"].search(
-            [
-                ("employee_id", "=", employee.id),
-                ("state", "in", ["draft", "submitted"]),
-            ],
+        # Get the latest request overall to determine the state shown to the employee
+        latest_request = request.env["hr.employee.resignation"].search(
+            [("employee_id", "=", employee.id)],
+            order="create_date desc",
             limit=1,
         )
 
+        editable_request = None
+        if latest_request and latest_request.state in ["draft", "submitted"]:
+            editable_request = latest_request
+
         values = {
-            "pending_request": pending_request,
+            "editable_request": editable_request,
             "page_name": "resignation",
         }
         return request.render("ahadu_hr_self_service.resignation_request_form", values)
@@ -254,8 +291,22 @@ class AhaduSelfServicePortal(CustomerPortal):
                 "reason": kw.get("reason"),
             }
 
-            # Create via sudo to avoid portal permission issues on custom models
-            res_request = request.env["hr.employee.resignation"].sudo().create(vals)
+            # Update existing draft/submitted record if in edit flow; else create new
+            existing_id = kw.get("resignation_id")
+            existing_record = None
+            if existing_id and str(existing_id).isdigit():
+                rec = request.env["hr.employee.resignation"].sudo().browse(int(existing_id))
+                if rec.exists() and rec.employee_id.id == employee.id and rec.state in ["draft", "submitted"]:
+                    existing_record = rec
+
+            if existing_record:
+                existing_record.write({"state": "draft"})
+                existing_record.approval_line_ids.unlink()
+                existing_record.write(vals)
+                res_request = existing_record
+            else:
+                # Create via sudo to avoid portal permission issues on custom models
+                res_request = request.env["hr.employee.resignation"].sudo().create(vals)
             res_request.sudo().action_submit()
 
             return request.render("ahadu_hr_self_service.resignation_submit_success")
@@ -563,10 +614,27 @@ class AhaduSelfServicePortal(CustomerPortal):
             if experience_vals:
                 vals["experience_ids"] = experience_vals
 
-            # Create Record
-            onboarding_request = (
-                request.env["hr.employee.onboarding"].sudo().create(vals)
-            )
+            # Update existing draft/submitted record if in edit flow; else create new
+            existing_id = kw.get("onboarding_id")
+            existing_record = None
+            if existing_id and str(existing_id).isdigit():
+                rec = request.env["hr.employee.onboarding"].sudo().browse(int(existing_id))
+                if rec.exists() and rec.employee_id.id == employee.id and rec.state in ["draft", "submitted"]:
+                    existing_record = rec
+
+            if existing_record:
+                # Reset to draft, clear old approval chain, replace O2M lines, then resubmit
+                existing_record.write({"state": "draft"})
+                existing_record.approval_line_ids.unlink()
+                for o2m_field in ["bank_account_ids", "family_ids", "education_ids", "experience_ids"]:
+                    if o2m_field in vals:
+                        vals[o2m_field] = [(5, 0, 0)] + vals[o2m_field]
+                existing_record.write(vals)
+                onboarding_request = existing_record
+            else:
+                onboarding_request = (
+                    request.env["hr.employee.onboarding"].sudo().create(vals)
+                )
             onboarding_request.sudo().action_submit()
 
             return request.make_response(
