@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 from odoo import http, fields, _
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal
 from odoo.addons.web.controllers.home import Home
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, AccessError
 from datetime import datetime
 import base64
 import logging
@@ -29,6 +28,19 @@ class AhaduLoginRedirect(Home):
 
 class AhaduSelfServicePortal(CustomerPortal):
 
+    def _clean_error_message(self, e):
+        """Safely convert any exception to a plain string, resolving lazy translation objects."""
+        if not e:
+            return ""
+        msg = getattr(e, "name", None)
+        if not msg and e.args:
+            msg = e.args[0]
+        if not msg:
+            msg = str(e)
+        if isinstance(msg, (list, tuple)):
+            return ", ".join(str(x) for x in msg)
+        return str(msg)
+
     def _parse_portal_date(self, date_str):
         """Helper to convert DD/MM/YYYY string to Date object"""
         if not date_str:
@@ -40,10 +52,14 @@ class AhaduSelfServicePortal(CustomerPortal):
             raise ValidationError(_("Invalid date format. Please use DD/MM/YYYY."))
 
     def _get_country_list(self):
-        return request.env["res.country"].search([])
+        return request.env["res.country"].sudo().search([])
 
     def _get_ethiopia_id(self):
-        eth = request.env["res.country"].search([("name", "=", "Ethiopia")], limit=1)
+        eth = (
+            request.env["res.country"]
+            .sudo()
+            .search([("name", "=", "Ethiopia")], limit=1)
+        )
         return eth.id if eth else False
 
     def _get_lang_list(self):
@@ -53,15 +69,55 @@ class AhaduSelfServicePortal(CustomerPortal):
         """
         return (
             request.env["res.lang"]
+            .sudo()
             .with_context(active_test=False)
             .search([], order="name")
         )
 
     def _get_bank_list(self):
-        return request.env["res.bank"].search([])
+        return request.env["res.bank"].sudo().search([])
 
     def _get_currency_list(self):
-        return request.env["res.currency"].search([])
+        return request.env["res.currency"].sudo().search([])
+
+    def _render_no_employee_page(self):
+        """
+        Safe method to render the access denied page. If the database QWeb view
+        has not been fully upgraded or signaling cached yet, this gracefully
+        serves a standard styled HTML representation to prevent any 500 error.
+        """
+        try:
+            return request.render("ahadu_hr_self_service.onboarding_no_employee")
+        except Exception:
+            _logger.warning(
+                "Template ahadu_hr_self_service.onboarding_no_employee failed to render. Rendering inline fallback."
+            )
+            html_content = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Access Denied</title>
+                    <meta charset="utf-8"/>
+                    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                    <link rel="stylesheet" href="/web/static/lib/bootstrap/dist/css/bootstrap.css"/>
+                </head>
+                <body class="bg-light">
+                    <div class="container py-5 mt-5">
+                        <div class="row justify-content-center">
+                            <div class="col-md-8 text-center">
+                                <div class="alert alert-danger py-5 shadow-sm" role="alert" style="border-radius: 8px;">
+                                    <h4 class="alert-heading display-6 mb-3">Access Denied</h4>
+                                    <p class="lead">Your user account is not linked to an employee record in the system. Please contact HR.</p>
+                                    <hr class="my-4"/>
+                                    <a href="/my/dashboard" class="btn btn-primary px-4 py-2">Back to Dashboard</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            """
+            return request.make_response(html_content, [("Content-Type", "text/html")])
 
     @http.route(["/my", "/my/home"], type="http", auth="user", website=True)
     def home(self, **kw):
@@ -75,20 +131,31 @@ class AhaduSelfServicePortal(CustomerPortal):
     def self_service_dashboard(self, **kw):
         employee = request.env.user.employee_id
         is_onboarded = False
+        is_pending_onboarding = False
         has_jd = False
 
         if employee:
-            approved_request_count = request.env["hr.employee.onboarding"].search_count(
-                [("employee_id", "=", employee.id), ("state", "=", "approved")]
+            latest_request = (
+                request.env["hr.employee.onboarding"]
+                .sudo()
+                .search(
+                    [("employee_id", "=", employee.id)],
+                    order="create_date desc",
+                    limit=1,
+                )
             )
-            if approved_request_count > 0:
-                is_onboarded = True
+            if latest_request:
+                if latest_request.state == "approved":
+                    is_onboarded = True
+                elif latest_request.state == "submitted":
+                    is_pending_onboarding = True
 
             if employee.job_id and employee.job_id.job_description:
                 has_jd = True
 
         values = {
             "is_onboarded": is_onboarded,
+            "is_pending_onboarding": is_pending_onboarding,
             "has_jd": has_jd,
         }
         return request.render("ahadu_hr_self_service.self_service_dashboard", values)
@@ -104,7 +171,7 @@ class AhaduSelfServicePortal(CustomerPortal):
         file_content = base64.b64decode(job.job_description)
         filename = job.job_description_filename or "Job_Description.pdf"
 
-        # Determine content type (default to octet-stream for download)
+        # Determine content type (default to o_stream for download)
         headers = [
             ("Content-Type", "application/octet-stream"),
             ("Content-Disposition", http.content_disposition(filename)),
@@ -115,35 +182,51 @@ class AhaduSelfServicePortal(CustomerPortal):
     def employee_onboarding_form(self, **kw):
         employee = request.env.user.employee_id
         if not employee:
-            return request.render("ahadu_hr_self_service.onboarding_no_employee")
+            return self._render_no_employee_page()
 
         # Get the latest request overall to determine the state shown to the employee
-        latest_request = request.env["hr.employee.onboarding"].search(
-            [("employee_id", "=", employee.id)],
-            order="create_date desc",
-            limit=1,
+        latest_request = (
+            request.env["hr.employee.onboarding"]
+            .sudo()
+            .search(
+                [("employee_id", "=", employee.id)],
+                order="create_date desc",
+                limit=1,
+            )
         )
 
         editable_request = None
         rejected_request = None
+        approved_request = None
         rejection_reason = ""
+        is_readonly = False
 
         if latest_request:
-            if latest_request.state in ["draft", "submitted"]:
+            if latest_request.state == "submitted":
+                # Pending approval records are now fully editable so employees can make subsequent edits
+                editable_request = latest_request
+                is_readonly = False
+            elif latest_request.state == "draft":
                 editable_request = latest_request
             elif latest_request.state == "rejected":
+                editable_request = latest_request
                 rejected_request = latest_request
                 rejected_lines = latest_request.approval_line_ids.filtered(
                     lambda l: l.status == "rejected"
                 )
                 rejection_reason = rejected_lines[-1].comments if rejected_lines else ""
+            elif latest_request.state == "approved":
+                # When approved, editable_request is None so the form loads live employee data for new updates
+                approved_request = latest_request
 
         values = {
             "employee": employee,
             "page_name": "onboarding",
             "editable_request": editable_request,
             "rejected_request": rejected_request,
+            "approved_request": approved_request,
             "rejection_reason": rejection_reason,
+            "is_readonly": is_readonly,
             "countries": self._get_country_list(),
             "languages": self._get_lang_list(),
             "banks": self._get_bank_list(),
@@ -161,13 +244,17 @@ class AhaduSelfServicePortal(CustomerPortal):
     def document_request_form(self, **kw):
         employee = request.env.user.employee_id
         if not employee:
-            return request.render("ahadu_hr_self_service.onboarding_no_employee")
+            return self._render_no_employee_page()
 
         # Get the latest request overall to determine the state shown to the employee
-        latest_request = request.env["hr.document.request"].search(
-            [("employee_id", "=", employee.id)],
-            order="create_date desc",
-            limit=1,
+        latest_request = (
+            request.env["hr.document.request"]
+            .sudo()
+            .search(
+                [("employee_id", "=", employee.id)],
+                order="create_date desc",
+                limit=1,
+            )
         )
 
         editable_request = None
@@ -191,7 +278,7 @@ class AhaduSelfServicePortal(CustomerPortal):
     def document_request_submit(self, **kw):
         employee = request.env.user.employee_id
         if not employee:
-            return request.render("ahadu_hr_self_service.onboarding_no_employee")
+            return self._render_no_employee_page()
 
         try:
             vals = {
@@ -212,7 +299,11 @@ class AhaduSelfServicePortal(CustomerPortal):
             existing_record = None
             if existing_id and str(existing_id).isdigit():
                 rec = request.env["hr.document.request"].sudo().browse(int(existing_id))
-                if rec.exists() and rec.employee_id.id == employee.id and rec.state in ["draft", "submitted"]:
+                if (
+                    rec.exists()
+                    and rec.employee_id.id == employee.id
+                    and rec.state in ["draft", "submitted"]
+                ):
                     existing_record = rec
 
             if existing_record:
@@ -244,13 +335,17 @@ class AhaduSelfServicePortal(CustomerPortal):
     def resignation_request_form(self, **kw):
         employee = request.env.user.employee_id
         if not employee:
-            return request.render("ahadu_hr_self_service.onboarding_no_employee")
+            return self._render_no_employee_page()
 
         # Get the latest request overall to determine the state shown to the employee
-        latest_request = request.env["hr.employee.resignation"].search(
-            [("employee_id", "=", employee.id)],
-            order="create_date desc",
-            limit=1,
+        latest_request = (
+            request.env["hr.employee.resignation"]
+            .sudo()
+            .search(
+                [("employee_id", "=", employee.id)],
+                order="create_date desc",
+                limit=1,
+            )
         )
 
         editable_request = None
@@ -274,7 +369,7 @@ class AhaduSelfServicePortal(CustomerPortal):
     def resignation_request_submit(self, **kw):
         employee = request.env.user.employee_id
         if not employee:
-            return request.render("ahadu_hr_self_service.onboarding_no_employee")
+            return self._render_no_employee_page()
 
         try:
             # Ensure dates are valid
@@ -295,8 +390,16 @@ class AhaduSelfServicePortal(CustomerPortal):
             existing_id = kw.get("resignation_id")
             existing_record = None
             if existing_id and str(existing_id).isdigit():
-                rec = request.env["hr.employee.resignation"].sudo().browse(int(existing_id))
-                if rec.exists() and rec.employee_id.id == employee.id and rec.state in ["draft", "submitted"]:
+                rec = (
+                    request.env["hr.employee.resignation"]
+                    .sudo()
+                    .browse(int(existing_id))
+                )
+                if (
+                    rec.exists()
+                    and rec.employee_id.id == employee.id
+                    and rec.state in ["draft", "submitted"]
+                ):
                     existing_record = rec
 
             if existing_record:
@@ -331,7 +434,7 @@ class AhaduSelfServicePortal(CustomerPortal):
         csrf=True,
     )
     def resignation_withdraw(self, res_id, **kw):
-        res_req = request.env["hr.employee.resignation"].browse(res_id)
+        res_req = request.env["hr.employee.resignation"].sudo().browse(res_id)
         if res_req.employee_id.user_id == request.env.user:
             res_req.action_withdraw()
         return request.redirect("/my/dashboard?withdrawn=1")
@@ -352,7 +455,7 @@ class AhaduSelfServicePortal(CustomerPortal):
                     {
                         "success": False,
                         "error": _(
-                            "Your user account is not linked to an employee record."
+                            "Your user account is not connected to an employee profile. Please contact HR."
                         ),
                     }
                 ),
@@ -547,11 +650,18 @@ class AhaduSelfServicePortal(CustomerPortal):
                             edu_cert_file.read()
                         )
                         line_vals["certification_filename"] = edu_cert_file.filename
-                    elif keep_file and str(keep_file).isdigit():
+                    elif keep_file and str(keep_file).isdigit() and int(keep_file) > 1:
+                        # Ensure we fetch the actual database record from active employee context
                         existing_edu = (
                             request.env["hr.employee.education"]
                             .sudo()
-                            .browse(int(keep_file))
+                            .search(
+                                [
+                                    ("id", "=", int(keep_file)),
+                                    ("employee_id", "=", employee.id),
+                                ],
+                                limit=1,
+                            )
                         )
                         if existing_edu.exists():
                             line_vals["certification_attachment"] = (
@@ -598,11 +708,17 @@ class AhaduSelfServicePortal(CustomerPortal):
                             exp_attachment_file.read()
                         )
                         line_vals["attachment_filename"] = exp_attachment_file.filename
-                    elif keep_file and str(keep_file).isdigit():
+                    elif keep_file and str(keep_file).isdigit() and int(keep_file) > 1:
                         existing_exp = (
                             request.env["hr.employee.experience"]
                             .sudo()
-                            .browse(int(keep_file))
+                            .search(
+                                [
+                                    ("id", "=", int(keep_file)),
+                                    ("employee_id", "=", employee.id),
+                                ],
+                                limit=1,
+                            )
                         )
                         if existing_exp.exists():
                             line_vals["attachment"] = existing_exp.attachment
@@ -618,15 +734,28 @@ class AhaduSelfServicePortal(CustomerPortal):
             existing_id = kw.get("onboarding_id")
             existing_record = None
             if existing_id and str(existing_id).isdigit():
-                rec = request.env["hr.employee.onboarding"].sudo().browse(int(existing_id))
-                if rec.exists() and rec.employee_id.id == employee.id and rec.state in ["draft", "submitted"]:
+                rec = (
+                    request.env["hr.employee.onboarding"]
+                    .sudo()
+                    .browse(int(existing_id))
+                )
+                if (
+                    rec.exists()
+                    and rec.employee_id.id == employee.id
+                    and rec.state in ["draft", "submitted", "rejected"]
+                ):
                     existing_record = rec
 
             if existing_record:
                 # Reset to draft, clear old approval chain, replace O2M lines, then resubmit
                 existing_record.write({"state": "draft"})
                 existing_record.approval_line_ids.unlink()
-                for o2m_field in ["bank_account_ids", "family_ids", "education_ids", "experience_ids"]:
+                for o2m_field in [
+                    "bank_account_ids",
+                    "family_ids",
+                    "education_ids",
+                    "experience_ids",
+                ]:
                     if o2m_field in vals:
                         vals[o2m_field] = [(5, 0, 0)] + vals[o2m_field]
                 existing_record.write(vals)
@@ -642,12 +771,18 @@ class AhaduSelfServicePortal(CustomerPortal):
                 headers=[("Content-Type", "application/json")],
             )
 
-        except (ValidationError, Exception) as e:
+        except ValidationError as e:
+            _logger.error(
+                "Validation Error during onboarding submission: %s", e, exc_info=True
+            )
+            error_msg = self._clean_error_message(e)
+            return request.make_response(
+                json.dumps({"success": False, "error": error_msg}),
+                headers=[("Content-Type", "application/json")],
+            )
+        except Exception as e:
             _logger.error("Error during onboarding submission: %s", e, exc_info=True)
-            error_msg = str(e)
-            if hasattr(e, "name"):
-                error_msg = e.name
-
+            error_msg = self._clean_error_message(e)
             return request.make_response(
                 json.dumps({"success": False, "error": error_msg}),
                 headers=[("Content-Type", "application/json")],

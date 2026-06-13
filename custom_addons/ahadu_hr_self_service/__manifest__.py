@@ -30,6 +30,10 @@
             "ahadu_hr_self_service/static/src/css/self_service.css",
             "ahadu_hr_self_service/static/src/js/ahadu_datepicker.js",
         ],
+
+        "web.assets_backend": [
+            "ahadu_hr_self_service/static/src/js/user_menu_patch.js",
+        ],
     },
     "installable": True,
     "application": True,

@@ -11,11 +11,20 @@
                     </div>
 
                     <t t-if="not is_onboarded">
-                        <div class="alert alert-warning text-center" role="alert">
-                            <h4 class="alert-heading">Complete Your Profile</h4>
-                            <p>To access all portal features, please complete and submit your employee profile for approval.</p>
-                            <a href="/my/onboarding" class="btn btn-primary">Go to My Profile</a>
-                        </div>
+                        <t t-if="is_pending_onboarding">
+                            <div class="alert alert-info text-center" role="alert">
+                                <h4 class="alert-heading">Profile Pending Approval</h4>
+                                <p>Your employee profile has been submitted and is currently pending approval by HR.</p>
+                                <a href="/my/onboarding" class="btn btn-info text-white">View My Submitted Profile</a>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="alert alert-warning text-center" role="alert">
+                                <h4 class="alert-heading">Complete Your Profile</h4>
+                                <p>To access all portal features, please complete and submit your employee profile for approval.</p>
+                                <a href="/my/onboarding" class="btn btn-primary">Go to My Profile</a>
+                            </div>
+                        </t>
                     </t>
 
                     <div class="row justify-content-center">
@@ -64,15 +73,6 @@
                                     </div>
                                 </a>
                             </div>
-                            <!-- Attendance -->
-                            <!-- <div class="col-6 col-md-4 col-lg-3 mb-4">
-                                <a href="/web#action=ahadu_attendance.action_my_attendance" class="card h-100 text-center text-decoration-none dashboard-card">
-                                    <div class="card-body d-flex flex-column justify-content-center">
-                                        <i class="fa fa-fingerprint dashboard-card-icon mb-3"/>
-                                        <h5 class="card-title">My Attendance</h5>
-                                    </div>
-                                </a>
-                            </div> -->
                             <!-- To-Do -->
                             <div class="col-6 col-md-4 col-lg-3 mb-4">
                                  <a href="/web#action=project_todo.project_task_action_todo" class="card h-100 text-center text-decoration-none dashboard-card">
@@ -267,21 +267,48 @@
         </t>
     </template>
 
-    <!-- 3. ONBOARDING FORM -->
+    <!-- 3. ACCESS DENIED (NO EMPLOYEE RECORD) -->
+    <template id="onboarding_no_employee" name="No Employee Record">
+        <t t-call="website.layout">
+             <div id="wrap">
+                <div class="container py-5">
+                     <div class="alert alert-danger text-center" role="alert">
+                        <h4 class="alert-heading">Access Denied</h4>
+                        <p>Your user account is not linked to an employee record in the system. Please contact HR.</p>
+                        <a href="/my/dashboard" class="btn btn-primary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- 4. ONBOARDING FORM -->
     <template id="employee_onboarding_form" name="Employee Onboarding Form">
         <t t-call="website.layout">
             <div id="wrap" class="o_onboarding_form">
                 <div class="container py-5">
-                    <t t-if="editable_request">
+                    <t t-if="approved_request">
+                        <div class="alert alert-success" role="alert">
+                            <h5 class="alert-heading"><i class="fa fa-check-circle me-2"/>Profile Update Request Approved</h5>
+                            <p class="mb-0">Your previous profile update request has been approved. If you have any new changes or updates, you can edit the form below and submit a new request for approval.</p>
+                        </div>
+                    </t>
+                    <t t-elif="editable_request">
                         <div class="alert alert-info" role="alert">
-                            <h5 class="alert-heading"><i class="fa fa-edit me-2"/>Editing Existing Request</h5>
-                            <p class="mb-0">Your profile update request is currently in <strong><t t-esc="dict(editable_request._fields['state'].selection).get(editable_request.state)"/></strong> state. You can update the details below and resubmit.</p>
+                            <t t-if="editable_request.state == 'submitted'">
+                                <h5 class="alert-heading"><i class="fa fa-info-circle me-2"/>Request Pending Approval</h5>
+                                <p class="mb-0">Your profile update request has been submitted and is currently pending approval by HR. You can still make changes to your details below and resubmit if needed.</p>
+                            </t>
+                            <t t-else="">
+                                <h5 class="alert-heading"><i class="fa fa-edit me-2"/>Editing Existing Request</h5>
+                                <p class="mb-0">Your profile update request is currently in <strong><t t-esc="dict(editable_request._fields['state'].selection).get(editable_request.state)"/></strong> state. You can update the details below and resubmit.</p>
+                            </t>
                         </div>
                     </t>
                     <t t-if="rejected_request">
                         <div class="alert alert-danger" role="alert">
                             <h5 class="alert-heading"><i class="fa fa-exclamation-triangle me-2"/>Previous Request Rejected</h5>
-                            <p class="mb-1">Your previous profile update request was rejected.</p>
+                            <p class="mb-1">Your previous profile update request was rejected. You can edit and resubmit your details below.</p>
                             <t t-if="rejection_reason">
                                 <p class="mb-0"><strong>Reason for Rejection:</strong> <span t-esc="rejection_reason"/></p>
                             </t>
@@ -350,10 +377,10 @@
                                                 t-att-value="onb_val.wedding_date.strftime('%d/%m/%Y') if onb_val.wedding_date else ''"/>
                                         </div>
                                         
-                                        <!-- Languages Spoken -->
+                                        <!-- Languages Spoken (Required Asterisk Removed) -->
                                         <div class="mb-3 col-md-4">
-                                            <label for="language_ids" class="form-label">Languages Spoken <span class="text-danger">*</span></label>
-                                            <select name="language_ids" id="language_ids" multiple="multiple" required="1" class="d-none">
+                                            <label for="language_ids" class="form-label">Languages Spoken</label>
+                                            <select name="language_ids" id="language_ids" multiple="multiple" class="d-none">
                                                 <t t-foreach="languages" t-as="language_rec">
                                                     <option t-att-value="language_rec.id" 
                                                             t-att-selected="language_rec.id in onb_val.language_ids.ids" 
@@ -470,7 +497,6 @@
                                                     <div class="mb-3 col-md-6"><label class="form-label">Bank Country <span class="text-danger">*</span></label><select t-attf-name="bank_country_id_#{acc_index}" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == acc.bank_country_id.id" t-esc="c.name"/></t></select></div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Account Number <span class="text-danger">*</span></label><input type="text" t-attf-name="bank_account_number_#{acc_index}" class="form-control" t-att-value="acc.account_number" required="1"/></div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Currency <span class="text-danger">*</span></label><select t-attf-name="bank_currency_id_#{acc_index}" class="form-select" required="1"><t t-foreach="currencies" t-as="curr"><option t-att-value="curr.id" t-att-selected="curr.id == acc.currency_id.id" t-esc="curr.name"/></t></select></div>
-                                                    <!-- <div class="mb-3 col-md-6"><label class="form-label">Account Holder</label><input type="text" t-attf-name="bank_account_holder_#{acc_index}" class="form-control" t-att-value="acc.account_holder_name or onb_val.employee_id.name"/></div> -->
                                                     <input type="text" t-attf-name="bank_account_holder_#{acc_index}" class="form-control" t-att-value="acc.account_holder_name or employee.name"/>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Account Type <span class="text-danger">*</span></label><select t-attf-name="bank_account_type_#{acc_index}" class="form-select" required="1">
                                                         <option value="salary" t-att-selected="acc.account_type == 'salary'">Salary Account</option>
@@ -548,7 +574,7 @@
                                                             t-att-value="edu.end_date.strftime('%d/%m/%Y') if edu.end_date else ''" required="1"/>
                                                     </div>
                                                     <div class="mb-3 col-md-4"><label class="form-label">CGPA <span class="text-danger">*</span></label><input type="number" step="0.01" t-attf-name="edu_cgpa_#{edu_index}" class="form-control" t-att-value="edu.cgpa" required="1"/></div>
-                                                    <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG) <span class="text-danger">*</span></label><input type="file" t-attf-name="edu_certificate_#{edu_index}" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/><t t-if="edu.certification_filename"><small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="edu.certification_filename"/></small><input type="hidden" t-attf-name="edu_keep_file_#{edu_index}" value="1"/></t></div>
+                                                    <div class="mb-3 col-md-12"><label class="form-label">Certificate (PDF, PNG, JPG) <span class="text-danger">*</span></label><input type="file" t-attf-name="edu_certificate_#{edu_index}" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/><t t-if="edu.certification_filename"><small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="edu.certification_filename"/></small><input type="hidden" t-attf-name="edu_keep_file_#{edu_index}" t-att-value="edu.id"/></t></div>
                                                 </div>
                                             </div>
                                         </t>
@@ -589,7 +615,7 @@
                                                     </div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Reason for Leaving</label><input type="text" t-attf-name="exp_reason_#{exp_rec_index}" class="form-control" t-att-value="exp_rec.reason_for_leaving"/></div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Job Description</label><textarea t-attf-name="exp_description_#{exp_rec_index}" class="form-control" rows="2"><t t-esc="exp_rec.job_description or ''"/></textarea></div>
-                                                    <div class="mb-3 col-md-12"><label class="form-label">Experience Letter/Proof (PDF, PNG, JPG)</label><input type="file" t-attf-name="exp_attachment_#{exp_rec_index}" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/><t t-if="exp_rec.attachment_filename"><small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="exp_rec.attachment_filename"/></small><input type="hidden" t-attf-name="exp_keep_file_#{exp_rec_index}" value="1"/></t></div>
+                                                    <div class="mb-3 col-md-12"><label class="form-label">Experience Letter/Proof (PDF, PNG, JPG)</label><input type="file" t-attf-name="exp_attachment_#{exp_rec_index}" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/><t t-if="exp_rec.attachment_filename"><small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="exp_rec.attachment_filename"/></small><input type="hidden" t-attf-name="exp_keep_file_#{exp_rec_index}" t-att-value="exp_rec.id"/></t></div>
                                                 </div>
                                             </div>
                                         </t>
@@ -676,6 +702,8 @@
                             
                             <div class="d-flex justify-content-between align-items-center mt-4">
                                 <a href="/my/dashboard" class="btn btn-secondary">&#8592; Back to Dashboard</a>
+                            </div>
+                            <div class="text-center" style="padding-top: 20px;">
                                 <button type="submit" id="btn_submit_onboarding" class="btn btn-primary btn-lg">Submit for Approval</button>
                             </div>
                         </form>
@@ -843,7 +871,7 @@
                         // Sync selections to hidden standard many2many select
                         if (hiddenSelect) {
                             Array.from(hiddenSelect.options).forEach(opt => {
-                                opt.selected = selectedIds.includes(opt.value);
+                                opt.selected = selectedIds.some(id => String(id).trim() === String(opt.value).trim());
                             });
                         }
 
@@ -967,6 +995,7 @@
                         }
                     }
 
+                    // Remove dynamic row tracking from LocalStorage
                     function removeActiveRowIndex(type, idx) {
                         const key = prefix + type + '_indices';
                         const savedIndices = localStorage.getItem(key);
@@ -1082,12 +1111,47 @@
                             });
                         }
 
+                        // Get Read-only State from python context
+                        const isReadonly = <t t-esc="is_readonly and 'true' or 'false'"/>;
+
+                        // Check if we are in edit mode (i.e. editing an existing draft/submitted request)
+                        const editMode = form.querySelector('input[name="onboarding_id"]') !== null;
+
+                        if (isReadonly) {
+                            // Do not load local storage drafts for read-only approved or submitted requests
+                        } else if (editMode) {
+                            // Clear onboarding draft localStorage keys to prevent stale overrides
+                            Object.keys(localStorage).forEach(key => {
+                                if (key.startsWith(prefix) || key === 'ahadu_onboarding_language_ids') {
+                                    localStorage.removeItem(key);
+                                }
+                            });
+                        } else {
+                            // --- Restore Input Values (Only for Draft/New modes) ---
+                            const allInputs = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
+                            allInputs.forEach(input => {
+                                const savedVal = localStorage.getItem(prefix + input.name);
+                                if (savedVal !== null &amp;&amp; input.name !== 'birthday') {
+                                    input.value = savedVal;
+                                }
+                            });
+
+                            // Restore Draft Languages Spoken Selections
+                            const savedLangs = localStorage.getItem('ahadu_onboarding_language_ids');
+                            if (savedLangs) {
+                                const savedIds = savedLangs.split(',');
+                                checkboxes.forEach(cb => {
+                                    cb.checked = savedIds.includes(cb.value);
+                                });
+                            }
+                        }
+
                         // --- 2. Restore Dynamic Rows ---
                         let restoredCount = 0;
                         ['bank', 'family', 'education', 'experience'].forEach(type => {
                             const key = prefix + type + '_indices';
                             const savedIndices = localStorage.getItem(key);
-                            if (savedIndices) {
+                            if (savedIndices &amp;&amp; !isReadonly) {
                                 const indices = savedIndices.split(',').filter(x => x !== '');
                                 indices.forEach(idx => {
                                     const indexInt = parseInt(idx);
@@ -1124,57 +1188,26 @@
                         // If no server-rendered rows AND no dynamic rows restored, auto-add a default row
                         const serverBankCount = <t t-esc="len(onb_val.bank_account_ids)"/>;
                         const activeBankIndices = localStorage.getItem(prefix + 'bank_indices');
-                        if (serverBankCount === 0 &amp;&amp; !activeBankIndices) {
+                        if (serverBankCount === 0 &amp;&amp; !activeBankIndices &amp;&amp; !isReadonly) {
                             window.addBankRow(true);
                         }
 
                         const serverFamilyCount = <t t-esc="len(onb_val.family_ids)"/>;
                         const activeFamilyIndices = localStorage.getItem(prefix + 'family_indices');
-                        if (serverFamilyCount === 0 &amp;&amp; !activeFamilyIndices) {
+                        if (serverFamilyCount === 0 &amp;&amp; !activeFamilyIndices &amp;&amp; !isReadonly) {
                             window.addFamilyRow(true);
                         }
 
                         const serverEducationCount = <t t-esc="len(onb_val.education_ids)"/>;
                         const activeEducationIndices = localStorage.getItem(prefix + 'education_indices');
-                        if (serverEducationCount === 0 &amp;&amp; !activeEducationIndices) {
+                        if (serverEducationCount === 0 &amp;&amp; !activeEducationIndices &amp;&amp; !isReadonly) {
                             window.addEducationRow(true);
                         }
 
                         const serverExperienceCount = <t t-esc="len(onb_val.experience_ids)"/>;
                         const activeExperienceIndices = localStorage.getItem(prefix + 'experience_indices');
-                        if (serverExperienceCount === 0 &amp;&amp; !activeExperienceIndices) {
+                        if (serverExperienceCount === 0 &amp;&amp; !activeExperienceIndices &amp;&amp; !isReadonly) {
                             window.addExperienceRow(true);
-                        }
-
-                        // Check if we are in edit mode (i.e. editing an existing draft/submitted request)
-                        const editMode = form.querySelector('input[name="onboarding_id"]') !== null;
-                        if (editMode) {
-                            // Clear onboarding draft localStorage keys to prevent stale overrides
-                            Object.keys(localStorage).forEach(key => {
-                                if (key.startsWith(prefix) || key === 'ahadu_onboarding_language_ids') {
-                                    localStorage.removeItem(key);
-                                }
-                            });
-                        } else {
-                            // --- 3. Restore Input Values ---
-                            const allInputs = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
-                            allInputs.forEach(input => {
-                                const savedVal = localStorage.getItem(prefix + input.name);
-                                if (savedVal !== null &amp;&amp; input.name !== 'birthday') {
-                                    input.value = savedVal;
-                                    restoredCount++;
-                                }
-                            });
-
-                            // Restore Draft Languages Spoken Selections
-                            const savedLangs = localStorage.getItem('ahadu_onboarding_language_ids');
-                            if (savedLangs) {
-                                const savedIds = savedLangs.split(',');
-                                checkboxes.forEach(cb => {
-                                    cb.checked = savedIds.includes(cb.value);
-                                });
-                                restoredCount++;
-                            }
                         }
 
                         // Synchronize state, apply display rules and compute labels
@@ -1182,7 +1215,7 @@
                         updateSelectedLanguages();
 
                         // Show alert if data was restored
-                        if (restoredCount > 0) {
+                        if (restoredCount > 0 &amp;&amp; !isReadonly) {
                             const draftAlert = document.getElementById('draft_alert');
                             if (draftAlert) {
                                 draftAlert.classList.remove('d-none');
@@ -1207,11 +1240,41 @@
                             }
                         }
 
+                        // --- Disable All Elements if Form is Read-only (Submitted or Approved requests) ---
+                        if (isReadonly) {
+                            const formElements = form.querySelectorAll('input, select, textarea, button[type="submit"]');
+                            formElements.forEach(el => {
+                                if (el.id !== 'languageDropdown') {
+                                    el.disabled = true;
+                                }
+                            });
+                            document.querySelectorAll('.btn-close, button[onclick^="add"]').forEach(btn => {
+                                btn.style.display = 'none';
+                            });
+                            const submitBtn = document.getElementById('btn_submit_onboarding');
+                            if (submitBtn) {
+                                submitBtn.style.display = 'none';
+                            }
+                            const langCheckboxes = document.querySelectorAll('.language-checkbox');
+                            langCheckboxes.forEach(cb => {
+                                cb.disabled = true;
+                            });
+                            const langDropdown = document.getElementById('languageDropdown');
+                            if (langDropdown) {
+                                langDropdown.classList.add('disabled');
+                                langDropdown.disabled = true;
+                            }
+                        }
+
                         // --- 6. Form Validation and Missing Fields Toast ---
                         const submitBtn = document.getElementById('btn_submit_onboarding');
                         if (submitBtn) {
                             form.addEventListener('submit', function(e) {
                                 e.preventDefault(); // Stop default browser full-page submission
+
+                                const missingFieldLabels = [];
+                                const invalidFields = [];
+                                let firstEmptyContainerTab = null;
 
                                 // Ensure checkboxes are synchronized first
                                 updateSelectedLanguages();
@@ -1221,10 +1284,6 @@
                                 const familyRows = document.getElementById('family_lines_container').querySelectorAll('.family-row');
                                 const eduRows = document.getElementById('education_lines_container').querySelectorAll('.education-row');
                                 const expRows = document.getElementById('experience_lines_container').querySelectorAll('.experience-row');
-
-                                const missingFieldLabels = [];
-                                const invalidFields = [];
-                                let firstEmptyContainerTab = null;
 
                                 if (bankRows.length === 0) {
                                     missingFieldLabels.push('Bank Account (Add at least one bank account)');

@@ -53,14 +53,16 @@ class HrEmployeeOnboarding(models.Model):
     nationality_id = fields.Many2one("res.country", string="Nationality")
     country_id = fields.Many2one("res.country", string="Country of Residence")
     marital = fields.Selection(
-        [
-            ("single", "Single"),
-            ("married", "Married"),
-            ("widower", "Widower"),
-            ("divorced", "Divorced"),
-        ],
-        string="Marital Status",
-    )
+    [
+        ("single", "Single"),
+        ("married", "Married"),
+        ("widower", "Widower"),
+        ("divorced", "Divorced"),
+    ],
+    string="Marital Status",
+    required=True,  # Added required constraint
+    tracking=True,
+)
     wedding_date = fields.Date(string="Wedding Date")
     language_ids = fields.Many2many("res.lang", string="Languages Spoken")
     blood_group = fields.Selection(
@@ -287,8 +289,15 @@ class HrEmployeeOnboarding(models.Model):
 
         for field_name in simple_fields:
             value = self[field_name]
-            # Write only if value is truthy, or if it is a number (int, float) and not a boolean False
-            if value or (isinstance(value, (int, float)) and not isinstance(value, bool)):
+            # Write the value (including False to clear the field on hr.employee),
+            # handling Many2one recordsets cleanly.
+
+            if field_name == 'marital' and not value:
+                continue
+        
+            if isinstance(value, models.BaseModel):
+                vals_to_write[field_name] = value.id if value else False
+            else:
                 vals_to_write[field_name] = value
 
         # --- 1. SYNC BANK ACCOUNTS ---
@@ -387,10 +396,9 @@ class HrEmployeeOnboarding(models.Model):
             vals_to_write["experience_ids"] = experience_vals
 
         # Handle Many2many languages
-        if self.language_ids:
-            vals_to_write["language_ids"] = [(6, 0, self.language_ids.ids)]
+        vals_to_write["language_ids"] = [(6, 0, self.language_ids.ids)]
 
-        # Handle Binary clearing
+        # Handle Binary clearing (do not clear existing files if empty on onboarding record)
         for bin_field in [
             "national_id_file",
             "kebele_id_file",
