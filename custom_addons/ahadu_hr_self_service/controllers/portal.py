@@ -135,6 +135,16 @@ class AhaduSelfServicePortal(CustomerPortal):
         has_jd = False
 
         if employee:
+            # Check if there is at least one approved onboarding request in history
+            approved_request_count = (
+                request.env["hr.employee.onboarding"]
+                .sudo()
+                .search_count(
+                    [("employee_id", "=", employee.id), ("state", "=", "approved")]
+                )
+            )
+            is_onboarded = approved_request_count > 0
+
             latest_request = (
                 request.env["hr.employee.onboarding"]
                 .sudo()
@@ -144,11 +154,8 @@ class AhaduSelfServicePortal(CustomerPortal):
                     limit=1,
                 )
             )
-            if latest_request:
-                if latest_request.state == "approved":
-                    is_onboarded = True
-                elif latest_request.state == "submitted":
-                    is_pending_onboarding = True
+            if latest_request and latest_request.state == "submitted":
+                is_pending_onboarding = True
 
             if employee.job_id and employee.job_id.job_description:
                 has_jd = True
@@ -642,6 +649,7 @@ class AhaduSelfServicePortal(CustomerPortal):
                         "end_date": self._parse_portal_date(
                             kw.get(f"edu_end_date_{idx}")
                         ),
+                        "employee_id": False,  # Explicitly set to False to prevent Odoo's context linking
                     }
 
                     # Safely bind file content or pull from existing record to avoid database constraint failures
@@ -698,6 +706,7 @@ class AhaduSelfServicePortal(CustomerPortal):
                         or None,
                         "reason_for_leaving": kw.get(f"exp_reason_{idx}"),
                         "job_description": kw.get(f"exp_description_{idx}"),
+                        "employee_id": False,  # Explicitly set to False to prevent Odoo's context linking
                     }
 
                     # Safely bind experience proof file content or pull from existing record
@@ -758,11 +767,15 @@ class AhaduSelfServicePortal(CustomerPortal):
                 ]:
                     if o2m_field in vals:
                         vals[o2m_field] = [(5, 0, 0)] + vals[o2m_field]
-                existing_record.write(vals)
+                # Override context to prevent Odoo's auto-linking behavior via default context propagation
+                existing_record.with_context(default_employee_id=False).write(vals)
                 onboarding_request = existing_record
             else:
                 onboarding_request = (
-                    request.env["hr.employee.onboarding"].sudo().create(vals)
+                    request.env["hr.employee.onboarding"]
+                    .sudo()
+                    .with_context(default_employee_id=False)
+                    .create(vals)
                 )
             onboarding_request.sudo().action_submit()
 

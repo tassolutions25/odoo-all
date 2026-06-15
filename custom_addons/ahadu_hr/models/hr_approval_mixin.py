@@ -200,6 +200,15 @@ class HrApprovalMixin(models.AbstractModel):
                 )
 
         if not vals_list:
+            # If the policy has approval steps defined but no active approvers were resolved, raise an error
+            if policy.line_ids:
+                raise UserError(
+                    _(
+                        "No active approvers could be resolved for the approval policy '%s'. "
+                        "Please verify that the employee has a designated Manager assigned, or that the job positions in the workflow are filled."
+                    )
+                    % policy.name
+                )
             _logger.info(
                 f"No approvers found for policy {policy.name}, auto-approving."
             )
@@ -296,8 +305,10 @@ class HrApprovalMixin(models.AbstractModel):
     def action_reject(self):
         is_hr_manager = self.env.user.has_group("hr.group_hr_manager")
 
-        # Check permissions for all selected records before opening the wizard
+        # Prevent approved records from being retroactively rejected
         for rec in self:
+            if rec.state == "approved":
+                raise UserError(_("You cannot reject an already approved request."))
             if not rec.can_approve and not is_hr_manager:
                 raise UserError(
                     _("You are not authorized to reject the request for %s.")
