@@ -22,6 +22,7 @@
         # "data/hr_document_request_approval_policy_data.xml",
         "views/self_service_templates.xml",
         "views/hr_employee_onboarding_views.xml",
+        "views/hr_employee_onboarding_reporting_views.xml",
         "views/hr_document_request_views.xml",
         # "data/hr_onboarding_approval_policy_data.xml",
     ],

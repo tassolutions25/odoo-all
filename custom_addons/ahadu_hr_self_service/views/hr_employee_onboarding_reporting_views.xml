@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Onboarding Reporting Search View -->
+    <record id="view_employee_onboarding_reporting_search" model="ir.ui.view">
+        <field name="name">hr.employee.onboarding.reporting.search</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <search string="Onboarding Reporting Search">
+                <field name="name" string="Employee" filter_domain="['|', '|', ('work_email', 'ilike', self), ('name', 'ilike', self), ('employee_id', 'ilike', self)]"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="branch_id"/>
+                <filter string="Onboarded (100% / Completed)" name="completed" domain="[('onboarding_status', '=', 'completed')]"/>
+                <filter string="Pending Onboarding" name="pending" domain="[('onboarding_status', '=', 'pending')]"/>
+                <filter string="Not Onboarded" name="not_started" domain="[('onboarding_status', '=', 'not_started')]"/>
+                <separator/>
+                <filter string="Active Employees" name="active" domain="[('active', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Onboarding Status" name="group_status" context="{'group_by': 'onboarding_status'}"/>
+                    <filter string="Department" name="group_department" context="{'group_by': 'department_id'}"/>
+                    <filter string="Branch" name="group_branch" context="{'group_by': 'branch_id'}"/>
+                    <filter string="Hiring / Joining Date" name="group_joining" context="{'group_by': 'date_of_joining'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Onboarding Reporting List View -->
+    <record id="view_employee_onboarding_reporting_list" model="ir.ui.view">
+        <field name="name">hr.employee.onboarding.reporting.list</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <list string="Onboarding Status Tracking" create="false" edit="false">
+                <field name="employee_id" decoration-bf="1"/>
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="branch_id"/>
+                <field name="date_of_joining"/>
+                <field name="onboarding_status" widget="badge" 
+                       decoration-success="onboarding_status == 'completed'" 
+                       decoration-warning="onboarding_status == 'pending'" 
+                       decoration-danger="onboarding_status == 'not_started'"/>
+                <field name="onboarding_completion_rate" widget="progressbar" string="Overall Progress"/>
+                <field name="personal_completion" string="Personal (%)" optional="show"/>
+                <field name="contact_completion" string="Contact (%)" optional="show"/>
+                <field name="emergency_completion" string="Emergency (%)" optional="show"/>
+                <field name="bank_completion" string="Bank (%)" optional="show"/>
+                <field name="family_completion" string="Family (%)" optional="show"/>
+                <field name="education_completion" string="Education (%)" optional="show"/>
+                <field name="experience_completion" string="Experience (%)" optional="show"/>
+                <field name="passport_completion" string="Passport (%)" optional="show"/>
+                <field name="cost_sharing_completion" string="Cost-Sharing (%)" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Onboarding Reporting Pivot View -->
+    <record id="view_employee_onboarding_reporting_pivot" model="ir.ui.view">
+        <field name="name">hr.employee.onboarding.reporting.pivot</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <pivot string="Onboarding Analysis" display_quantity="true">
+                <field name="department_id" type="row"/>
+                <field name="onboarding_status" type="col"/>
+                <field name="onboarding_completion_rate" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Onboarding Reporting Graph View -->
+    <record id="view_employee_onboarding_reporting_graph" model="ir.ui.view">
+        <field name="name">hr.employee.onboarding.reporting.graph</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <graph string="Onboarding Progress by Status" type="bar">
+                <field name="onboarding_status"/>
+                <field name="onboarding_completion_rate" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Window Actions -->
+    <record id="action_employee_onboarding_all" model="ir.actions.act_window">
+        <field name="name">All Onboarding Tracking</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="search_view_id" ref="view_employee_onboarding_reporting_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+    </record>
+
+    <record id="action_employee_onboarding_completed" model="ir.actions.act_window">
+        <field name="name">Onboarded Employees</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="search_view_id" ref="view_employee_onboarding_reporting_search"/>
+        <field name="context">{'search_default_completed': 1, 'search_default_active': 1}</field>
+    </record>
+
+    <record id="action_employee_onboarding_pending" model="ir.actions.act_window">
+        <field name="name">Pending Onboarding</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="search_view_id" ref="view_employee_onboarding_reporting_search"/>
+        <field name="context">{'search_default_pending': 1, 'search_default_active': 1}</field>
+    </record>
+
+    <record id="action_employee_onboarding_not_started" model="ir.actions.act_window">
+        <field name="name">Not Onboarded</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="search_view_id" ref="view_employee_onboarding_reporting_search"/>
+        <field name="context">{'search_default_not_started': 1, 'search_default_active': 1}</field>
+    </record>
+
+    <!-- Action View Associations -->
+    <!-- 1. All Onboarding -->
+    <record id="action_employee_onboarding_all_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_employee_onboarding_reporting_list"/>
+        <field name="act_window_id" ref="action_employee_onboarding_all"/>
+    </record>
+    <record id="action_employee_onboarding_all_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_employee_onboarding_reporting_pivot"/>
+        <field name="act_window_id" ref="action_employee_onboarding_all"/>
+    </record>
+    <record id="action_employee_onboarding_all_graph" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_employee_onboarding_reporting_graph"/>
+        <field name="act_window_id" ref="action_employee_onboarding_all"/>
+    </record>
+
+    <!-- 2. Completed -->
+    <record id="action_employee_onboarding_completed_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_employee_onboarding_reporting_list"/>
+        <field name="act_window_id" ref="action_employee_onboarding_completed"/>
+    </record>
+    <record id="action_employee_onboarding_completed_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_employee_onboarding_reporting_pivot"/>
+        <field name="act_window_id" ref="action_employee_onboarding_completed"/>
+    </record>
+
+    <!-- 3. Pending -->
+    <record id="action_employee_onboarding_pending_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_employee_onboarding_reporting_list"/>
+        <field name="act_window_id" ref="action_employee_onboarding_pending"/>
+    </record>
+    <record id="action_employee_onboarding_pending_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_employee_onboarding_reporting_pivot"/>
+        <field name="act_window_id" ref="action_employee_onboarding_pending"/>
+    </record>
+
+    <!-- 4. Not Started -->
+    <record id="action_employee_onboarding_not_started_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_employee_onboarding_reporting_list"/>
+        <field name="act_window_id" ref="action_employee_onboarding_not_started"/>
+    </record>
+    <record id="action_employee_onboarding_not_started_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_employee_onboarding_reporting_pivot"/>
+        <field name="act_window_id" ref="action_employee_onboarding_not_started"/>
+    </record>
+
+    <!-- Menu Hierarchy under Ahadu HR Root -->
+    <menuitem id="menu_ahadu_onboarding_root"
+              name="Onboarding Tracking"
+              parent="ahadu_hr.menu_ahadu_hr_root"
+              sequence="25"/>
+
+    <menuitem id="menu_employee_onboarding_all"
+              name="Onboarding Dashboard"
+              parent="menu_ahadu_onboarding_root"
+              action="action_employee_onboarding_all"
+              sequence="5"/>
+
+    <menuitem id="menu_employee_onboarding_completed"
+              name="Onboarded Employees"
+              parent="menu_ahadu_onboarding_root"
+              action="action_employee_onboarding_completed"
+              sequence="10"/>
+
+    <menuitem id="menu_employee_onboarding_pending"
+              name="Pending Onboarding"
+              parent="menu_ahadu_onboarding_root"
+              action="action_employee_onboarding_pending"
+              sequence="15"/>
+
+    <menuitem id="menu_employee_onboarding_not_started"
+              name="Not Onboarded"
+              parent="menu_ahadu_onboarding_root"
+              action="action_employee_onboarding_not_started"
+              sequence="20"/>
+
+    <menuitem id="menu_employee_onboarding_requests"
+              name="Onboarding Requests"
+              parent="menu_ahadu_onboarding_root"
+              action="action_hr_employee_onboarding"
+              sequence="25"/>
+</odoo>

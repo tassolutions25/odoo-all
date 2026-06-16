@@ -10,6 +10,19 @@ class HrEmployeeOnboarding(models.Model):
     _order = "create_date desc"
 
     name = fields.Char(compute="_compute_name", store=True)
+
+    # Completion Tracking Fields
+    personal_completion = fields.Float(string="Personal Info (%)", compute="_compute_completion_percentages", store=True)
+    contact_completion = fields.Float(string="Contact Details (%)", compute="_compute_completion_percentages", store=True)
+    emergency_completion = fields.Float(string="Emergency Contact (%)", compute="_compute_completion_percentages", store=True)
+    bank_completion = fields.Float(string="Bank Details (%)", compute="_compute_completion_percentages", store=True)
+    family_completion = fields.Float(string="Family Details (%)", compute="_compute_completion_percentages", store=True)
+    education_completion = fields.Float(string="Education Details (%)", compute="_compute_completion_percentages", store=True)
+    experience_completion = fields.Float(string="Previous Experience (%)", compute="_compute_completion_percentages", store=True)
+    passport_completion = fields.Float(string="Passport Details (%)", compute="_compute_completion_percentages", store=True)
+    cost_sharing_completion = fields.Float(string="Cost-Sharing (%)", compute="_compute_completion_percentages", store=True)
+    onboarding_completion_rate = fields.Float(string="Overall Onboarding Progress (%)", compute="_compute_completion_percentages", store=True)
+
     employee_id = fields.Many2one(
         "hr.employee",
         string="Employee",
@@ -233,6 +246,82 @@ class HrEmployeeOnboarding(models.Model):
                 if rec.employee_id
                 else "New Onboarding Request"
             )
+
+    @api.depends(
+        'salutation', 'gender_updated', 'birthday', 'country_id', 'marital', 'wedding_date', 'physical_challenge', 'physical_challenge_detail', 'identification_id', 'national_id_file', 'kebele_id', 'kebele_id_file',
+        'mobile_phone', 'private_email', 'subcity', 'woreda', 'permanent_address_city', 'permanent_address_country_id',
+        'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_phone', 'emergency_contact_address_city', 'emergency_contact_address_country_id',
+        'bank_account_ids.account_number', 'family_ids.full_name', 'education_ids.school', 'experience_ids.company_name',
+        'passport_id', 'passport_name', 'passport_issue_place', 'passport_issue_date', 'passport_expiry_date', 'passport_file',
+        'cost_sharing_institution', 'cost_sharing_status', 'cost_sharing_amount', 'cost_sharing_document'
+    )
+    def _compute_completion_percentages(self):
+        for rec in self:
+            # 1. Personal Information (out of key fields)
+            personal_fields = ['salutation', 'gender_updated', 'birthday', 'country_id', 'marital']
+            if rec.marital == 'married':
+                personal_fields.append('wedding_date')
+            if rec.physical_challenge == 'yes':
+                personal_fields.append('physical_challenge_detail')
+            
+            # ID fields
+            personal_fields.extend(['identification_id', 'national_id_file', 'kebele_id', 'kebele_id_file'])
+            filled_personal = sum(1 for f in personal_fields if rec[f])
+            rec.personal_completion = (filled_personal / len(personal_fields)) * 100.0 if personal_fields else 100.0
+
+            # 2. Contact Details
+            contact_fields = ['mobile_phone', 'private_email', 'subcity', 'woreda', 'permanent_address_city', 'permanent_address_country_id']
+            filled_contact = sum(1 for f in contact_fields if rec[f])
+            rec.contact_completion = (filled_contact / len(contact_fields)) * 100.0 if contact_fields else 100.0
+
+            # 3. Emergency Contact
+            emergency_fields = ['emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_phone', 'emergency_contact_address_city', 'emergency_contact_address_country_id']
+            filled_emergency = sum(1 for f in emergency_fields if rec[f])
+            rec.emergency_completion = (filled_emergency / len(emergency_fields)) * 100.0 if emergency_fields else 100.0
+
+            # 4. Bank Details
+            rec.bank_completion = 100.0 if rec.bank_account_ids else 0.0
+
+            # 5. Family Details
+            if rec.marital == 'married':
+                rec.family_completion = 100.0 if rec.family_ids else 0.0
+            else:
+                rec.family_completion = 100.0
+
+            # 6. Education Details
+            rec.education_completion = 100.0 if rec.education_ids else 0.0
+
+            # 7. Previous Experience
+            rec.experience_completion = 100.0
+
+            # 8. Passport Details
+            if rec.passport_id:
+                passport_fields = ['passport_name', 'passport_issue_place', 'passport_issue_date', 'passport_expiry_date', 'passport_file']
+                filled_passport = sum(1 for f in passport_fields if rec[f])
+                rec.passport_completion = (filled_passport / len(passport_fields)) * 100.0 if passport_fields else 100.0
+            else:
+                rec.passport_completion = 100.0
+
+            # 9. Cost Sharing
+            if rec.cost_sharing_institution == 'government':
+                cost_fields = ['cost_sharing_status', 'cost_sharing_amount', 'cost_sharing_document']
+                filled_cost = sum(1 for f in cost_fields if rec[f])
+                rec.cost_sharing_completion = (filled_cost / len(cost_fields)) * 100.0 if cost_fields else 100.0
+            else:
+                rec.cost_sharing_completion = 100.0
+
+            # Overall Completion Rate
+            rec.onboarding_completion_rate = sum([
+                rec.personal_completion,
+                rec.contact_completion,
+                rec.emergency_completion,
+                rec.bank_completion,
+                rec.family_completion,
+                rec.education_completion,
+                rec.experience_completion,
+                rec.passport_completion,
+                rec.cost_sharing_completion
+            ]) / 9.0
 
     def _get_employee_for_approval(self):
         return self.employee_id
