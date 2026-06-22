@@ -63,7 +63,12 @@ class HrEmployee(models.Model):
             ("prof", "Prof."),
         ],
         string="Salutation",
+        required=True,
     )
+    mobile_phone = fields.Char(string="Work Mobile", required=True)
+    department_id = fields.Many2one("hr.department", string="Department", required=True)
+    parent_id = fields.Many2one("hr.employee", string="Manager", required=True)
+    employee_type = fields.Selection(required=True)
     first_name = fields.Char(string="First Name", required=True)
     last_name = fields.Char(string="Last Name", required=True)
     middle_name = fields.Char(string="Middle Name", required=True)
@@ -181,10 +186,10 @@ class HrEmployee(models.Model):
         "Country",
         default=lambda self: self.env.ref("base.et", raise_if_not_found=False),
     )
-    date_of_joining = fields.Date(string="Date of Joining")
+    date_of_joining = fields.Date(string="Date of Joining", required=True)
     # effective_from_date = fields.Date(string="Effective From Date")
     grade_id = fields.Many2one(
-        "hr.grade", string="Grade", ondelete="set null", options="{'no_create': True}"
+        "hr.grade", string="Grade", ondelete="restrict", options="{'no_create': True}", required=True
     )
     position_classification = fields.Selection(
         [
@@ -193,11 +198,13 @@ class HrEmployee(models.Model):
         ],
         string="Position Classification",
         default="non_management",
+        required=True,
     )
     gender_updated = fields.Selection(
         [("male", "Male"), ("female", "Female")],
         string="Gender",
         tracking=True,
+        required=True,
     )
     identification_id = fields.Char(string="National ID Number")
     ssnid = fields.Char(string="Pension Number")
@@ -208,7 +215,7 @@ class HrEmployee(models.Model):
         
     )
     branch_id = fields.Many2one(
-        "hr.branch", string="Branch", ondelete="set null", options="{'no_create': True}"
+        "hr.branch", string="Branch", ondelete="restrict", options="{'no_create': True}", required=True
     )
     division_id = fields.Many2one(
         "hr.division",
@@ -222,7 +229,7 @@ class HrEmployee(models.Model):
         string="Cost Center",
         tracking=True,
         help="The Cost Center to which this employee's costs are allocated.",
-        
+        required=True,
     )
     tin_number = fields.Char(string="TIN Number", size=10, required=True)
     kebele_id = fields.Char(string="Kebele ID Number", size=20)
@@ -247,6 +254,7 @@ class HrEmployee(models.Model):
         string="Base Salary (Wage)",
         tracking=True,
         help="This is the employee's gross monthly salary.",
+        required=True,
     )
     representation_allowance = fields.Float(
         string="Representation Allowance (%)", tracking=True
@@ -262,10 +270,10 @@ class HrEmployee(models.Model):
         tracking=True,
     )
 
-    housing_allowance = fields.Monetary(string="Housing Allowance", tracking=True)
-    mobile_allowance = fields.Monetary(string="Mobile Allowance", tracking=True)
+    housing_allowance = fields.Monetary(string="Housing Allowance", tracking=True, required=True)
+    mobile_allowance = fields.Monetary(string="Mobile Allowance", tracking=True, required=True)
     transport_allowance_liters = fields.Float(
-        string="Transport Allowance (Liters)", tracking=True
+        string="Transport Allowance (Liters)", tracking=True, required=True
     )
     transport_allowance_amount = fields.Monetary(
         string="Transport Allowance Amount",
@@ -288,6 +296,7 @@ class HrEmployee(models.Model):
         store=True,
         recursive=True,
         help="Determined based on the employee's job position.",
+        required=True,
     )
     # benefit_line_ids = fields.One2many(
     #     related="benefit_package_id.line_ids", string="Applicable Benefits"
@@ -753,7 +762,7 @@ class HrEmployee(models.Model):
                     )
                 )
 
-    birthday = fields.Date(string="Birthday")
+    birthday = fields.Date(string="Birthday", required=True)
     birthday_et = fields.Char(
         string="Birthday (ET)",
         compute="_compute_birthday_et",
