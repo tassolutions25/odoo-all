@@ -377,7 +377,7 @@
                                                 t-att-value="onb_val.wedding_date.strftime('%d/%m/%Y') if onb_val.wedding_date else ''"/>
                                         </div>
                                         
-                                        <!-- Languages Spoken (Required Asterisk Removed) -->
+                                        <!-- Languages Spoken -->
                                         <div class="mb-3 col-md-4">
                                             <label for="language_ids" class="form-label">Languages Spoken</label>
                                             <select name="language_ids" id="language_ids" multiple="multiple" class="d-none">
@@ -448,9 +448,21 @@
                                                     placeholder="Please provide details about the physical challenge..."><t t-esc="onb_val.physical_challenge_detail or ''"/></textarea>
                                         </div>
                                         <div class="mb-3 col-md-6"><label for="national_id_number" class="form-label">National ID Number</label><input type="text" name="national_id_number" class="form-control" t-att-value="onb_val.identification_id"/></div>
-                                        <div class="mb-3 col-md-6"><label for="national_id_file" class="form-label">National ID (Photo)</label><input type="file" name="national_id_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
+                                        <div class="mb-3 col-md-6">
+                                            <label for="national_id_file" class="form-label">National ID (Photo)</label>
+                                            <input type="file" name="national_id_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/>
+                                            <t t-if="onb_val.national_id_filename">
+                                                <small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="onb_val.national_id_filename"/></small>
+                                            </t>
+                                        </div>
                                         <div class="mb-3 col-md-6"><label for="kebele_id_number" class="form-label">Kebele ID Number</label><input type="text" name="kebele_id_number" class="form-control" t-att-value="onb_val.kebele_id"/></div>
-                                        <div class="mb-3 col-md-6"><label for="kebele_id_file" class="form-label">Kebele ID (Photo)</label><input type="file" name="kebele_id_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
+                                        <div class="mb-3 col-md-6">
+                                            <label for="kebele_id_file" class="form-label">Kebele ID (Photo)</label>
+                                            <input type="file" name="kebele_id_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/>
+                                            <t t-if="onb_val.kebele_id_filename">
+                                                <small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="onb_val.kebele_id_filename"/></small>
+                                            </t>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -462,7 +474,7 @@
                                         <div class="mb-3 col-md-6"><label for="work_email" class="form-label">Work Email</label><input type="email" name="work_email" class="form-control" t-att-value="onb_val.work_email"/></div>
                                         <div class="mb-3 col-md-6"><label for="private_email" class="form-label">Private Email</label><input type="email" name="private_email" class="form-control" t-att-value="onb_val.private_email"/></div>
                                         <h5 class="mt-3">Current Address</h5>
-                                        <div class="mb-3 col-md-4"><label class="form-label">Subcity <span class="text-danger">*</span></label><input type="text" name="current_address_subcity" class="form-control" t-att-value="onb_val.subcity" required="1"/></div>
+                                        <div class="mb-3 col-md-4"><label class="form-label">Subcity <span class="text-danger">*</span></label><input type="text" name="current_address_subcity" class="form-control" t-att-value="onb_val.woreda" required="1"/></div>
                                         <div class="mb-3 col-md-4"><label class="form-label">Woreda <span class="text-danger">*</span></label><input type="text" name="current_address_woreda" class="form-control" t-att-value="onb_val.woreda" required="1"/></div>
                                         <div class="mb-3 col-md-4"><label class="form-label">House No.</label><input type="text" name="current_address_house_number" class="form-control" t-att-value="onb_val.house_number"/></div>
                                         <h5 class="mt-3">Permanent Address</h5>
@@ -497,7 +509,7 @@
                                                     <div class="mb-3 col-md-6"><label class="form-label">Bank Country <span class="text-danger">*</span></label><select t-attf-name="bank_country_id_#{acc_index}" class="form-select" required="1"><t t-foreach="countries" t-as="c"><option t-att-value="c.id" t-att-selected="c.id == acc.bank_country_id.id" t-esc="c.name"/></t></select></div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Account Number <span class="text-danger">*</span></label><input type="text" t-attf-name="bank_account_number_#{acc_index}" class="form-control" t-att-value="acc.account_number" required="1"/></div>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Currency <span class="text-danger">*</span></label><select t-attf-name="bank_currency_id_#{acc_index}" class="form-select" required="1"><t t-foreach="currencies" t-as="curr"><option t-att-value="curr.id" t-att-selected="curr.id == acc.currency_id.id" t-esc="curr.name"/></t></select></div>
-                                                    <input type="text" t-attf-name="bank_account_holder_#{acc_index}" class="form-control" t-att-value="acc.account_holder_name or employee.name"/>
+                                                    <input type="hidden" t-attf-name="bank_account_holder_#{acc_index}" class="form-control" t-att-value="acc.account_holder_name or employee.name"/>
                                                     <div class="mb-3 col-md-6"><label class="form-label">Account Type <span class="text-danger">*</span></label><select t-attf-name="bank_account_type_#{acc_index}" class="form-select" required="1">
                                                         <option value="salary" t-att-selected="acc.account_type == 'salary'">Salary Account</option>
                                                         <option value="saving" t-att-selected="acc.account_type == 'saving'">Saving Account</option>
@@ -642,7 +654,13 @@
                                                 placeholder="DD/MM/YYYY" t-att-value="onb_val.passport_expiry_date.strftime('%d/%m/%Y') if onb_val.passport_expiry_date else ''"/>
                                         </div>
                                         <div class="mb-3 col-md-6"><label class="form-label">ENCR Required?</label><select name="encr_required" class="form-select"><option value="">...</option><option value="yes" t-att-selected="onb_val.encr_required == 'yes'">Yes</option><option value="no" t-att-selected="onb_val.encr_required == 'no'">No</option></select></div>
-                                        <div class="mb-3 col-md-6"><label class="form-label">Upload Passport</label><input type="file" name="passport_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
+                                        <div class="mb-3 col-md-6">
+                                            <label class="form-label">Upload Passport</label>
+                                            <input type="file" name="passport_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/>
+                                            <t t-if="onb_val.passport_filename">
+                                                <small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="onb_val.passport_filename"/></small>
+                                            </t>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -678,7 +696,13 @@
                                                 </div>
                                             </div>
 
-                                            <div class="mb-3 col-md-12"><label class="form-label">Upload Document</label><input type="file" name="cost_sharing_document" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/></div>
+                                            <div class="mb-3 col-md-12">
+                                                <label class="form-label">Upload Document</label>
+                                                <input type="file" name="cost_sharing_document" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/>
+                                                <t t-if="onb_val.cost_sharing_document_filename">
+                                                    <small class="text-success fw-bold"><i class="fa fa-check-circle"/> Current File: <t t-esc="onb_val.cost_sharing_document_filename"/></small>
+                                                </t>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -817,7 +841,7 @@
                 </div>
             </div>
 
-            <!-- Toast Container (Top Right & Z-Index extremely high to clear the navbar) -->
+            <!-- Toast Container -->
             <div class="toast-container position-fixed p-3" style="top: 80px; right: 20px; z-index: 100000;">
                 <div id="validationToast" class="toast align-items-center text-white bg-danger border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="d-flex">
@@ -1114,11 +1138,11 @@
                         // Get Read-only State from python context
                         const isReadonly = <t t-esc="is_readonly and 'true' or 'false'"/>;
 
-                        // Check if we are in edit mode (i.e. editing an existing draft/submitted request)
+                        // Check if we are in edit mode
                         const editMode = form.querySelector('input[name="onboarding_id"]') !== null;
 
                         if (isReadonly) {
-                            // Do not load local storage drafts for read-only approved or submitted requests
+                            // Do not load local storage drafts for read-only requests
                         } else if (editMode) {
                             // Clear onboarding draft localStorage keys to prevent stale overrides
                             Object.keys(localStorage).forEach(key => {
@@ -1127,7 +1151,7 @@
                                 }
                             });
                         } else {
-                            // --- Restore Input Values (Only for Draft/New modes) ---
+                            // --- Restore Input Values ---
                             const allInputs = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
                             allInputs.forEach(input => {
                                 const savedVal = localStorage.getItem(prefix + input.name);
@@ -1146,7 +1170,7 @@
                             }
                         }
 
-                        // --- 2. Restore Dynamic Rows ---
+                        // --- Restore Dynamic Rows ---
                         let restoredCount = 0;
                         ['bank', 'family', 'education', 'experience'].forEach(type => {
                             const key = prefix + type + '_indices';
@@ -1225,7 +1249,7 @@
                         // Initial bind for all inputs currently on page
                         bindInputListeners(form);
 
-                        // --- 5. Save/Restore Active Tab ---
+                        // --- Save/Restore Active Tab ---
                         const tabLinks = document.querySelectorAll('button[data-bs-toggle="tab"]');
                         tabLinks.forEach(tab => {
                             tab.addEventListener('shown.bs.tab', function (e) {
@@ -1240,7 +1264,7 @@
                             }
                         }
 
-                        // --- Disable All Elements if Form is Read-only (Submitted or Approved requests) ---
+                        // --- Disable All Elements if Form is Read-only ---
                         if (isReadonly) {
                             const formElements = form.querySelectorAll('input, select, textarea, button[type="submit"]');
                             formElements.forEach(el => {
@@ -1266,11 +1290,11 @@
                             }
                         }
 
-                        // --- 6. Form Validation and Missing Fields Toast ---
+                        // --- Form Validation and Missing Fields Toast ---
                         const submitBtn = document.getElementById('btn_submit_onboarding');
                         if (submitBtn) {
                             form.addEventListener('submit', function(e) {
-                                e.preventDefault(); // Stop default browser full-page submission
+                                e.preventDefault(); 
 
                                 const missingFieldLabels = [];
                                 const invalidFields = [];
@@ -1331,7 +1355,7 @@
                                             labelText = el.getAttribute('placeholder') || el.getAttribute('name') || 'Required field';
                                         }
 
-                                        // Cleanup the label name text cleanly
+                                        // Cleanup the label name text
                                         labelText = labelText.replace(/\*/g, '').replace(/:$/, '').trim();
 
                                         if (labelText &amp;&amp; !missingFieldLabels.includes(labelText)) {
@@ -1380,7 +1404,6 @@
                                 const originalBtnHtml = submitBtn.innerHTML;
                                 submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Submitting...';
 
-                                // Package form text inputs and binary files cleanly into multipart/form-data
                                 const formData = new FormData(form);
 
                                 fetch(form.action, {

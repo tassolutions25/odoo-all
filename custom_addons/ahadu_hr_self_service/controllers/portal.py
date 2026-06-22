@@ -490,6 +490,22 @@ class AhaduSelfServicePortal(CustomerPortal):
                     if part.isdigit():
                         lang_ids_list.append(int(part))
 
+            # Retrieve existing request if in edit flow
+            existing_id = kw.get("onboarding_id")
+            existing_record = None
+            if existing_id and str(existing_id).isdigit():
+                rec = (
+                    request.env["hr.employee.onboarding"]
+                    .sudo()
+                    .browse(int(existing_id))
+                )
+                if (
+                    rec.exists()
+                    and rec.employee_id.id == employee.id
+                    and rec.state in ["draft", "submitted", "rejected"]
+                ):
+                    existing_record = rec
+
             vals = {
                 "employee_id": employee.id,
                 # Personal Info
@@ -554,24 +570,41 @@ class AhaduSelfServicePortal(CustomerPortal):
                 f = kw.get("national_id_file")
                 vals["national_id_file"] = base64.b64encode(f.read())
                 vals["national_id_filename"] = f.filename
+            elif not existing_record and employee.national_id_file:
+                vals["national_id_file"] = employee.national_id_file
+                vals["national_id_filename"] = employee.national_id_filename
+
             if kw.get("kebele_id_file") and getattr(
                 kw.get("kebele_id_file"), "filename", ""
             ):
                 f = kw.get("kebele_id_file")
                 vals["kebele_id_file"] = base64.b64encode(f.read())
                 vals["kebele_id_filename"] = f.filename
+            elif not existing_record and employee.kebele_id_file:
+                vals["kebele_id_file"] = employee.kebele_id_file
+                vals["kebele_id_filename"] = employee.kebele_id_filename
+
             if kw.get("passport_file") and getattr(
                 kw.get("passport_file"), "filename", ""
             ):
                 f = kw.get("passport_file")
                 vals["passport_file"] = base64.b64encode(f.read())
                 vals["passport_filename"] = f.filename
+            elif not existing_record and employee.passport_file:
+                vals["passport_file"] = employee.passport_file
+                vals["passport_filename"] = employee.passport_filename
+
             if kw.get("cost_sharing_document") and getattr(
                 kw.get("cost_sharing_document"), "filename", ""
             ):
                 f = kw.get("cost_sharing_document")
                 vals["cost_sharing_document"] = base64.b64encode(f.read())
                 vals["cost_sharing_document_filename"] = f.filename
+            elif not existing_record and employee.cost_sharing_document:
+                vals["cost_sharing_document"] = employee.cost_sharing_document
+                vals["cost_sharing_document_filename"] = (
+                    employee.cost_sharing_document_filename
+                )
 
             # 2. Handle Dynamic Bank Rows
             bank_vals_list = []
@@ -652,21 +685,23 @@ class AhaduSelfServicePortal(CustomerPortal):
                         "employee_id": False,  # Explicitly set to False to prevent Odoo's context linking
                     }
 
-                    # Safely bind file content or pull from existing record to avoid database constraint failures
+                    # Safely bind file content or pull from existing record/onboarding request context
                     if edu_cert_file and getattr(edu_cert_file, "filename", ""):
                         line_vals["certification_attachment"] = base64.b64encode(
                             edu_cert_file.read()
                         )
                         line_vals["certification_filename"] = edu_cert_file.filename
-                    elif keep_file and str(keep_file).isdigit() and int(keep_file) > 1:
-                        # Ensure we fetch the actual database record from active employee context
+                    elif keep_file and str(keep_file).isdigit() and int(keep_file) > 0:
+                        # Ensure we fetch the actual database record from active employee context or draft onboarding context
                         existing_edu = (
                             request.env["hr.employee.education"]
                             .sudo()
                             .search(
                                 [
                                     ("id", "=", int(keep_file)),
+                                    "|",
                                     ("employee_id", "=", employee.id),
+                                    ("onboarding_id.employee_id", "=", employee.id),
                                 ],
                                 limit=1,
                             )
@@ -717,14 +752,16 @@ class AhaduSelfServicePortal(CustomerPortal):
                             exp_attachment_file.read()
                         )
                         line_vals["attachment_filename"] = exp_attachment_file.filename
-                    elif keep_file and str(keep_file).isdigit() and int(keep_file) > 1:
+                    elif keep_file and str(keep_file).isdigit() and int(keep_file) > 0:
                         existing_exp = (
                             request.env["hr.employee.experience"]
                             .sudo()
                             .search(
                                 [
                                     ("id", "=", int(keep_file)),
+                                    "|",
                                     ("employee_id", "=", employee.id),
+                                    ("onboarding_id.employee_id", "=", employee.id),
                                 ],
                                 limit=1,
                             )
@@ -738,22 +775,6 @@ class AhaduSelfServicePortal(CustomerPortal):
                     experience_vals.append((0, 0, line_vals))
             if experience_vals:
                 vals["experience_ids"] = experience_vals
-
-            # Update existing draft/submitted record if in edit flow; else create new
-            existing_id = kw.get("onboarding_id")
-            existing_record = None
-            if existing_id and str(existing_id).isdigit():
-                rec = (
-                    request.env["hr.employee.onboarding"]
-                    .sudo()
-                    .browse(int(existing_id))
-                )
-                if (
-                    rec.exists()
-                    and rec.employee_id.id == employee.id
-                    and rec.state in ["draft", "submitted", "rejected"]
-                ):
-                    existing_record = rec
 
             if existing_record:
                 # Reset to draft, clear old approval chain, replace O2M lines, then resubmit
