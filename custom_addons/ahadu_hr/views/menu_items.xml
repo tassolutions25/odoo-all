@@ -42,6 +42,7 @@
 <menuitem id="menu_ahadu_departments" name="Departments" parent="menu_ahadu_hr_root" action="hr.hr_department_tree_action" sequence="20"/>
 <menuitem id="menu_ahadu_reporting" name="Skill Reporting" parent="menu_ahadu_hr_root" action="hr_skills.hr_employee_skill_report_action" sequence="60"/>
 <menuitem id="menu_hr_approval_policy" name="Approval Workflows" parent="hr.menu_hr_configuration" action="action_hr_approval_policy" sequence="70"/>
+<menuitem id="menu_hr_activity_card_access" name="Activity Card Access" parent="hr.menu_hr_configuration" action="action_activity_card_access" sequence="75" groups="hr.group_hr_manager"/>
 <menuitem id="menu_hr_benefit_package_config" name="Benefits" parent="hr.menu_hr_configuration" sequence="80"/>
 <menuitem id="menu_hr_benefit_packages" name="Benefit Packages" parent="menu_hr_benefit_package_config" action="action_hr_benefit_package" sequence="10"/>
 <menuitem id="menu_hr_benefit_types" name="Benefit Types" parent="menu_hr_benefit_package_config" action="action_hr_benefit_type" sequence="20"/>

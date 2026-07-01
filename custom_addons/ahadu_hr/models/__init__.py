@@ -23,6 +23,7 @@ from . import hr_city
 from . import hr_employee_bank
 from . import hr_employee
 from . import hr_employee_activity
+from . import hr_activity_card_access
 from . import hr_employee_promotion
 from . import hr_employee_ctc
 from . import hr_employee_transfer

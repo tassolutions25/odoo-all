@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_activity_card_access_list" model="ir.ui.view">
+        <field name="name">hr.activity.card.access.list</field>
+        <field name="model">hr.activity.card.access</field>
+        <field name="arch" type="xml">
+            <list string="Activity Card Access Rules" editable="bottom">
+                <field name="activity_type"/>
+                <field name="job_ids" widget="many2many_tags"/>
+                <field name="note"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_activity_card_access_form" model="ir.ui.view">
+        <field name="name">hr.activity.card.access.form</field>
+        <field name="model">hr.activity.card.access</field>
+        <field name="arch" type="xml">
+            <form string="Activity Card Access Rule">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="activity_type"/>
+                        <h1>
+                            <field name="activity_type" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Restriction">
+                            <field name="activity_type"/>
+                            <field name="note" placeholder="Optional note..."/>
+                        </group>
+                        <group string="Info">
+                            <div class="alert alert-warning" role="alert" colspan="2">
+                                <strong>Default: Hidden.</strong>
+                                Cards are <strong>hidden from everyone</strong> unless a rule
+                                exists here with at least one job position assigned.
+                                Add job positions below to grant visibility to those roles.
+                                System administrators (users without a linked employee record)
+                                always see all cards.
+                            </div>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Allowed Job Positions">
+                            <field name="job_ids" widget="many2many"
+                                   options="{'no_create': True}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="department_id"/>
+                                    <field name="no_of_employee" string="Employees"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_activity_card_access" model="ir.actions.act_window">
+        <field name="name">Activity Card Access</field>
+        <field name="res_model">hr.activity.card.access</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No access rules configured yet.
+            </p>
+            <p>
+                <strong>All activity cards are hidden by default.</strong>
+                Create a rule for each card you want to make visible, then assign
+                the job positions that should see it.
+                Cards with no rule, or with an empty job positions list, remain
+                hidden from all users.
+                System administrators (users without a linked employee record)
+                always see all cards regardless of rules.
+            </p>
+        </field>
+    </record>
+</odoo>

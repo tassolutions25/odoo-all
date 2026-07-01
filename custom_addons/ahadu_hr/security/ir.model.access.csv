@@ -79,3 +79,6 @@ access_hr_employee_reinitiate_user,hr.employee.reinitiate.user,model_hr_employee
 access_hr_employee_reinitiate_manager,hr.employee.reinitiate.manager,model_hr_employee_reinitiate,hr.group_hr_manager,1,1,1,1
 access_hr_employee_suspension_manager,hr.employee.suspension manager,model_hr_employee_suspension,hr.group_hr_manager,1,1,1,1
 access_hr_employee_mass_update_wizard,hr.employee.mass.update.wizard,model_hr_employee_mass_update_wizard,base.group_user,1,1,1,1
+access_hr_activity_card_access_manager,hr.activity.card.access.manager,model_hr_activity_card_access,hr.group_hr_manager,1,1,1,1
+access_hr_activity_card_access_user,hr.activity.card.access.user,model_hr_activity_card_access,hr.group_hr_user,1,0,0,0
+access_hr_activity_card_access_base,hr.activity.card.access.base,model_hr_activity_card_access,base.group_user,1,0,0,0

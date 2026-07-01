@@ -1,4 +1,4 @@
-import { Component, useState, xml } from "@odoo/owl";
+import { Component, useState, onWillStart, xml } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 
@@ -6,34 +6,47 @@ class EmployeeActivityDashboard extends Component {
   setup() {
     this.orm = useService("orm");
     this.action = useService("action");
+
+    // State: null = loading, Array = resolved list of visible card types
+    this.state = useState({ visibleCards: null });
+
+    onWillStart(async () => {
+      try {
+        const result = await this.orm.call(
+          "hr.activity.card.access",
+          "get_visible_cards_for_current_user",
+          []
+        );
+        this.state.visibleCards = result;
+      } catch (e) {
+        // Fallback: show all cards if the RPC fails for any reason
+        this.state.visibleCards = [
+          "onboarding", "document_request", "promotion", "demotion",
+          "transfer", "acting", "temporary", "termination", "resignation",
+          "suspension", "disciplinary", "guarantee", "retirement",
+          "ctc", "data_change", "confirmation", "reassign_reportees",
+          "employee_reinitiate",
+        ];
+      }
+    });
+  }
+
+  /** Returns true if the given card type should be rendered. */
+  isVisible(cardType) {
+    // While loading, hide everything to avoid flash
+    if (!this.state.visibleCards) return false;
+    return this.state.visibleCards.includes(cardType);
   }
 
   async onActivityClick(activityType) {
     let action;
     switch (activityType) {
-      // case "employees":
-      //   action = {
-      //     type: "ir.actions.act_window",
-      //     res_model: "hr.employee",
-      //     view_mode: "list,form,graph",
-      //     views: [
-      //       [false, "list"],
-      //       [false, "form"],
-      //       [false, "graph"],
-      //     ],
-      //     name: "Employees",
-      //   };
-      //   break;
       case "demotion":
         action = {
           type: "ir.actions.act_window",
           res_model: "hr.employee.demotion",
           view_mode: "list,form,graph",
-          views: [
-            [false, "list"],
-            [false, "form"],
-            [false, "graph"],
-          ],
+          views: [[false, "list"], [false, "form"], [false, "graph"]],
           name: "Employee Demotions",
         };
         break;
@@ -42,11 +55,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.promotion",
           view_mode: "list,form,graph",
-          views: [
-            [false, "list"],
-            [false, "form"],
-            [false, "graph"],
-          ],
+          views: [[false, "list"], [false, "form"], [false, "graph"]],
           name: "Employee Promotions",
         };
         break;
@@ -55,11 +64,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.transfer",
           view_mode: "list,form,graph",
-          views: [
-            [false, "list"],
-            [false, "form"],
-            [false, "graph"],
-          ],
+          views: [[false, "list"], [false, "form"], [false, "graph"]],
           name: "Employee Transfers",
         };
         break;
@@ -68,11 +73,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.termination",
           view_mode: "list,form,graph",
-          views: [
-            [false, "list"],
-            [false, "form"],
-            [false, "graph"],
-          ],
+          views: [[false, "list"], [false, "form"], [false, "graph"]],
           name: "Employee Terminations",
         };
         break;
@@ -81,12 +82,8 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.resignation",
           view_mode: "list,form,graph",
-          views: [
-            [false, "list"],
-            [false, "form"],
-            [false, "graph"],
-          ],
-          name: "Employee resignations",
+          views: [[false, "list"], [false, "form"], [false, "graph"]],
+          name: "Employee Resignations",
         };
         break;
       case "acting":
@@ -94,11 +91,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.acting",
           view_mode: "list,form,graph",
-          views: [
-            [false, "list"],
-            [false, "form"],
-            [false, "graph"],
-          ],
+          views: [[false, "list"], [false, "form"], [false, "graph"]],
           name: "Acting Assignments",
         };
         break;
@@ -107,11 +100,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.temporary.assignment",
           view_mode: "list,form,graph",
-          views: [
-            [false, "list"],
-            [false, "form"],
-            [false, "graph"],
-          ],
+          views: [[false, "list"], [false, "form"], [false, "graph"]],
           name: "Temporary Assignments",
         };
         break;
@@ -120,11 +109,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.suspension",
           view_mode: "list,form",
-          views: [
-            [false, "list"],
-            [false, "form"],
-            [false, "graph"],
-          ],
+          views: [[false, "list"], [false, "form"], [false, "graph"]],
           name: "Suspensions",
         };
         break;
@@ -133,11 +118,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.disciplinary",
           view_mode: "list,form,graph",
-          views: [
-            [false, "list"],
-            [false, "form"],
-            [false, "graph"],
-          ],
+          views: [[false, "list"], [false, "form"], [false, "graph"]],
           name: "Disciplinary Actions",
         };
         break;
@@ -146,10 +127,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.ctc",
           view_mode: "list,form",
-          views: [
-            [false, "list"],
-            [false, "form"],
-          ],
+          views: [[false, "list"], [false, "form"]],
           name: "CTC Adjustments",
         };
         break;
@@ -158,11 +136,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.guarantee",
           view_mode: "list,form,graph",
-          views: [
-            [false, "list"],
-            [false, "form"],
-            [false, "graph"],
-          ],
+          views: [[false, "list"], [false, "form"], [false, "graph"]],
           name: "Employee Guarantees",
         };
         break;
@@ -171,10 +145,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.retirement",
           view_mode: "list,form",
-          views: [
-            [false, "list"],
-            [false, "form"],
-          ],
+          views: [[false, "list"], [false, "form"]],
           name: "Employee Retirements",
         };
         break;
@@ -183,10 +154,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.data.change",
           view_mode: "list,form",
-          views: [
-            [false, "list"],
-            [false, "form"],
-          ],
+          views: [[false, "list"], [false, "form"]],
           name: "Employee Data Changes",
         };
         break;
@@ -195,10 +163,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.confirmation",
           view_mode: "list,form",
-          views: [
-            [false, "list"],
-            [false, "form"],
-          ],
+          views: [[false, "list"], [false, "form"]],
           name: "Employee Confirmations",
         };
         break;
@@ -207,10 +172,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.reassign",
           view_mode: "list,form",
-          views: [
-            [false, "list"],
-            [false, "form"],
-          ],
+          views: [[false, "list"], [false, "form"]],
           name: "Reassign Reportees",
         };
         break;
@@ -219,10 +181,7 @@ class EmployeeActivityDashboard extends Component {
           type: "ir.actions.act_window",
           res_model: "hr.employee.reinitiate",
           view_mode: "list,form",
-          views: [
-            [false, "list"],
-            [false, "form"],
-          ],
+          views: [[false, "list"], [false, "form"]],
           name: "Employee Re-initiate",
         };
         break;
@@ -244,154 +203,200 @@ class EmployeeActivityDashboard extends Component {
 
 EmployeeActivityDashboard.template = xml`
 <div class="o_employee_activities_dashboard p-4 h-100 overflow-auto">
-    <h1 class="text-center mb-4">Employee Activities</h1>
-    <div class="row">
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('onboarding')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-user-check fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Onboarding</h5>
+    <!-- Loading state -->
+    <t t-if="!state.visibleCards">
+        <div class="text-center py-5">
+            <i class="fa fa-spinner fa-spin fa-2x" style="color: #860037;"/>
+            <p class="mt-3 text-muted">Loading activities...</p>
+        </div>
+    </t>
+
+    <!-- Cards grid -->
+    <t t-if="state.visibleCards">
+        <h1 class="text-center mb-4">Employee Activities</h1>
+        <div class="row">
+            <t t-if="isVisible('onboarding')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('onboarding')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-user-check fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Onboarding</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('document_request')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-file-signature fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Document Request</h5>
+            </t>
+            <t t-if="isVisible('document_request')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('document_request')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-file-signature fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Document Request</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('promotion')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-arrow-up fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Promotion</h5>
+            </t>
+            <t t-if="isVisible('promotion')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('promotion')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-arrow-up fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Promotion</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('demotion')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-arrow-down fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Demotion</h5>
+            </t>
+            <t t-if="isVisible('demotion')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('demotion')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-arrow-down fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Demotion</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('transfer')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-random fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Transfer</h5>
+            </t>
+            <t t-if="isVisible('transfer')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('transfer')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-random fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Transfer</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('acting')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-user-tie fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Acting Assignment</h5>
+            </t>
+            <t t-if="isVisible('acting')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('acting')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-user-tie fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Acting Assignment</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('temporary')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-user-clock fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Temporary Assignment</h5>
+            </t>
+            <t t-if="isVisible('temporary')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('temporary')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-user-clock fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Temporary Assignment</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('termination')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-user-minus fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Termination</h5>
+            </t>
+            <t t-if="isVisible('termination')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('termination')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-user-minus fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Termination</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-          <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('resignation')">
-              <div class="card-body text-center d-flex flex-column justify-content-center">
-                  <i class="fa fa-user-times fa-3x" style="color: #860037;"></i>
-                  <h5 class="mt-3">Resignation</h5>
-              </div>
-          </div>
-      </div>
-      <div class="col-lg-3 col-md-4 mb-4">
-        <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('suspension')">
-            <div class="card-body text-center d-flex flex-column justify-content-center">
-                <i class="fa fa-user-times fa-3x" style="color: #860037;"></i>
-                <h5 class="mt-3">Suspension</h5>
-            </div>
-        </div>
-      </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('disciplinary')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-gavel fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Disciplinary Actions</h5>
+            </t>
+            <t t-if="isVisible('resignation')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('resignation')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-user-times fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Resignation</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('guarantee')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-shield fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Employee Guarantees</h5>
+            </t>
+            <t t-if="isVisible('suspension')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('suspension')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-ban fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Suspension</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('retirement')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-random fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">retirement</h5>
+            </t>
+            <t t-if="isVisible('disciplinary')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('disciplinary')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-gavel fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Disciplinary Actions</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('ctc')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-money fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">CTC Adjustments</h5>
+            </t>
+            <t t-if="isVisible('guarantee')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('guarantee')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-shield fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Employee Guarantees</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('data_change')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-random fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Data Change</h5>
+            </t>
+            <t t-if="isVisible('retirement')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('retirement')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-hourglass-end fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Retirement</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('confirmation')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-random fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Confirmation</h5>
+            </t>
+            <t t-if="isVisible('ctc')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('ctc')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-money fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">CTC Adjustments</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('reassign_reportees')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-random fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Reassign Reportees</h5>
+            </t>
+            <t t-if="isVisible('data_change')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('data_change')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-pencil-square-o fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Data Change</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('employee_reinitiate')">
-                <div class="card-body text-center d-flex flex-column justify-content-center">
-                    <i class="fa fa-random fa-3x" style="color: #860037;"></i>
-                    <h5 class="mt-3">Employee Re-initiate</h5>
+            </t>
+            <t t-if="isVisible('confirmation')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('confirmation')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-check-circle fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Confirmation</h5>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </t>
+            <t t-if="isVisible('reassign_reportees')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('reassign_reportees')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-users fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Reassign Reportees</h5>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <t t-if="isVisible('employee_reinitiate')">
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <div class="card activity-card h-100" t-on-click="() => this.onActivityClick('employee_reinitiate')">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <i class="fa fa-refresh fa-3x" style="color: #860037;"/>
+                            <h5 class="mt-3">Employee Re-initiate</h5>
+                        </div>
+                    </div>
+                </div>
+            </t>
         </div>
-    </div>
+    </t>
 </div>
 `;
 

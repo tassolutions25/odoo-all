@@ -43,6 +43,7 @@
         # "views/hr_resume_views.xml",
         "views/hr_employee_experience_views.xml",
         "views/hr_employee_activity_views.xml",
+        "views/hr_activity_card_access_views.xml",
         "views/hr_employee_promotion_views.xml",
         "views/hr_employee_transfer_views.xml",
         "views/hr_employee_type_views.xml",
