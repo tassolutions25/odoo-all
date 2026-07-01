@@ -305,4 +305,4 @@ class HrEmployeeDemotion(models.Model):
         if self.new_parent_id:
             self.employee_id.sudo().write({"parent_id": self.new_parent_id.id})
 
-        self.employee_id.write(employee_vals)
+        self.employee_id.sudo().write(employee_vals)

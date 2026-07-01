@@ -6,6 +6,7 @@
             <field name="model">hr.employee.activity</field>
             <field name="arch" type="xml">
                 <kanban class="o_employee_activity_kanban">
+                    <field name="next_approver_ids"/>
                     <templates>
                         <t t-name="kanban-box">
                             <div class="oe_kanban_card oe_kanban_global_click">
@@ -64,6 +65,9 @@
                                     <strong><field name="activity_type"/></strong>
                                     <div><field name="employee_id"/></div>
                                     <div><field name="date"/></div>
+                                    <div t-if="record.next_approver_ids.raw_value and record.next_approver_ids.raw_value.length" class="text-muted small">
+                                        Next Approver: <field name="next_approver_ids" widget="many2many_tags"/>
+                                    </div>
                                     <div class="oe_kanban_bottom_right">
                                         <span class="badge" t-att-class="record.state.raw_value == 'approved' ? 'badge-success' : record.state.raw_value == 'rejected' ? 'badge-danger' : 'badge-warning'">
                                             <field name="state"/>
@@ -85,6 +89,7 @@
                     <field name="activity_type"/>
                     <field name="date"/>
                     <field name="state" widget="badge"/>
+                    <field name="next_approver_ids" widget="many2many_tags" optional="show"/>
                     <field name="description"/>
                     <button name="action_open_related_record" type="object" icon="fa-external-link" title="View Original Document"
                         class="float-end"/>

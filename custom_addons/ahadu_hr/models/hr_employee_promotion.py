@@ -295,4 +295,8 @@ class HrEmployeePromotion(models.Model):
         if self.new_salary > 0:
             update_vals["emp_wage"] = self.new_salary
 
-        self.employee_id.write(update_vals)
+        self.employee_id.sudo().write(update_vals)
+
+        # Sync contract wage if employee has an active contract
+        if self.new_salary > 0 and self.employee_id.contract_id:
+            self.employee_id.contract_id.sudo().write({"wage": self.new_salary})

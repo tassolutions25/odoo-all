@@ -45,6 +45,11 @@ class HrEmployeeActivity(models.Model):
 
     description = fields.Text(string="Description")
     attachment_ids = fields.Many2many("ir.attachment", string="Attachments")
+    next_approver_ids = fields.Many2many(
+        "hr.employee",
+        string="Next Approver(s)",
+        compute="_compute_next_approvers",
+    )
 
     # Reference fields for specific activity records
     promotion_id = fields.Many2one(
@@ -150,3 +155,56 @@ class HrEmployeeActivity(models.Model):
 
     def action_reset_to_draft(self):
         self.state = "draft"
+
+    @api.depends(
+        "promotion_id.next_approver_ids",
+        "demotion_id.next_approver_ids",
+        "transfer_id.next_approver_ids",
+        "suspension_id.next_approver_ids",
+        "disciplinary_id.next_approver_ids",
+        "guarantee_id.next_approver_ids",
+        "retirement_id.next_approver_ids",
+        "termination_id.next_approver_ids",
+        "resignation_id.next_approver_ids",
+        "acting_id.next_approver_ids",
+        "temporary_assignment_id.next_approver_ids",
+        "ctc_id.next_approver_ids",
+        "data_change_id.next_approver_ids",
+        "confirmation_id.next_approver_ids",
+        "reassign_id.next_approver_ids",
+        "reinitiate_id.next_approver_ids",
+    )
+    def _compute_next_approvers(self):
+        mapping = {
+            "promotion": "promotion_id",
+            "demotion": "demotion_id",
+            "transfer": "transfer_id",
+            "suspension": "suspension_id",
+            "disciplinary": "disciplinary_id",
+            "guarantee": "guarantee_id",
+            "retirement": "retirement_id",
+            "termination": "termination_id",
+            "resignation": "resignation_id",
+            "acting": "acting_id",
+            "temporary": "temporary_assignment_id",
+            "ctc": "ctc_id",
+            "data_change": "data_change_id",
+            "confirmation": "confirmation_id",
+            "reassign_reportees": "reassign_id",
+            "employee_reinitiate": "reinitiate_id",
+        }
+        for rec in self:
+            field_name = mapping.get(rec.activity_type)
+            # Check self-service fields if they exist
+            if not field_name:
+                if rec.activity_type == "onboarding":
+                    field_name = "onboarding_id"
+                elif rec.activity_type == "document_request":
+                    field_name = "document_request_id"
+
+            if field_name and hasattr(rec, field_name) and rec[field_name]:
+                related_rec = rec[field_name]
+                if hasattr(related_rec, "next_approver_ids"):
+                    rec.next_approver_ids = related_rec.next_approver_ids
+                    continue
+            rec.next_approver_ids = self.env["hr.employee"]

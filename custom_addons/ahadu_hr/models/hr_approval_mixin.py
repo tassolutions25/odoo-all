@@ -56,43 +56,109 @@ class HrApprovalMixin(models.AbstractModel):
         raise NotImplementedError()
 
     def _send_approval_notification(self, approvers):
-        """Sends Odoo notification to a set of approvers."""
+        """Sends Odoo chat notification and a direct work-email to each approver."""
         self.ensure_one()
         if not approvers:
             return
 
-        if not hasattr(self, "message_post"):
-            _logger.warning(
-                f"Model {self._name} does not inherit mail.thread, cannot send notifications."
-            )
-            return
+        record_name = self.display_name or self._description or str(self.id)
 
-        partners = approvers.mapped("user_id.partner_id").filtered(lambda p: p.active)
-        if not partners:
-            _logger.warning(
-                f"No active partners with linked users found for approvers on {self._name} ID {self.id}"
-            )
-            return
+        # ── 1. Odoo in-app chat notification (only for users with portal/internal accounts) ──
+        if hasattr(self, "message_post"):
+            partners = approvers.mapped("user_id.partner_id").filtered(lambda p: p.active)
+            if partners:
+                body = _(
+                    "Approval request for the <a href='#' data-oe-model='%(model)s' "
+                    "data-oe-id='%(res_id)d'>%(name)s</a> is pending and waiting for you. "
+                    "Please approve."
+                ) % {
+                    "model": self._name,
+                    "res_id": self.id,
+                    "name": record_name,
+                }
+                try:
+                    self.message_post(
+                        body=body,
+                        partner_ids=partners.ids,
+                        message_type="notification",
+                        subtype_xmlid="mail.mt_note",
+                    )
+                    _logger.info(
+                        "Sent in-app approval notification for '%s' to partner IDs: %s",
+                        record_name, partners.ids
+                    )
+                except Exception as e:
+                    _logger.error("Failed to post in-app message for %s %s: %s", self._name, self.id, e)
 
-        record_name = self.display_name or self._description
-        body = _(
-            "Your approval is requested for the following document: "
-            "<a href='#' data-oe-model='%(model)s' data-oe-id='%(res_id)d'>%(name)s</a>"
-        ) % {
-            "model": self._name,
-            "res_id": self.id,
-            "name": record_name,
-        }
-
-        self.message_post(
-            body=body,
-            partner_ids=partners.ids,
-            message_type="notification",
-            subtype_xmlid="mail.mt_note",
+        # ── 2. Direct work-email to every approver ──
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or ''
+        record_url = "%s/web#id=%s&model=%s&view_type=form" % (base_url, self.id, self._name)
+        company = self.env.company
+        email_from = (
+            company.email
+            or self.env.user.email
+            or 'hr-noreply@ahadubank.com'
         )
-        _logger.info(
-            f"Sent approval notification for '{record_name}' to partners: {partners.ids}"
-        )
+
+        for approver in approvers:
+            email_to = (
+                approver.work_email
+                or approver.private_email
+                or (approver.user_id.partner_id.email if approver.user_id else False)
+            )
+            if not email_to:
+                _logger.warning(
+                    "Approver %s (ID %s) has no work_email – skipping email for %s %s.",
+                    approver.name, approver.id, self._name, self.id
+                )
+                continue
+
+            subject = "Approval Required: %s" % record_name
+            body_html = """
+<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6;">
+  <p>Dear %s,</p>
+  <p>
+    Approval request for the <strong>%s</strong> is pending and waiting for you.
+    Please approve.
+  </p>
+  <p style="margin: 24px 0;">
+    <a href="%s"
+       style="background-color: #860037; color: #fff; padding: 10px 22px;
+              text-decoration: none; border-radius: 5px; font-weight: bold;
+              display: inline-block;">
+      View &amp; Approve Request
+    </a>
+  </p>
+  <p style="color: #555; font-size: 12px;">
+    If the button doesn&#39;t work, copy and paste this URL into your browser:<br/>%s
+  </p>
+  <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
+  <p style="font-size: 12px; color: #777;">
+    This is an automated notification from the Ahadu HR Management System.
+  </p>
+</div>
+""" % (approver.name, record_name, record_url, record_url)
+
+            mail_values = {
+                'subject': subject,
+                'body_html': body_html,
+                'email_to': email_to,
+                'email_from': email_from,
+                'auto_delete': False,
+                'state': 'outgoing',
+            }
+            try:
+                mail = self.env['mail.mail'].sudo().create(mail_values)
+                mail.sudo().send(raise_exception=False)
+                _logger.info(
+                    "Approval email sent to %s for %s ID %s.",
+                    email_to, self._name, self.id
+                )
+            except Exception as e:
+                _logger.error(
+                    "Failed to send approval email to %s for %s ID %s: %s",
+                    email_to, self._name, self.id, e
+                )
 
     @api.depends("approval_line_ids.status")
     def _compute_next_approvers(self):
@@ -269,18 +335,15 @@ class HrApprovalMixin(models.AbstractModel):
                     % (rec.display_name or rec.id)
                 )
 
-            # Find peers who share the same job position and sequence to remove them
+            # Find peers who share the same sequence to remove them (allowing any approver of this level to approve)
             peers_to_remove = self.env["hr.approval.line"]
             for line in lines_to_update:
-                job_id = line.approver_id.job_id
-                if job_id:
-                    peers = rec.approval_line_ids.filtered(
-                        lambda l: l.status == "pending"
-                        and l.sequence == line.sequence
-                        and l.approver_id.job_id == job_id
-                        and l.id != line.id
-                    )
-                    peers_to_remove |= peers
+                peers = rec.approval_line_ids.filtered(
+                    lambda l: l.status == "pending"
+                    and l.sequence == line.sequence
+                    and l.id != line.id
+                )
+                peers_to_remove |= peers
 
             lines_to_update.write(
                 {"status": "approved", "approval_date": fields.Datetime.now()}

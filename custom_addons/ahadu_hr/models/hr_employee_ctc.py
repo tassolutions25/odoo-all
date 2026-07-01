@@ -282,10 +282,10 @@ class HrEmployeeCtc(models.Model):
         if self.new_department_id:
             update_vals["department_id"] = self.new_department_id.id
 
-        self.employee_id.write(update_vals)
+        self.employee_id.sudo().write(update_vals)
 
         if self.employee_id.contract_id:
-            self.employee_id.contract_id.write({"wage": self.new_wage})
+            self.employee_id.contract_id.sudo().write({"wage": self.new_wage})
 
     def action_submit(self):
         return super().action_submit()

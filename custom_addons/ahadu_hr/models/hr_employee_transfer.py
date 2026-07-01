@@ -269,4 +269,4 @@ class HrEmployeeTransfer(models.Model):
         if self.new_job_id:
             update_vals["job_id"] = self.new_job_id.id
 
-        self.employee_id.write(update_vals)
+        self.employee_id.sudo().write(update_vals)
