@@ -160,9 +160,12 @@ class HrApprovalMixin(models.AbstractModel):
                     email_to, self._name, self.id, e
                 )
 
-    @api.depends("approval_line_ids.status")
+    @api.depends("state", "approval_line_ids.status")
     def _compute_next_approvers(self):
         for rec in self:
+            if rec.state != "submitted":
+                rec.next_approver_ids = self.env["hr.employee"]
+                continue
             pending_lines = rec.approval_line_ids.filtered(
                 lambda l: l.status == "pending"
             )
@@ -300,11 +303,13 @@ class HrApprovalMixin(models.AbstractModel):
                 continue
 
             rec._generate_approval_chain()
+            rec.invalidate_recordset(fnames=["approval_line_ids", "next_approver_ids"])
             if rec.state != "approved":
                 rec.state = "submitted"
             if hasattr(rec, "activity_id") and rec.activity_id:
                 rec.activity_id.action_submit()
-            rec._send_approval_notification(rec.next_approver_ids)
+            if rec.state == "submitted":
+                rec._send_approval_notification(rec.next_approver_ids)
 
     def _get_current_approval_line(self):
         self.ensure_one()
@@ -352,6 +357,8 @@ class HrApprovalMixin(models.AbstractModel):
             if peers_to_remove:
                 peers_to_remove.unlink()
 
+            rec.invalidate_recordset(fnames=["approval_line_ids", "next_approver_ids"])
+
             pending_lines_after = rec.approval_line_ids.filtered(
                 lambda l: l.status == "pending"
             )
@@ -362,7 +369,6 @@ class HrApprovalMixin(models.AbstractModel):
                 if hasattr(rec, "activity_id") and rec.activity_id:
                     rec.activity_id.action_approve()
             else:
-                rec._compute_next_approvers()
                 rec._send_approval_notification(rec.next_approver_ids)
 
     def action_reject(self):
@@ -395,6 +401,7 @@ class HrApprovalMixin(models.AbstractModel):
         for rec in self:
             rec.write({"state": "draft"})
             rec.approval_line_ids.unlink()
+            rec.invalidate_recordset(fnames=["approval_line_ids", "next_approver_ids"])
             if hasattr(rec, "activity_id") and rec.activity_id:
                 if hasattr(rec.activity_id, "action_draft"):
                     rec.activity_id.action_draft()

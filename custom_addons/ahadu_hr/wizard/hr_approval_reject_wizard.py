@@ -55,6 +55,7 @@ class HrApprovalRejectWizard(models.TransientModel):
             )
 
             record.state = "rejected"
+            record.invalidate_recordset(fnames=["approval_line_ids", "next_approver_ids"])
             if hasattr(record, "activity_id") and record.activity_id:
                 record.activity_id.action_reject()
 
