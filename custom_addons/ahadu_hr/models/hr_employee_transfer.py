@@ -60,7 +60,7 @@ class HrEmployeeTransfer(models.Model):
     new_division_id = fields.Many2one("hr.division", string="New Division")
     new_cost_center_id = fields.Many2one("hr.cost.center", string="New Cost Center")
     new_manager_id = fields.Many2one("hr.employee", string="New Manager")
-    new_job_id = fields.Many2one("hr.job", string="New Position")
+    new_job_id = fields.Many2one("hr.job", string="New Position", required=True)
 
     new_transport_allowance_liters = fields.Float(
         string="New Transport Allowance (Liters)", tracking=True

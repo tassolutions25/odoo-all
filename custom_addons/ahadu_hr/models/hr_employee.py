@@ -217,6 +217,11 @@ class HrEmployee(models.Model):
     branch_id = fields.Many2one(
         "hr.branch", string="Branch", ondelete="restrict", options="{'no_create': True}", required=True
     )
+    job_id = fields.Many2one(
+        "hr.job",
+        string="Job Position",
+        required=True,
+    )
     division_id = fields.Many2one(
         "hr.division",
         string="Division",
