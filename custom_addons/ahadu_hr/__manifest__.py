@@ -79,6 +79,7 @@
             "ahadu_hr/static/src/css/structural_org_chart.css",
             "ahadu_hr/static/src/css/hr_analytics_dashboard.css",
             "ahadu_hr/static/src/js/dashboard.js",
+            "ahadu_hr/static/src/js/ahadu_hr_home_action.js",
             "ahadu_hr/static/src/js/hr_reporting_dashboard.js",
             "ahadu_hr/static/src/js/hr_organization_chart.js",
             "ahadu_hr/static/src/js/structural_org_chart.js",

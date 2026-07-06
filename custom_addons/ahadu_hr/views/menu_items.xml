@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<menuitem id="menu_ahadu_hr_root" name="Ahadu HR" sequence="10" groups="ahadu_hr.group_menu_ahadu_hr_root"/>
+<!-- Blank home action: prevents Odoo from auto-redirecting to the first child action -->
+<record id="action_ahadu_hr_home" model="ir.actions.client">
+    <field name="name">Ahadu HR</field>
+    <field name="tag">ahadu_hr.home_action</field>
+</record>
+<menuitem id="menu_ahadu_hr_root" name="Ahadu HR" sequence="10" action="action_ahadu_hr_home" groups="ahadu_hr.group_menu_ahadu_hr_root"/>
 <!--  HR REPORTING DASHBOARD MENU  -->
 <record id="action_ahadu_hr_reporting_dashboard" model="ir.actions.client">
 <field name="name">HR Reporting Dashboard</field>
 <field name="tag">ahadu_hr.reporting_dashboard</field>
 </record>
 <menuitem id="menu_ahadu_hr_reporting_dashboard" name="HR Dashboard" parent="menu_ahadu_hr_root" action="action_ahadu_hr_reporting_dashboard" sequence="5" groups="ahadu_hr.group_menu_ahadu_hr_reporting_dashboard"/>
-<menuitem id="hr.menu_hr_configuration" name="Configuration" parent="menu_ahadu_hr_root" sequence="70"/>
-<menuitem id="hr.menu_hr_customfield_group" name="Custom Fields" parent="hr.menu_hr_configuration" sequence="30"/>
+<menuitem id="hr.menu_hr_configuration" name="Configuration" parent="menu_ahadu_hr_root" sequence="70" groups="ahadu_hr.group_menu_hr_work_location,ahadu_hr.group_menu_hr_departure_reasons,ahadu_hr.group_menu_hr_category,ahadu_hr.group_menu_hr_resume_type_menu,ahadu_hr.group_menu_hr_grade,ahadu_hr.group_menu_hr_district,ahadu_hr.group_menu_hr_region,ahadu_hr.group_menu_hr_branch,ahadu_hr.group_menu_hr_city,ahadu_hr.group_menu_hr_division,ahadu_hr.group_menu_hr_cost_center,ahadu_hr.group_menu_hr_employee_type,ahadu_hr.group_menu_hr_hardship_allowance_level,ahadu_hr.group_menu_hr_job_position,ahadu_hr.group_menu_hr_contract_type_action,ahadu_hr.group_menu_hr_skill_type_menu,ahadu_hr.group_menu_hr_working_time,ahadu_hr.group_menu_hr_organogram_structure,ahadu_hr.group_menu_hr_approval_policy,ahadu_hr.group_menu_hr_activity_card_access,ahadu_hr.group_menu_employee_probation"/>
+<menuitem id="hr.menu_hr_customfield_group" name="Custom Fields" parent="hr.menu_hr_configuration" sequence="30" groups="ahadu_hr.group_menu_hr_grade,ahadu_hr.group_menu_hr_district,ahadu_hr.group_menu_hr_region,ahadu_hr.group_menu_hr_branch,ahadu_hr.group_menu_hr_city,ahadu_hr.group_menu_hr_division,ahadu_hr.group_menu_hr_cost_center,ahadu_hr.group_menu_hr_employee_type,ahadu_hr.group_menu_hr_hardship_allowance_level"/>
 <record id="action_employee_activities_dashboard" model="ir.actions.client">
 <field name="name">Activities Dashboard</field>
 <field name="tag">employee_activity_dashboard</field>
