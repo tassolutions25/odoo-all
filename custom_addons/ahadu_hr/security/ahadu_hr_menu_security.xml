@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Hidden category - prevents groups from appearing in the Technical section -->
+        <record id="module_category_ahadu_hr_menu_access" model="ir.module.category">
+            <field name="name">Ahadu HR Menu Access</field>
+            <field name="visible" eval="False"/>
+        </record>
+
+        <!-- Main Menus -->
+        <record id="group_menu_ahadu_hr_root" model="res.groups">
+            <field name="name">Menu Access: Ahadu HR Root</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_ahadu_hr_reporting_dashboard" model="res.groups">
+            <field name="name">Menu Access: HR Dashboard</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_employee_activities" model="res.groups">
+            <field name="name">Menu Access: Employee Activities</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_ahadu_departments" model="res.groups">
+            <field name="name">Menu Access: Departments</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_structural_org_chart" model="res.groups">
+            <field name="name">Menu Access: Structural Chart</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_ahadu_reporting" model="res.groups">
+            <field name="name">Menu Access: Skill Reporting</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <!-- Employees Submenus -->
+        <record id="group_menu_employee_list_ahadu" model="res.groups">
+            <field name="name">Menu Access: Employees (Parent)</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_ahadu_employee_list" model="res.groups">
+            <field name="name">Menu Access: Employees</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_ahadu_contracts" model="res.groups">
+            <field name="name">Menu Access: Contracts</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_employee_mass_update" model="res.groups">
+            <field name="name">Menu Access: Mass Update Employee Data</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <!-- Onboarding Tracking -->
+        <record id="group_menu_ahadu_onboarding_root" model="res.groups">
+            <field name="name">Menu Access: Onboarding Tracking (Parent)</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_employee_onboarding_all" model="res.groups">
+            <field name="name">Menu Access: Onboarding Dashboard</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_employee_onboarding_completed" model="res.groups">
+            <field name="name">Menu Access: Onboarded Employees</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_employee_onboarding_pending" model="res.groups">
+            <field name="name">Menu Access: Pending Onboarding</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_employee_onboarding_not_started" model="res.groups">
+            <field name="name">Menu Access: Not Onboarded</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_employee_onboarding_requests" model="res.groups">
+            <field name="name">Menu Access: Onboarding Requests</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <!-- Analytics -->
+        <record id="group_menu_employee_headcount_report" model="res.groups">
+            <field name="name">Menu Access: Headcount Analysis</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_analytics_dashboard" model="res.groups">
+            <field name="name">Menu Access: Analytics Dashboard</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <!-- Configuration & Submenus -->
+        <record id="group_menu_hr_work_location" model="res.groups">
+            <field name="name">Menu Access: Work Locations</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_departure_reasons" model="res.groups">
+            <field name="name">Menu Access: Departure Reasons</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_category" model="res.groups">
+            <field name="name">Menu Access: Tags</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_resume_type_menu" model="res.groups">
+            <field name="name">Menu Access: Resume Line Types</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_grade" model="res.groups">
+            <field name="name">Menu Access: Grades</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_district" model="res.groups">
+            <field name="name">Menu Access: Districts</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_region" model="res.groups">
+            <field name="name">Menu Access: Regions</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_branch" model="res.groups">
+            <field name="name">Menu Access: Branches</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_city" model="res.groups">
+            <field name="name">Menu Access: Cities</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_division" model="res.groups">
+            <field name="name">Menu Access: Divisions</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_cost_center" model="res.groups">
+            <field name="name">Menu Access: Cost Centers</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_employee_type" model="res.groups">
+            <field name="name">Menu Access: Employee Type</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_hardship_allowance_level" model="res.groups">
+            <field name="name">Menu Access: Hardship Allowance</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_job_position" model="res.groups">
+            <field name="name">Menu Access: Job Positions</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_contract_type_action" model="res.groups">
+            <field name="name">Menu Access: Employment Types</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_skill_type_menu" model="res.groups">
+            <field name="name">Menu Access: Skill Types</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_working_time" model="res.groups">
+            <field name="name">Menu Access: Working Schedules</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_organogram_structure" model="res.groups">
+            <field name="name">Menu Access: Organogram Structure</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_approval_policy" model="res.groups">
+            <field name="name">Menu Access: Approval Workflows</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_hr_activity_card_access" model="res.groups">
+            <field name="name">Menu Access: Activity Card Access</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+
+        <record id="group_menu_employee_probation" model="res.groups">
+            <field name="name">Menu Access: Probation Reviews</field>
+            <field name="category_id" ref="module_category_ahadu_hr_menu_access"/>
+        </record>
+    </data>
+</odoo>

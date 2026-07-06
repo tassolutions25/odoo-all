@@ -179,35 +179,41 @@
     <menuitem id="menu_ahadu_onboarding_root"
               name="Onboarding Tracking"
               parent="ahadu_hr.menu_ahadu_hr_root"
-              sequence="25"/>
+              sequence="25"
+              groups="ahadu_hr.group_menu_ahadu_onboarding_root"/>
 
     <menuitem id="menu_employee_onboarding_all"
               name="Onboarding Dashboard"
               parent="menu_ahadu_onboarding_root"
               action="action_employee_onboarding_all"
-              sequence="5"/>
+              sequence="5"
+              groups="ahadu_hr.group_menu_employee_onboarding_all"/>
 
     <menuitem id="menu_employee_onboarding_completed"
               name="Onboarded Employees"
               parent="menu_ahadu_onboarding_root"
               action="action_employee_onboarding_completed"
-              sequence="10"/>
+              sequence="10"
+              groups="ahadu_hr.group_menu_employee_onboarding_completed"/>
 
     <menuitem id="menu_employee_onboarding_pending"
               name="Pending Onboarding"
               parent="menu_ahadu_onboarding_root"
               action="action_employee_onboarding_pending"
-              sequence="15"/>
+              sequence="15"
+              groups="ahadu_hr.group_menu_employee_onboarding_pending"/>
 
     <menuitem id="menu_employee_onboarding_not_started"
               name="Not Onboarded"
               parent="menu_ahadu_onboarding_root"
               action="action_employee_onboarding_not_started"
-              sequence="20"/>
+              sequence="20"
+              groups="ahadu_hr.group_menu_employee_onboarding_not_started"/>
 
     <menuitem id="menu_employee_onboarding_requests"
               name="Onboarding Requests"
               parent="menu_ahadu_onboarding_root"
               action="action_hr_employee_onboarding"
-              sequence="25"/>
+              sequence="25"
+              groups="ahadu_hr.group_menu_employee_onboarding_requests"/>
 </odoo>

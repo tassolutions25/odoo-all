@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_ahadu_hr" model="ir.ui.view">
+        <field name="name">res.users.form.ahadu.hr</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Ahadu HR Menu Access" name="ahadu_hr_menu_access">
+
+                    <!-- Select All Toggle -->
+                    <group string="Quick Access">
+                        <group>
+                            <field name="has_menu_select_all"
+                                   widget="boolean_toggle"
+                                   string="Select All Ahadu HR Menu Items"/>
+                        </group>
+                        <group/>
+                    </group>
+
+                    <!-- Main Menus -->
+                    <group string="Ahadu HR Main Menus">
+                        <group>
+                            <field name="has_menu_ahadu_hr_root"/>
+                            <field name="has_menu_ahadu_hr_reporting_dashboard"/>
+                            <field name="has_menu_employee_activities"/>
+                            <field name="has_menu_ahadu_departments"/>
+                            <field name="has_menu_hr_structural_org_chart"/>
+                            <field name="has_menu_ahadu_reporting"/>
+                        </group>
+                        <group>
+                            <field name="has_menu_employee_list_ahadu"/>
+                            <field name="has_menu_ahadu_employee_list"/>
+                            <field name="has_menu_ahadu_contracts"/>
+                            <field name="has_menu_hr_employee_mass_update"/>
+                        </group>
+                    </group>
+
+                    <!-- Onboarding -->
+                    <group string="Onboarding Tracking">
+                        <group>
+                            <field name="has_menu_ahadu_onboarding_root"/>
+                            <field name="has_menu_employee_onboarding_all"/>
+                            <field name="has_menu_employee_onboarding_completed"/>
+                        </group>
+                        <group>
+                            <field name="has_menu_employee_onboarding_pending"/>
+                            <field name="has_menu_employee_onboarding_not_started"/>
+                            <field name="has_menu_employee_onboarding_requests"/>
+                        </group>
+                    </group>
+
+                    <!-- Analytics -->
+                    <group string="Analytics">
+                        <group>
+                            <field name="has_menu_employee_headcount_report"/>
+                            <field name="has_menu_hr_analytics_dashboard"/>
+                        </group>
+                        <group/>
+                    </group>
+
+                    <!-- Configuration -->
+                    <group string="Configuration">
+                        <group string="Employee &amp; Custom Fields">
+                            <field name="has_menu_hr_work_location"/>
+                            <field name="has_menu_hr_departure_reasons"/>
+                            <field name="has_menu_hr_category"/>
+                            <field name="has_menu_hr_resume_type_menu"/>
+                            <field name="has_menu_hr_grade"/>
+                            <field name="has_menu_hr_district"/>
+                            <field name="has_menu_hr_region"/>
+                            <field name="has_menu_hr_branch"/>
+                            <field name="has_menu_hr_city"/>
+                            <field name="has_menu_hr_division"/>
+                            <field name="has_menu_hr_cost_center"/>
+                            <field name="has_menu_hr_employee_type"/>
+                            <field name="has_menu_hr_hardship_allowance_level"/>
+                        </group>
+                        <group string="Recruitment, Contracts &amp; Other">
+                            <field name="has_menu_hr_job_position"/>
+                            <field name="has_menu_hr_contract_type_action"/>
+                            <field name="has_menu_hr_skill_type_menu"/>
+                            <field name="has_menu_hr_working_time"/>
+                            <field name="has_menu_hr_organogram_structure"/>
+                            <field name="has_menu_hr_approval_policy"/>
+                            <field name="has_menu_hr_activity_card_access"/>
+                            <field name="has_menu_employee_probation"/>
+                        </group>
+                    </group>
+
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

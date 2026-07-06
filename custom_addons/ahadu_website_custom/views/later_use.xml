@@ -2018,20 +2018,20 @@ menu_items.xml
 
 <!-- Employee Group -->
 <menuitem id="hr.menu_hr_employee_group" name="Employee" parent="hr.menu_hr_configuration" sequence="20"/>
-<menuitem id="hr.menu_hr_work_location" name="Work Locations" parent="hr.menu_hr_employee_group" action="hr.hr_work_location_action" sequence="10"/>
-<menuitem id="hr.menu_hr_departure_reasons" name="Departure Reasons" parent="hr.menu_hr_employee_group" action="hr.hr_departure_reason_action" sequence="20"/>
-<menuitem id="hr.menu_hr_category" name="Tags" parent="hr.menu_hr_employee_group" action="hr.open_view_categ_form" sequence="30"/>
-<menuitem id="hr_skills.hr_resume_type_menu" name="Resume Line Types" parent="hr.menu_hr_employee_group" action="hr_skills.hr_resume_type_action" sequence="40"/>
+<menuitem id="hr.menu_hr_work_location" name="Work Locations" parent="hr.menu_hr_employee_group" action="hr.hr_work_location_action" sequence="10" groups="ahadu_hr.group_menu_hr_work_location"/>
+<menuitem id="hr.menu_hr_departure_reasons" name="Departure Reasons" parent="hr.menu_hr_employee_group" action="hr.hr_departure_reason_action" sequence="20" groups="ahadu_hr.group_menu_hr_departure_reasons"/>
+<menuitem id="hr.menu_hr_category" name="Tags" parent="hr.menu_hr_employee_group" action="hr.open_view_categ_form" sequence="30" groups="ahadu_hr.group_menu_hr_category"/>
+<menuitem id="hr_skills.hr_resume_type_menu" name="Resume Line Types" parent="hr.menu_hr_employee_group" action="hr_skills.hr_resume_type_action" sequence="40" groups="ahadu_hr.group_menu_hr_resume_type_menu"/>
 
 <!-- Recruitment Group -->
 <menuitem id="hr.menu_hr_recruitment_group" name="Recruitment" parent="hr.menu_hr_configuration" sequence="30"/>
-<menuitem id="hr.menu_hr_job_position" name="Job Positions" parent="hr.menu_hr_recruitment_group" action="hr.action_hr_job" sequence="10"/>
-<menuitem id="hr_contract.hr_contract_type_action" name="Employment Types" parent="hr.menu_hr_recruitment_group" action="hr.hr_contract_type_action" sequence="20"/>
-<menuitem id="hr_skills.hr_skill_type_menu" name="Skill Types" parent="hr.menu_hr_recruitment_group" action="hr_skills.hr_skill_type_action" sequence="30"/>
+<menuitem id="hr.menu_hr_job_position" name="Job Positions" parent="hr.menu_hr_recruitment_group" action="hr.action_hr_job" sequence="10" groups="ahadu_hr.group_menu_hr_job_position"/>
+<menuitem id="hr_contract.hr_contract_type_action" name="Employment Types" parent="hr.menu_hr_recruitment_group" action="hr.hr_contract_type_action" sequence="20" groups="ahadu_hr.group_menu_hr_contract_type_action"/>
+<menuitem id="hr_skills.hr_skill_type_menu" name="Skill Types" parent="hr.menu_hr_recruitment_group" action="hr_skills.hr_skill_type_action" sequence="30" groups="ahadu_hr.group_menu_hr_skill_type_menu"/>
 
 <!-- Contracts Group -->
 <menuitem id="hr.menu_hr_contracts_group" name="Contracts" parent="hr.menu_hr_configuration" sequence="40"/>
-<menuitem id="hr.menu_hr_working_time" name="Working Schedules" parent="hr.menu_hr_contracts_group" action="resource.action_resource_calendar_form" sequence="10"/>
+<menuitem id="hr.menu_hr_working_time" name="Working Schedules" parent="hr.menu_hr_contracts_group" action="resource.action_resource_calendar_form" sequence="10" groups="ahadu_hr.group_menu_hr_working_time"/>
         
      <!-- Window Actions for individual activity models -->
     <record id="action_employee_promotion" model="ir.actions.act_window">

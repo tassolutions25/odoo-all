@@ -1,7 +1,7 @@
 from . import ahadu_fuel_price
 from . import hr_approval_policy
 
-# from . import res_users
+from . import res_users
 from . import res_config_settings
 from . import hr_approval_line
 from . import hr_approval_mixin
