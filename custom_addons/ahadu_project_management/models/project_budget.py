@@ -37,11 +37,12 @@ class ProjectBudget(models.Model):
     approved_by_id = fields.Many2one('res.users', string="Approved By", readonly=True, copy=False)
     description = fields.Text(string="Description")
 
-    @api.depends('line_ids.planned_amount', 'line_ids.actual_amount')
+    @api.depends('line_ids.planned_amount', 'project_id.expense_ids.amount', 'project_id.expense_ids.state')
     def _compute_totals(self):
         for budget in self:
             planned = sum(budget.line_ids.mapped('planned_amount'))
-            actual = sum(budget.line_ids.mapped('actual_amount'))
+            approved_expenses = budget.project_id.expense_ids.filtered(lambda e: e.state == 'approved')
+            actual = sum(approved_expenses.mapped('amount'))
             budget.planned_amount = planned
             budget.actual_amount = actual
             budget.variance = planned - actual
@@ -212,15 +213,13 @@ class ProjectProject(models.Model):
             approved_budgets = proj.budget_ids.filtered(lambda b: b.state == 'approved')
             proj.active_budget_id = approved_budgets[0] if approved_budgets else False
 
-    @api.depends('active_budget_id.planned_amount', 'active_budget_id.actual_amount')
+    @api.depends('active_budget_id.planned_amount', 'expense_ids.amount', 'expense_ids.state')
     def _compute_project_budget_totals(self):
         for proj in self:
             budget = proj.active_budget_id
-            if budget:
-                proj.budget_amount = budget.planned_amount
-                proj.actual_cost = budget.actual_amount
-                proj.budget_variance = budget.variance
-            else:
-                proj.budget_amount = 0.0
-                proj.actual_cost = 0.0
-                proj.budget_variance = 0.0
+            proj.budget_amount = budget.planned_amount if budget else 0.0
+            
+            approved_expenses = proj.expense_ids.filtered(lambda e: e.state == 'approved')
+            proj.actual_cost = sum(approved_expenses.mapped('amount'))
+            
+            proj.budget_variance = proj.budget_amount - proj.actual_cost

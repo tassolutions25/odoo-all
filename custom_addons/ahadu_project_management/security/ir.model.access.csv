@@ -32,4 +32,8 @@ access_project_change_request_pmo,project.change_request.pmo,model_project_chang
 access_project_closure_wizard_mgr,project.closure.wizard.mgr,model_project_closure_wizard,group_project_manager,1,1,1,1
 access_project_closure_wizard_pmo,project.closure.wizard.pmo,model_project_closure_wizard,group_pmo_admin,1,1,1,1
 access_project_dashboard_report_team,project.dashboard.report.team,model_project_dashboard_report,group_project_team,1,0,0,0
+access_project_change_request_type_team,project.change_request.type.team,model_project_change_request_type,group_project_team,1,0,0,0
+access_project_change_request_type_mgr,project.change_request.type.mgr,model_project_change_request_type,group_project_manager,1,1,1,0
+access_project_change_request_type_pmo,project.change_request.type.pmo,model_project_change_request_type,group_pmo_admin,1,1,1,1
+
 

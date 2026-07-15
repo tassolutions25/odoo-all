@@ -349,6 +349,15 @@
         sequence="38"
     />
 
+    <!-- Change Request Types -->
+    <menuitem
+        name="Change Request Types"
+        id="menu_ahadu_config_change_request_types"
+        parent="menu_ahadu_config_group"
+        action="action_project_change_request_type"
+        sequence="39"
+    />
+
 
     <!-- Activity Types -->
     <menuitem

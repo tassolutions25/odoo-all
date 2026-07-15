@@ -21,6 +21,7 @@
         'security/security_rules.xml',
         'data/ir_sequence_data.xml',
         'data/project_budget_category_data.xml',
+        'data/project_change_request_type_data.xml',
         'data/ir_cron_data.xml',
         'views/project_views.xml',
         'views/task_views.xml',

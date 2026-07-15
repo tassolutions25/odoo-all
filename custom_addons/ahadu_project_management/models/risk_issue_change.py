@@ -160,8 +160,14 @@ class ProjectIssue(models.Model):
     date_resolved = fields.Date(string="Date Resolved", tracking=True)
     
     escalated = fields.Boolean(string="Is Escalated", default=False, tracking=True, copy=False)
-    escalated_to_id = fields.Many2one('res.users', string="Escalated To", readonly=True, copy=False)
+    escalated_to_id = fields.Many2one('res.users', string="Escalated To Sponsor", copy=False, tracking=True)
     escalation_date = fields.Date(string="Escalation Date", readonly=True, copy=False)
+
+    @api.onchange('project_id')
+    def _onchange_project_id(self):
+        for issue in self:
+            if issue.project_id and issue.project_id.project_sponsor_id:
+                issue.escalated_to_id = issue.project_id.project_sponsor_id.user_id
 
     @api.constrains('owner_id')
     def _check_owner(self):
@@ -204,16 +210,17 @@ class ProjectIssue(models.Model):
 
     def action_escalate(self):
         for issue in self:
-            sponsor_user = issue.project_id.project_sponsor_id.user_id
-            if not sponsor_user:
-                sponsor_user = self.env.ref('ahadu_project_management.group_pmo_admin').users[:1]
+            if not issue.escalated_to_id:
+                sponsor_user = issue.project_id.project_sponsor_id.user_id
+                if not sponsor_user:
+                    raise UserError("Please select the Sponsor to whom this issue should be escalated.")
+                issue.write({'escalated_to_id': sponsor_user.id})
             
             issue.write({
                 'escalated': True,
-                'escalated_to_id': sponsor_user.id,
                 'escalation_date': fields.Date.today()
             })
-            issue._send_escalation_email(sponsor_user)
+            issue._send_escalation_email(issue.escalated_to_id)
 
     def _send_escalation_email(self, sponsor_user):
         self.ensure_one()
@@ -270,12 +277,8 @@ class ProjectChangeRequest(models.Model):
     name = fields.Char(string="CR Title/Subject", required=True, tracking=True)
     project_id = fields.Many2one('project.project', string="Project", required=True, tracking=True)
     
-    change_type = fields.Selection([
-        ('scope', 'Scope Change'),
-        ('budget', 'Budget Adjustment'),
-        ('timeline', 'Timeline Schedule Change'),
-        ('other', 'Other modification')
-    ], string="Change Type", required=True, tracking=True)
+    change_type_id = fields.Many2one('project.change_request.type', string="Change Type", required=True, tracking=True)
+    system_action = fields.Selection(related='change_type_id.system_action', string="System Action", readonly=True)
     
     description = fields.Text(string="Change Description", required=True, tracking=True)
     impact_assessment = fields.Text(string="Impact Assessment", required=True, tracking=True)
@@ -361,13 +364,13 @@ class ProjectChangeRequest(models.Model):
     def _apply_changes_to_project(self):
         self.ensure_one()
         project = self.project_id
-        if self.change_type == 'timeline':
+        if self.system_action == 'timeline':
             if self.proposed_timeline_change:
                 old_date = project.planned_end_date
                 project.write({'planned_end_date': self.proposed_timeline_change})
                 project.message_post(body="Timeline Baseline Updated via Approved CR %s: %s -> %s" % (self.code, old_date, self.proposed_timeline_change))
         
-        elif self.change_type == 'budget':
+        elif self.system_action == 'budget':
             if self.proposed_budget_change != 0.0:
                 active_budget = project.active_budget_id
                 if active_budget:
@@ -480,5 +483,20 @@ class ProjectMilestone(models.Model):
             }).send()
             
         self.project_id.message_post(body="Milestone reminder email sent for '%s' (Deadline: %s)." % (self.name, self.deadline))
+
+
+class ProjectChangeRequestType(models.Model):
+    _name = 'project.change_request.type'
+    _description = 'Project Change Request Type'
+    _order = 'sequence, id'
+
+    name = fields.Char(string="Type Name", required=True)
+    sequence = fields.Integer(string="Sequence", default=10)
+    system_action = fields.Selection([
+        ('none', 'No System Action'),
+        ('budget', 'Budget Adjustment'),
+        ('timeline', 'Timeline Schedule Change')
+    ], string="System Action", default='none', required=True, help="Special system logic triggered when this CR type is approved.")
+
 
 

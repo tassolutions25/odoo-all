@@ -140,11 +140,11 @@
                             <field name="severity"/>
                         </group>
                         <group>
-                            <field name="date_identified"/>
+                            <field name="date_identified" readonly="state in ('resolved', 'closed')"/>
                             <field name="date_resolved" readonly="1"/>
                             <field name="escalated" readonly="1"/>
-                            <field name="escalated_to_id" widget="many2one_avatar"/>
-                            <field name="escalation_date"/>
+                            <field name="escalated_to_id" widget="many2one_avatar" readonly="escalated or state in ('resolved', 'closed')"/>
+                            <field name="escalation_date" readonly="1"/>
                         </group>
                     </group>
                     <group string="Issue Description">
@@ -232,6 +232,41 @@
         </field>
     </record>
 
+    <!-- Change Request Type Views -->
+    <record id="view_project_change_request_type_tree" model="ir.ui.view">
+        <field name="name">project.change_request.type.tree</field>
+        <field name="model">project.change_request.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="sequence"/>
+                <field name="system_action"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_project_change_request_type_form" model="ir.ui.view">
+        <field name="name">project.change_request.type.form</field>
+        <field name="model">project.change_request.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="system_action"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_change_request_type" model="ir.actions.act_window">
+        <field name="name">Change Request Types</field>
+        <field name="res_model">project.change_request.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
     <!-- Change Request Views -->
 
     <record id="view_project_change_request_tree" model="ir.ui.view">
@@ -242,7 +277,7 @@
                 <field name="code"/>
                 <field name="name"/>
                 <field name="project_id"/>
-                <field name="change_type"/>
+                <field name="change_type_id"/>
                 <field name="requested_by_id"/>
                 <field name="state" widget="badge" decoration-info="state == 'submitted'" decoration-warning="state in ['reviewed', 'approved']" decoration-success="state in ['implemented', 'closed']" decoration-muted="state == 'draft'"/>
             </list>
@@ -274,12 +309,13 @@
                     <group>
                         <group>
                             <field name="project_id" options="{'no_create': True, 'no_edit': True}" readonly="state != 'draft'"/>
-                            <field name="change_type" readonly="state != 'draft'"/>
+                            <field name="change_type_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="system_action" invisible="1"/>
                             <field name="requested_by_id" widget="many2one_avatar"/>
                         </group>
                         <group string="Impact Adjustments">
-                            <field name="proposed_budget_change" invisible="change_type != 'budget'" required="change_type == 'budget'" readonly="state != 'draft'"/>
-                            <field name="proposed_timeline_change" invisible="change_type != 'timeline'" required="change_type == 'timeline'" readonly="state != 'draft'"/>
+                            <field name="proposed_budget_change" invisible="system_action != 'budget'" required="system_action == 'budget'" readonly="state != 'draft'"/>
+                            <field name="proposed_timeline_change" invisible="system_action != 'timeline'" required="system_action == 'timeline'" readonly="state != 'draft'"/>
                             <field name="reviewed_by_id" widget="many2one_avatar"/>
                             <field name="approved_by_id" widget="many2one_avatar"/>
                         </group>
@@ -310,7 +346,7 @@
                 <filter string="Pending Approval" name="pending" domain="[('state', 'in', ['submitted', 'reviewed'])]"/>
                 <group expand="0" string="Group By">
                     <filter string="Project" name="group_by_project" context="{'group_by': 'project_id'}"/>
-                    <filter string="Change Type" name="group_by_change_type" context="{'group_by': 'change_type'}"/>
+                    <filter string="Change Type" name="group_by_change_type" context="{'group_by': 'change_type_id'}"/>
                     <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
                 </group>
             </search>
@@ -369,7 +405,7 @@
                         <list>
                             <field name="code"/>
                             <field name="name"/>
-                            <field name="change_type"/>
+                            <field name="change_type_id"/>
                             <field name="requested_by_id"/>
                             <field name="state" widget="badge"
                                 decoration-muted="state == 'draft'"
