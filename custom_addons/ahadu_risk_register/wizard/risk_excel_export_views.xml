@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Excel / PDF Export Wizard — Form View
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_risk_excel_export_wizard_form" model="ir.ui.view">
+        <field name="name">risk.excel.export.wizard.form</field>
+        <field name="model">risk.excel.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Risk Register">
+                <field name="export_type" invisible="1"/>
+                
+                <div class="alert alert-info" role="alert" invisible="export_type == 'pdf'">
+                    <strong>Tip:</strong> All filters below are optional.
+                    If you leave <em>Branch</em> and <em>Department</em> empty,
+                    the export will include <strong>all departments</strong>, each
+                    in its own Excel sheet within a single workbook.
+                </div>
+                <div class="alert alert-info" role="alert" invisible="export_type == 'excel'">
+                    <strong>Tip:</strong> All filters below are optional.
+                    If you leave them blank, the PDF will export the entire bank-wide risk register.
+                </div>
+                
+                <group string="Filter Criteria (all optional)">
+                    <group>
+                        <field name="branch_id" placeholder="All branches"/>
+                        <field name="department_id" placeholder="All departments"/>
+                        <field name="risk_category_id" placeholder="All categories"/>
+                    </group>
+                    <group>
+                        <field name="date_from" placeholder="No start date filter"/>
+                        <field name="date_to" placeholder="No end date filter"/>
+                    </group>
+                </group>
+                
+                <footer>
+                    <!-- Export to Excel button -->
+                    <button name="action_export" type="object"
+                            string="Export to Excel" class="btn-primary"
+                            icon="fa-file-excel-o"
+                            invisible="export_type != 'excel'"/>
+                    
+                    <!-- Export to PDF button -->
+                    <button name="action_export_pdf" type="object"
+                            string="Export to PDF" class="btn-primary"
+                            icon="fa-file-pdf-o"
+                            invisible="export_type != 'pdf'"/>
+                            
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Wizard Action — Export to Excel
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="action_risk_excel_export_wizard" model="ir.actions.act_window">
+        <field name="name">Export to Excel</field>
+        <field name="res_model">risk.excel.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_export_type': 'excel'}</field>
+        <field name="binding_model_id" ref="model_risk_register"/>
+        <field name="binding_view_types">list</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Wizard Action — Export to PDF
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="action_risk_pdf_export_wizard" model="ir.actions.act_window">
+        <field name="name">Export to PDF</field>
+        <field name="res_model">risk.excel.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_export_type': 'pdf'}</field>
+        <field name="binding_model_id" ref="model_risk_register"/>
+        <field name="binding_view_types">list</field>
+    </record>
+
+</odoo>

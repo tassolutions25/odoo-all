@@ -1,0 +1,105 @@
+.ahadu_risk_dashboard {
+    background-color: #f8f9fa;
+    min-height: 100%;
+    overflow-y: auto;
+}
+
+.kpi-card-light {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid;
+    transition: all 0.2s ease-in-out;
+}
+
+.kpi-card-light:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-card-light .kpi-icon {
+    font-size: 2.5rem;
+    margin-right: 20px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #fff;
+}
+
+.kpi-card-light .kpi-content .kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.kpi-card-light .kpi-content .kpi-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.kpi-card-total {
+    border-color: #860037;
+}
+.kpi-card-total .kpi-icon {
+    background-color: #860037;
+}
+
+.kpi-card-filled {
+    border-color: #f6c23e;
+}
+.kpi-card-filled .kpi-icon {
+    background-color: #f6c23e;
+}
+
+.kpi-card-vacant {
+    border-color: #1cc88a;
+}
+.kpi-card-vacant .kpi-icon {
+    background-color: #1cc88a;
+}
+
+.heatmap-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.heatmap-cell {
+    width: 15%;
+    height: 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+.heatmap-axis {
+    width: 10%;
+    background-color: #e9ecef;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.text-primary {
+    color: #0d6efd !important;
+}
+
+.bg-primary {
+    background-color: #0d6efd !important;
+}

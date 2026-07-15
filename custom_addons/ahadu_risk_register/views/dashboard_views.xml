@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         PIVOT VIEWS (Heat Maps)
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_risk_register_pivot_inherent" model="ir.ui.view">
+        <field name="name">risk.register.pivot.inherent</field>
+        <field name="model">risk.register</field>
+        <field name="arch" type="xml">
+            <pivot string="Inherent Risk Heatmap" disable_linking="True" display_quantity="true">
+                <field name="likelihood" type="row"/>
+                <field name="impact" type="col"/>
+                <field name="inherent_risk_score" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_risk_register_pivot_control" model="ir.ui.view">
+        <field name="name">risk.register.pivot.control</field>
+        <field name="model">risk.register</field>
+        <field name="arch" type="xml">
+            <pivot string="Control Assessment Heatmap" disable_linking="True" display_quantity="true">
+                <field name="control_adequacy" type="row"/>
+                <field name="control_effectiveness" type="col"/>
+                <field name="control_strength_score" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_risk_register_pivot_residual" model="ir.ui.view">
+        <field name="name">risk.register.pivot.residual</field>
+        <field name="model">risk.register</field>
+        <field name="arch" type="xml">
+            <pivot string="Residual Risk Heatmap" disable_linking="True" display_quantity="true">
+                <field name="inherent_risk_rating" type="row"/>
+                <field name="control_strength_rating" type="col"/>
+                <field name="residual_risk_score" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         GRAPH VIEWS (Analytics)
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_risk_register_graph_inherent" model="ir.ui.view">
+        <field name="name">risk.register.graph.inherent</field>
+        <field name="model">risk.register</field>
+        <field name="arch" type="xml">
+            <graph string="Inherent Risk by Department" type="bar" sample="1">
+                <field name="department_id" type="row"/>
+                <field name="inherent_risk_score" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_risk_register_graph_residual" model="ir.ui.view">
+        <field name="name">risk.register.graph.residual</field>
+        <field name="model">risk.register</field>
+        <field name="arch" type="xml">
+            <graph string="Residual Risk by Category" type="bar" sample="1">
+                <field name="risk_category_id" type="row"/>
+                <field name="residual_risk_score" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         WINDOW ACTIONS
+         ══════════════════════════════════════════════════════════════════ -->
+    <!-- Inherent Risk Heatmap Action -->
+    <record id="action_risk_inherent_heatmap" model="ir.actions.act_window">
+        <field name="name">Inherent Risk Heatmap</field>
+        <field name="res_model">risk.register</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="context">{'search_default_group_by_likelihood': 1, 'search_default_group_by_impact': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Inherent Risk Heat Map
+            </p>
+            <p>
+                Visualise your risk exposure based on Likelihood and Impact prior to controls.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_risk_inherent_heatmap_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_risk_register_pivot_inherent"/>
+        <field name="act_window_id" ref="action_risk_inherent_heatmap"/>
+    </record>
+
+    <!-- Control Assessment Heatmap Action -->
+    <record id="action_risk_control_heatmap" model="ir.actions.act_window">
+        <field name="name">Control Assessment Heatmap</field>
+        <field name="res_model">risk.register</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="context">{'search_default_group_by_adequacy': 1, 'search_default_group_by_effectiveness': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Control Strength Heat Map
+            </p>
+            <p>
+                Visualise control ratings based on Adequacy and Effectiveness.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_risk_control_heatmap_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_risk_register_pivot_control"/>
+        <field name="act_window_id" ref="action_risk_control_heatmap"/>
+    </record>
+
+    <!-- Residual Risk Heatmap Action -->
+    <record id="action_risk_residual_heatmap" model="ir.actions.act_window">
+        <field name="name">Residual Risk Heatmap</field>
+        <field name="res_model">risk.register</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="context">{'search_default_group_by_inherent_rating': 1, 'search_default_group_by_control_rating': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Residual Risk Heat Map
+            </p>
+            <p>
+                Visualise final risk ratings after accounting for control strength.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_risk_residual_heatmap_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_risk_register_pivot_residual"/>
+        <field name="act_window_id" ref="action_risk_residual_heatmap"/>
+    </record>
+
+    <!-- Analytics Dashboard Action -->
+    <record id="action_risk_analytics_dashboard" model="ir.actions.act_window">
+        <field name="name">Risk Analytics</field>
+        <field name="res_model">risk.register</field>
+        <field name="view_mode">graph,pivot</field>
+        <field name="context">{'search_default_group_by_department': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Analytics Dashboard
+            </p>
+            <p>
+                High-level risk profiling and control strength distribution.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_risk_analytics_dashboard_graph" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_risk_register_graph_inherent"/>
+        <field name="act_window_id" ref="action_risk_analytics_dashboard"/>
+    </record>
+
+    <!-- Custom Owl Dashboard Action -->
+    <record id="action_risk_dashboard_owl" model="ir.actions.client">
+        <field name="name">Bank-Wide Risk Dashboard</field>
+        <field name="tag">ahadu_risk_register.risk_dashboard</field>
+    </record>
+
+</odoo>

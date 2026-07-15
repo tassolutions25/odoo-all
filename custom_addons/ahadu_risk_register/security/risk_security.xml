@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ══════════════════════════════════════════════════════════════
+             Module Category
+             ══════════════════════════════════════════════════════════════ -->
+        <record id="module_category_risk_management" model="ir.module.category">
+            <field name="name">Risk Management</field>
+            <field name="sequence">60</field>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             Security Groups
+             ══════════════════════════════════════════════════════════════ -->
+
+        <!-- Risk Maker: Can create/edit risks in own branch/department -->
+        <record id="group_risk_owner" model="res.groups">
+            <field name="name">Risk Maker</field>
+            <field name="category_id" ref="module_category_risk_management"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">
+                Can create and edit risk register entries for their own
+                branch and department. Cannot delete records.
+            </field>
+        </record>
+
+        <!-- Risk Checker: Can check/verify risks in own branch/department -->
+        <record id="group_risk_checker" model="res.groups">
+            <field name="name">Risk Checker</field>
+            <field name="category_id" ref="module_category_risk_management"/>
+            <field name="implied_ids" eval="[(4, ref('group_risk_owner'))]"/>
+            <field name="comment">
+                Can verify risks submitted by risk owners for their own branch/department.
+            </field>
+        </record>
+
+        <!-- RCMD Admin: Full bank-wide CRUD on all risks -->
+        <record id="group_rcmd_admin" model="res.groups">
+            <field name="name">RCMD Administrator</field>
+            <field name="category_id" ref="module_category_risk_management"/>
+            <field name="implied_ids" eval="[(4, ref('group_risk_checker'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">
+                Full access to all risk register entries bank-wide.
+                Includes create, read, update, and delete permissions.
+            </field>
+        </record>
+
+        <!-- Executive Management: Read-only access to all risks, mitigations, and dashboards -->
+        <record id="group_executive_management" model="res.groups">
+            <field name="name">Executive Management</field>
+            <field name="category_id" ref="module_category_risk_management"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">
+                Read-only access to all risks, mitigations, and dashboards bank-wide.
+            </field>
+        </record>
+
+        <!-- Board Committee: Approver/Oversight access bank-wide -->
+        <record id="group_board_committee" model="res.groups">
+            <field name="name">Board Committee</field>
+            <field name="category_id" ref="module_category_risk_management"/>
+            <field name="implied_ids" eval="[(4, ref('group_risk_checker'))]"/>
+            <field name="comment">
+                Approver/Oversight access. Read/Write access bank-wide.
+            </field>
+        </record>
+
+    </data>
+
+    <data noupdate="1">
+
+        <!-- ══════════════════════════════════════════════════════════════
+             Record Rules for Risk Register
+             ══════════════════════════════════════════════════════════════ -->
+
+        <!-- Risk Owner & Checker: can see risks they own OR in their branch & department -->
+        <record id="rule_risk_owner_own" model="ir.rule">
+            <field name="name">Risk Owner/Checker: Own branch &amp; department risks</field>
+            <field name="model_id" ref="model_risk_register"/>
+            <field name="groups" eval="[(4, ref('group_risk_owner')), (4, ref('group_risk_checker'))]"/>
+            <field name="domain_force">[
+                '|',
+                    ('risk_maker_id', '=', user.id),
+                    '&amp;',
+                        ('branch_id', 'in', [e.branch_id.id for e in user.employee_ids if e.branch_id]),
+                        ('department_id', 'in', [e.department_id.id for e in user.employee_ids if e.department_id])
+            ]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- RCMD Admin: see all records bank-wide -->
+        <record id="rule_rcmd_admin_all" model="ir.rule">
+            <field name="name">RCMD Admin: All risks (bank-wide)</field>
+            <field name="model_id" ref="model_risk_register"/>
+            <field name="groups" eval="[(4, ref('group_rcmd_admin'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Executive Management: read-only all records bank-wide -->
+        <record id="rule_executive_management_all" model="ir.rule">
+            <field name="name">Executive Management: All risks (read-only)</field>
+            <field name="model_id" ref="model_risk_register"/>
+            <field name="groups" eval="[(4, ref('group_executive_management'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Board Committee: read-write all records bank-wide -->
+        <record id="rule_board_committee_all" model="ir.rule">
+            <field name="name">Board Committee: All risks (bank-wide)</field>
+            <field name="model_id" ref="model_risk_register"/>
+            <field name="groups" eval="[(4, ref('group_board_committee'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             Record Rules for Mitigation Actions
+             ══════════════════════════════════════════════════════════════ -->
+
+        <record id="rule_risk_mitigation_owner" model="ir.rule">
+            <field name="name">Risk Owner/Checker: Own mitigations</field>
+            <field name="model_id" ref="model_risk_mitigation"/>
+            <field name="groups" eval="[(4, ref('group_risk_owner')), (4, ref('group_risk_checker'))]"/>
+            <field name="domain_force">[
+                '|',
+                    ('risk_id.risk_maker_id', '=', user.id),
+                    '&amp;',
+                        ('risk_id.branch_id', 'in', [e.branch_id.id for e in user.employee_ids if e.branch_id]),
+                        ('risk_id.department_id', 'in', [e.department_id.id for e in user.employee_ids if e.department_id])
+            ]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_risk_mitigation_admin" model="ir.rule">
+            <field name="name">RCMD Admin: All mitigations</field>
+            <field name="model_id" ref="model_risk_mitigation"/>
+            <field name="groups" eval="[(4, ref('group_rcmd_admin'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_risk_mitigation_exec" model="ir.rule">
+            <field name="name">Executive Management: All mitigations (read-only)</field>
+            <field name="model_id" ref="model_risk_mitigation"/>
+            <field name="groups" eval="[(4, ref('group_executive_management'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_risk_mitigation_board" model="ir.rule">
+            <field name="name">Board Committee: All mitigations (bank-wide)</field>
+            <field name="model_id" ref="model_risk_mitigation"/>
+            <field name="groups" eval="[(4, ref('group_board_committee'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

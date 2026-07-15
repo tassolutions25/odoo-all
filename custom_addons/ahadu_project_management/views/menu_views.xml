@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         Window Actions for WBS and Categories
+         ============================================================ -->
+
+    <!-- Project Program Action -->
+    <record id="action_project_program" model="ir.actions.act_window">
+        <field name="name">Programs</field>
+        <field name="res_model">project.program</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define your first Program to group related projects.
+            </p>
+        </field>
+    </record>
+
+    <!-- Project Phase Action -->
+    <record id="action_project_phase" model="ir.actions.act_window">
+        <field name="name">Project Phases</field>
+        <field name="res_model">project.phase</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define phases for your projects (WBS Level 2).
+            </p>
+        </field>
+    </record>
+
+    <!-- Project Milestone Action -->
+    <record id="action_project_milestone" model="ir.actions.act_window">
+        <field name="name">Milestones</field>
+        <field name="res_model">project.milestone</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define milestones for WBS Level 3 tracking.
+            </p>
+        </field>
+    </record>
+
+    <!-- Project Category Action -->
+    <record id="action_project_category" model="ir.actions.act_window">
+        <field name="name">Project Categories</field>
+        <field name="res_model">project.category</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Manage Project Categories for configuration.
+            </p>
+        </field>
+    </record>
+
+    <!-- Window Action: Budget Categories -->
+    <record id="action_project_budget_category" model="ir.actions.act_window">
+        <field name="name">Budget Categories</field>
+        <field name="res_model">project.budget.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Window Action: Project Budget -->
+    <record id="action_project_budget" model="ir.actions.act_window">
+        <field name="name">Project Budgets</field>
+        <field name="res_model">project.budget</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_project_budget_search"/>
+    </record>
+
+    <!-- Window Action: Project Expense -->
+    <record id="action_project_expense" model="ir.actions.act_window">
+        <field name="name">Project Expenses</field>
+        <field name="res_model">project.expense</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_project_expense_search"/>
+    </record>
+
+    <!-- Window Action: Risks -->
+    <record id="action_project_risk" model="ir.actions.act_window">
+        <field name="name">Project Risks</field>
+        <field name="res_model">project.risk</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_project_risk_search"/>
+    </record>
+
+    <!-- Window Action: Issues -->
+    <record id="action_project_issue" model="ir.actions.act_window">
+        <field name="name">Project Issues</field>
+        <field name="res_model">project.issue</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_project_issue_search"/>
+    </record>
+
+
+    <!-- Window Action: Change Requests -->
+    <record id="action_project_change_request" model="ir.actions.act_window">
+        <field name="name">Change Requests</field>
+        <field name="res_model">project.change_request</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_project_change_request_search"/>
+    </record>
+
+    <!-- ============================================================
+         Ahadu Projects App Root Menu (Sidebar App Menu)
+         ============================================================ -->
+    <menuitem
+        name="Ahadu Projects"
+        id="menu_ahadu_project_root"
+        web_icon="project,static/description/icon.png"
+        sequence="25"
+    />
+
+    <!-- ============================================================
+         Ahadu Projects Child Menu Items
+         ============================================================ -->
+
+    <!-- Projects Menu -->
+    <menuitem
+        name="Projects"
+        id="menu_ahadu_projects_act"
+        parent="menu_ahadu_project_root"
+        action="project.open_view_project_all"
+        sequence="10"
+    />
+
+    <!-- Tasks Group -->
+    <menuitem
+        name="Tasks"
+        id="menu_ahadu_tasks_group"
+        parent="menu_ahadu_project_root"
+        sequence="20"
+    />
+
+    <!-- My Tasks -->
+    <menuitem
+        name="My Tasks"
+        id="menu_ahadu_my_tasks"
+        parent="menu_ahadu_tasks_group"
+        action="project.action_server_view_my_task"
+        sequence="10"
+    />
+
+    <!-- All Tasks -->
+    <menuitem
+        name="All Tasks"
+        id="menu_ahadu_all_tasks"
+        parent="menu_ahadu_tasks_group"
+        action="project.action_view_all_task"
+        sequence="20"
+    />
+
+    <!-- WBS Configuration Menu Group -->
+    <menuitem
+        name="WBS Configuration"
+        id="menu_ahadu_wbs_config"
+        parent="menu_ahadu_project_root"
+        sequence="30"
+        groups="ahadu_project_management.group_project_manager"
+    />
+
+    <!-- Programs -->
+    <menuitem
+        name="Programs"
+        id="menu_ahadu_programs"
+        parent="menu_ahadu_wbs_config"
+        action="action_project_program"
+        sequence="10"
+    />
+
+    <!-- Phases -->
+    <menuitem
+        name="Phases"
+        id="menu_ahadu_phases"
+        parent="menu_ahadu_wbs_config"
+        action="action_project_phase"
+        sequence="20"
+    />
+
+    <!-- Milestones -->
+    <menuitem
+        name="Milestones"
+        id="menu_ahadu_milestones"
+        parent="menu_ahadu_wbs_config"
+        action="action_project_milestone"
+        sequence="30"
+    />
+
+    <!-- Financials Menu Group -->
+    <menuitem
+        name="Financials"
+        id="menu_ahadu_financials_group"
+        parent="menu_ahadu_project_root"
+        sequence="33"
+        groups="ahadu_project_management.group_project_manager"
+    />
+
+    <menuitem
+        name="Project Budgets"
+        id="menu_ahadu_project_budgets"
+        parent="menu_ahadu_financials_group"
+        action="action_project_budget"
+        sequence="10"
+    />
+
+    <menuitem
+        name="Project Expenses"
+        id="menu_ahadu_project_expenses"
+        parent="menu_ahadu_financials_group"
+        action="action_project_expense"
+        sequence="20"
+    />
+
+    <!-- Governance Menu Group -->
+    <menuitem
+        name="Governance"
+        id="menu_ahadu_governance_group"
+        parent="menu_ahadu_project_root"
+        sequence="36"
+        groups="ahadu_project_management.group_project_team"
+    />
+
+    <menuitem
+        name="Project Risks"
+        id="menu_ahadu_project_risks"
+        parent="menu_ahadu_governance_group"
+        action="action_project_risk"
+        sequence="10"
+    />
+
+    <menuitem
+        name="Project Issues"
+        id="menu_ahadu_project_issues"
+        parent="menu_ahadu_governance_group"
+        action="action_project_issue"
+        sequence="20"
+    />
+
+    <menuitem
+        name="Change Requests"
+        id="menu_ahadu_change_requests"
+        parent="menu_ahadu_governance_group"
+        action="action_project_change_request"
+        sequence="30"
+    />
+
+    <!-- Timesheet Approvals -->
+    <menuitem
+        name="Timesheet Approvals"
+        id="menu_ahadu_timesheet_approvals"
+        parent="menu_ahadu_project_root"
+        action="ahadu_project_management.action_ahadu_timesheet_approval"
+        sequence="40"
+        groups="ahadu_project_management.group_project_manager"
+    />
+
+    <!-- ============================================================
+         Reporting Menu Group (Inherited Actions)
+         ============================================================ -->
+    <menuitem
+        name="Reporting"
+        id="menu_ahadu_reporting_group"
+        parent="menu_ahadu_project_root"
+        sequence="50"
+        groups="ahadu_project_management.group_project_manager"
+    />
+
+    <!-- Executive Dashboard -->
+    <menuitem
+        name="Executive Dashboard"
+        id="menu_ahadu_portfolio_dashboard"
+        parent="menu_ahadu_reporting_group"
+        action="action_project_dashboard_report"
+        sequence="5"
+    />
+
+    <!-- Task Analysis -->
+    <menuitem
+        name="Tasks Analysis"
+        id="menu_ahadu_report_task_analysis"
+        parent="menu_ahadu_reporting_group"
+        action="project.action_project_task_user_tree"
+        sequence="10"
+    />
+
+
+    <!-- ============================================================
+         General Configuration Menu Group
+         ============================================================ -->
+    <menuitem
+        name="Configuration"
+        id="menu_ahadu_config_group"
+        parent="menu_ahadu_project_root"
+        sequence="60"
+        groups="ahadu_project_management.group_pmo_admin"
+    />
+
+    <!-- Settings -->
+    <menuitem
+        name="Settings"
+        id="menu_ahadu_config_settings"
+        parent="menu_ahadu_config_group"
+        action="project.project_config_settings_action"
+        sequence="10"
+    />
+
+    <!-- Projects (Stage-based) -->
+    <menuitem
+        name="Projects"
+        id="menu_ahadu_config_projects"
+        parent="menu_ahadu_config_group"
+        action="project.open_view_project_all_config"
+        sequence="15"
+    />
+
+    <!-- Task Stages -->
+    <menuitem
+        name="Task Stages"
+        id="menu_ahadu_config_stages"
+        parent="menu_ahadu_config_group"
+        action="project.open_task_type_form"
+        sequence="20"
+    />
+
+    <!-- Task Tags -->
+    <menuitem
+        name="Task Tags"
+        id="menu_ahadu_config_tags"
+        parent="menu_ahadu_config_group"
+        action="project.project_tags_action"
+        sequence="30"
+    />
+
+    <!-- Project Categories -->
+    <menuitem
+        name="Project Categories"
+        id="menu_ahadu_config_project_categories"
+        parent="menu_ahadu_config_group"
+        action="action_project_category"
+        sequence="35"
+    />
+
+    <!-- Budget Categories -->
+    <menuitem
+        name="Budget Categories"
+        id="menu_ahadu_config_budget_categories"
+        parent="menu_ahadu_config_group"
+        action="action_project_budget_category"
+        sequence="38"
+    />
+
+
+    <!-- Activity Types -->
+    <menuitem
+        name="Activity Types"
+        id="menu_ahadu_config_activity_types"
+        parent="menu_ahadu_config_group"
+        action="project.mail_activity_type_action_config_project_types"
+        sequence="40"
+    />
+
+    <!-- Activity Plans -->
+    <menuitem
+        name="Activity Plans"
+        id="menu_ahadu_config_activity_plans"
+        parent="menu_ahadu_config_group"
+        action="project.mail_activity_plan_action_config_project_task_plan"
+        sequence="50"
+    />
+</odoo>

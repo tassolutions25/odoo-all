@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         FORM VIEW — Risk Guideline
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_risk_guideline_form" model="ir.ui.view">
+        <field name="name">risk.guideline.form</field>
+        <field name="model">risk.guideline</field>
+        <field name="arch" type="xml">
+            <form string="Risk Guideline">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Document Title"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="category"/>
+                            <field name="published_date"/>
+                            <field name="uploaded_by"/>
+                        </group>
+                        <group>
+                            <field name="document" filename="document_filename"/>
+                            <field name="document_filename" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Brief summary of the document…"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TREE VIEW — Risk Guideline
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_risk_guideline_tree" model="ir.ui.view">
+        <field name="name">risk.guideline.tree</field>
+        <field name="model">risk.guideline</field>
+        <field name="arch" type="xml">
+            <list string="Risk Guidelines &amp; References">
+                <field name="name"/>
+                <field name="category" widget="badge"/>
+                <field name="published_date"/>
+                <field name="uploaded_by" widget="many2one_avatar_user"/>
+                <field name="document_filename"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         ACTION
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="action_risk_guideline" model="ir.actions.act_window">
+        <field name="name">Guidelines &amp; References</field>
+        <field name="res_model">risk.guideline</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Upload your first risk guideline
+            </p>
+            <p>
+                Store risk management policies, guidelines, manuals,
+                and reference templates in a central vault.
+            </p>
+        </field>
+    </record>
+
+</odoo>

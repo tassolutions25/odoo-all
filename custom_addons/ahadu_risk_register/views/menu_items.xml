@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Root Menu — Risk Register Application
+         ══════════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_risk_root"
+              name="Risk Register"
+              web_icon="ahadu_risk_register,static/description/icon.png"
+              groups="ahadu_risk_register.group_risk_owner,ahadu_risk_register.group_risk_checker,ahadu_risk_register.group_rcmd_admin,ahadu_risk_register.group_executive_management,ahadu_risk_register.group_board_committee"
+              sequence="70"/>
+
+    <!-- ── Level 1: Risk Registry ────────────────────────────────────── -->
+    <menuitem id="menu_risk_registry"
+              name="Risk Registry"
+              parent="menu_risk_root"
+              sequence="10"/>
+
+    <menuitem id="menu_risk_register_list"
+              name="All Risks"
+              parent="menu_risk_registry"
+              action="action_risk_register"
+              sequence="10"/>
+
+    <menuitem id="menu_risk_mitigation_list"
+              name="Mitigation Controls"
+              parent="menu_risk_registry"
+              action="action_risk_mitigation"
+              sequence="20"/>
+
+    <!-- ── Level 1: Dashboards & Heatmaps ──────────────────────────────── -->
+    <menuitem id="menu_risk_dashboards"
+              name="Dashboards &amp; Heatmaps"
+              parent="menu_risk_root"
+              sequence="15"/>
+
+    <menuitem id="menu_risk_inherent_heatmap"
+              name="Inherent Risk Heatmap"
+              parent="menu_risk_dashboards"
+              action="action_risk_inherent_heatmap"
+              sequence="10"/>
+
+    <menuitem id="menu_risk_control_heatmap"
+              name="Control Assessment Heatmap"
+              parent="menu_risk_dashboards"
+              action="action_risk_control_heatmap"
+              sequence="20"/>
+
+    <menuitem id="menu_risk_residual_heatmap"
+              name="Residual Risk Heatmap"
+              parent="menu_risk_dashboards"
+              action="action_risk_residual_heatmap"
+              sequence="30"/>
+
+    <menuitem id="menu_risk_analytics_dashboard"
+              name="Risk Analytics (Standard)"
+              parent="menu_risk_dashboards"
+              action="action_risk_analytics_dashboard"
+              sequence="40"/>
+
+    <menuitem id="menu_risk_custom_dashboard"
+              name="Interactive Dashboard"
+              parent="menu_risk_dashboards"
+              action="action_risk_dashboard_owl"
+              sequence="5"/>
+
+    <!-- ── Level 1: Guidelines & References ──────────────────────────── -->
+    <menuitem id="menu_risk_guidelines"
+              name="Guidelines &amp; References"
+              parent="menu_risk_root"
+              sequence="20"/>
+
+    <menuitem id="menu_risk_guideline_list"
+              name="Documents"
+              parent="menu_risk_guidelines"
+              action="action_risk_guideline"
+              sequence="10"/>
+
+    <!-- ── Level 1: Reports ──────────────────────────────────────────── -->
+    <menuitem id="menu_risk_reports"
+              name="Reports"
+              parent="menu_risk_root"
+              sequence="30"/>
+
+    <menuitem id="menu_risk_excel_export"
+              name="Export to Excel"
+              parent="menu_risk_reports"
+              action="action_risk_excel_export_wizard"
+              sequence="10"/>
+
+    <menuitem id="menu_risk_pdf_export"
+              name="Export to PDF"
+              parent="menu_risk_reports"
+              action="action_risk_pdf_export_wizard"
+              sequence="20"/>
+
+    <!-- ── Level 1: Configuration ────────────────────────────────────── -->
+    <menuitem id="menu_risk_configuration"
+              name="Configuration"
+              parent="menu_risk_root"
+              groups="ahadu_risk_register.group_rcmd_admin"
+              sequence="90"/>
+
+    <menuitem id="menu_risk_category_config"
+              name="Risk Categories"
+              parent="menu_risk_configuration"
+              action="action_risk_category"
+              sequence="10"/>
+
+</odoo>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dashboard Tree View -->
+    <record id="view_project_dashboard_report_tree" model="ir.ui.view">
+        <field name="name">project.dashboard.report.tree</field>
+        <field name="model">project.dashboard.report</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false">
+                <field name="project_code"/>
+                <field name="project_id"/>
+                <field name="state" widget="badge"/>
+                <field name="progress" widget="progressbar"/>
+                <field name="planned_budget" sum="Total Planned Budget"/>
+                <field name="actual_cost" sum="Total Actual Cost"/>
+                <field name="budget_variance" sum="Total Budget Variance"/>
+                <field name="open_risks_count"/>
+                <field name="open_issues_count"/>
+                <field name="critical_issues_count"/>
+                <field name="change_requests_count"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Dashboard Pivot View -->
+    <record id="view_project_dashboard_report_pivot" model="ir.ui.view">
+        <field name="name">project.dashboard.report.pivot</field>
+        <field name="model">project.dashboard.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Project Portfolio Analysis" disable_linking="true">
+                <field name="project_id" type="row"/>
+                <field name="planned_budget" type="measure"/>
+                <field name="actual_cost" type="measure"/>
+                <field name="budget_variance" type="measure"/>
+                <field name="progress" type="measure"/>
+                <field name="open_risks_count" type="measure"/>
+                <field name="open_issues_count" type="measure"/>
+                <field name="critical_issues_count" type="measure"/>
+                <field name="change_requests_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Dashboard Graph View -->
+    <record id="view_project_dashboard_report_graph" model="ir.ui.view">
+        <field name="name">project.dashboard.report.graph</field>
+        <field name="model">project.dashboard.report</field>
+        <field name="arch" type="xml">
+            <graph string="Project Portfolio Analytics" type="bar" sample="1">
+                <field name="project_id"/>
+                <field name="planned_budget" type="measure"/>
+                <field name="actual_cost" type="measure"/>
+                <field name="progress" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Dashboard Window Action -->
+    <record id="action_project_dashboard_report" model="ir.actions.act_window">
+        <field name="name">Executive Portfolio Dashboard</field>
+        <field name="res_model">project.dashboard.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                No project metrics available to display on the dashboard.
+            </p>
+            <p>
+                Add projects, approve budgets, and log actual expenses to see data here.
+            </p>
+        </field>
+    </record>
+</odoo>

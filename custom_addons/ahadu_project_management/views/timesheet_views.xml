@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         Timesheet LIST View Inheritance
+         Adds: state badge + action buttons column
+    ============================================================ -->
+    <record id="hr_timesheet_line_tree_inherit_ahadu" model="ir.ui.view">
+        <field name="name">account.analytic.line.list.inherit.ahadu</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_tree"/>
+        <field name="arch" type="xml">
+            <!-- Add approval state badge after unit_amount -->
+            <xpath expr="//field[@name='unit_amount']" position="after">
+                <field name="state" widget="badge" optional="show"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'submitted'"
+                       decoration-warning="state == 'approved'"
+                       decoration-success="state == 'posted'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Timesheet FORM View Inheritance
+         Adds: approval header, state statusbar, action buttons
+    ============================================================ -->
+    <record id="hr_timesheet_line_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">account.analytic.line.form.inherit.ahadu</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_submit" string="Submit" type="object"
+                            invisible="state != 'draft'" class="oe_highlight"/>
+                    <button name="action_approve" string="Approve" type="object"
+                            invisible="state != 'submitted'" class="oe_highlight"
+                            groups="ahadu_project_management.group_project_manager"/>
+                    <button name="action_post" string="Post" type="object"
+                            invisible="state != 'approved'" class="oe_highlight"
+                            groups="ahadu_project_management.group_pmo_admin"/>
+                    <button name="action_reject" string="Reject" type="object"
+                            invisible="state != 'submitted'"
+                            groups="ahadu_project_management.group_project_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,submitted,approved,posted"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Ahadu Timesheet Approval Manager View
+         Dedicated list view for managers to see all timesheets + states
+    ============================================================ -->
+    <record id="hr_timesheet_approval_list_ahadu" model="ir.ui.view">
+        <field name="name">account.analytic.line.approval.list.ahadu</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.timesheet_view_tree_user"/>
+        <field name="mode">primary</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="string">Timesheet Approvals</attribute>
+                <attribute name="decoration-info">state == 'submitted'</attribute>
+                <attribute name="decoration-muted">state == 'draft'</attribute>
+                <attribute name="decoration-success">state == 'posted'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='unit_amount']" position="after">
+                <field name="state" widget="badge" optional="show"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'submitted'"
+                       decoration-warning="state == 'approved'"
+                       decoration-success="state == 'posted'"/>
+                <button name="action_approve" string="Approve" type="object"
+                        invisible="state != 'submitted'"
+                        groups="ahadu_project_management.group_project_manager"/>
+                <button name="action_reject" string="Reject" type="object"
+                        invisible="state != 'submitted'"
+                        groups="ahadu_project_management.group_project_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Timesheet Approval Action
+    ============================================================ -->
+    <record id="action_ahadu_timesheet_approval" model="ir.actions.act_window">
+        <field name="name">Timesheet Approvals</field>
+        <field name="res_model">account.analytic.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="hr_timesheet_approval_list_ahadu"/>
+        <field name="domain">[('project_id', '!=', False)]</field>
+        <field name="context">{'search_default_submitted': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No timesheets pending approval.
+            </p>
+        </field>
+    </record>
+
+    <!-- Search filter for state -->
+    <record id="hr_timesheet_line_search_inherit_ahadu" model="ir.ui.view">
+        <field name="name">account.analytic.line.search.inherit.ahadu</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='mine']" position="after">
+                <separator/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_submitted" string="Submitted (Pending Approval)"
+                        domain="[('state', '=', 'submitted')]"/>
+                <filter name="filter_approved" string="Approved"
+                        domain="[('state', '=', 'approved')]"/>
+                <filter name="filter_posted" string="Posted"
+                        domain="[('state', '=', 'posted')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

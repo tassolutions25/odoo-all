@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_board_summary_document">
+        <t t-call="web.html_container">
+            <div class="page" style="font-family: Calibri, Arial, sans-serif; font-size: 9px; margin: 0; padding: 0;">
+                
+                <!-- Styling -->
+                <style>
+                    .peach-title-block {
+                        background-color: #FFCC99;
+                        color: #3F3F76;
+                        font-family: 'Calibri', sans-serif;
+                        font-size: 12px;
+                        font-weight: bold;
+                        padding: 4px 8px;
+                    }
+                    .kpi-container {
+                        width: 100%;
+                        margin-top: 10px;
+                        margin-bottom: 15px;
+                    }
+                    .kpi-card {
+                        width: 23%;
+                        float: left;
+                        border: 1px solid #CCC;
+                        border-radius: 4px;
+                        background-color: #F8F9FA;
+                        padding: 8px;
+                        text-align: center;
+                        margin-right: 2%;
+                    }
+                    .kpi-card:last-child {
+                        margin-right: 0;
+                    }
+                    .kpi-value {
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #1B4170;
+                    }
+                    .kpi-title {
+                        font-size: 9px;
+                        color: #555;
+                        margin-top: 3px;
+                    }
+                    .section-header {
+                        font-family: 'Calibri', sans-serif;
+                        font-size: 12px;
+                        font-weight: bold;
+                        color: #1B4170;
+                        border-bottom: 2px solid #1B4170;
+                        margin-top: 20px;
+                        padding-bottom: 3px;
+                    }
+                    table.summary-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 8px;
+                        font-size: 8px;
+                    }
+                    table.summary-table th, table.summary-table td {
+                        border: 0.5px solid #000000;
+                        padding: 4px 6px;
+                        vertical-align: middle;
+                    }
+                    table.summary-table th {
+                        background-color: #1B4170;
+                        color: #FFFFFF;
+                        font-weight: bold;
+                        text-align: center;
+                    }
+                    .cell-center {
+                        text-align: center;
+                    }
+                    .cell-left {
+                        text-align: left;
+                    }
+                </style>
+
+                <!-- Branding Header -->
+                <t t-set="company" t-value="res_company or (docs and docs.env.company)"/>
+                <t t-set="fy_label" t-value="docs[0].get_fiscal_year_label() if docs else 'FY 2025/26'"/>
+
+                <table style="width: 100%; border: none; margin-bottom: 10px;">
+                    <tr style="border: none;">
+                        <td style="width: 12%; border: none; text-align: center; vertical-align: middle;">
+                            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 55px; max-width: 95px;"/>
+                        </td>
+                        <td style="width: 88%; border: none; vertical-align: middle;">
+                            <div class="peach-title-block">Ahadu Bank S.C.</div>
+                            <div class="peach-title-block" style="margin-top: 2px;">Board Risk Management Summary Report</div>
+                            <div class="peach-title-block" style="margin-top: 2px;"><t t-esc="fy_label"/></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- KPI Cards -->
+                <t t-set="all_risks" t-value="docs"/>
+                <t t-set="top_risks" t-value="all_risks.filtered(lambda r: r.residual_risk_rating in ('high', 'very_high'))"/>
+                <t t-set="all_mitigations" t-value="all_risks.mapped('mitigation_ids')"/>
+                <t t-set="overdue_mitigations" t-value="all_mitigations.filtered(lambda m: m.progress_status == 'overdue')"/>
+                <t t-set="completed_mitigations" t-value="all_mitigations.filtered(lambda m: m.progress_status == 'completed')"/>
+
+                <div class="kpi-container">
+                    <div class="kpi-card">
+                        <div class="kpi-value"><t t-esc="len(all_risks)"/></div>
+                        <div class="kpi-title">Total Risks Registered</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value" style="color: #FF0000;"><t t-esc="len(top_risks)"/></div>
+                        <div class="kpi-title">Top Risks (High/Very High)</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value" style="color: #DF0A0A;"><t t-esc="len(overdue_mitigations)"/></div>
+                        <div class="kpi-title">Overdue Mitigations</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value" style="color: #109F10;"><t t-esc="len(completed_mitigations)"/></div>
+                        <div class="kpi-title">Completed Mitigations</div>
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+
+                <!-- Section: Top Risks -->
+                <div class="section-header">I. Top Bank-Wide Risks (Residual Risk: High &amp; Very High)</div>
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">RIN</th>
+                            <th style="width: 15%;">Department</th>
+                            <th style="width: 32%;">Risk Event Description</th>
+                            <th style="width: 15%;">Inherent Rating</th>
+                            <th style="width: 15%;">Control Strength</th>
+                            <th style="width: 15%;">Residual Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-if="not top_risks">
+                            <tr>
+                                <td colspan="6" class="cell-center" style="font-style: italic; padding: 10px;">No High or Very High Residual Risks found.</td>
+                            </tr>
+                        </t>
+                        <t t-else="" t-foreach="top_risks" t-as="risk">
+                            <tr>
+                                <td class="cell-center" style="font-weight: bold;"><t t-esc="risk.name"/></td>
+                                <td><t t-esc="risk.department_id.name"/></td>
+                                <td class="cell-left"><t t-esc="risk.risk_event"/></td>
+                                <td class="cell-center" t-attf-style="background-color: {{risk.get_rating_color('inherent')}}; color: {{risk.get_rating_text_color('inherent')}}; font-weight: bold;">
+                                    <t t-esc="risk.inherent_risk_rating.upper().replace('_', ' ')"/> (<t t-esc="risk.inherent_risk_score"/>)
+                                </td>
+                                <td class="cell-center" t-attf-style="background-color: {{risk.get_rating_color('control')}}; color: {{risk.get_rating_text_color('control')}}; font-weight: bold;">
+                                    <t t-esc="risk.control_strength_rating.upper().replace('_', ' ')"/> (<t t-esc="risk.control_strength_score"/>)
+                                </td>
+                                <td class="cell-center" t-attf-style="background-color: {{risk.get_rating_color('residual')}}; color: {{risk.get_rating_text_color('residual')}}; font-weight: bold;">
+                                    <t t-esc="risk.residual_risk_rating.upper().replace('_', ' ')"/> (<t t-esc="'%.1f' % risk.residual_risk_score"/>)
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Section: Overdue Mitigations -->
+                <div class="section-header" style="margin-top: 25px;">II. Overdue Mitigation Actions</div>
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">Risk RIN</th>
+                            <th style="width: 25%;">Mitigation Action Plan</th>
+                            <th style="width: 35%;">Detailed Checklist</th>
+                            <th style="width: 12%;">Target Date</th>
+                            <th style="width: 12%;">Risk Owner</th>
+                            <th style="width: 8%;">Attainment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-if="not overdue_mitigations">
+                            <tr>
+                                <td colspan="6" class="cell-center" style="font-style: italic; padding: 10px;">No overdue mitigation actions found.</td>
+                            </tr>
+                        </t>
+                        <t t-else="" t-foreach="overdue_mitigations" t-as="mit">
+                            <tr>
+                                <td class="cell-center" style="font-weight: bold;"><t t-esc="mit.risk_id.name"/></td>
+                                <td class="cell-left" style="font-weight: bold;"><t t-esc="mit.action_plan"/></td>
+                                <td class="cell-left"><t t-esc="mit.detailed_action"/></td>
+                                <td class="cell-center" style="color: red; font-weight: bold;"><t t-esc="mit.timeline"/></td>
+                                <td><t t-esc="mit.risk_owner_id.name"/></td>
+                                <td class="cell-center">
+                                    <t t-if="mit.status == 'not_attained'"><span style="color: red; font-weight: bold;">Not Attained</span></t>
+                                    <t t-elif="mit.status == 'partially_addressed'"><span style="color: orange; font-weight: bold;">Partial</span></t>
+                                    <t t-elif="mit.status == 'fully_addressed'"><span style="color: green; font-weight: bold;">Full</span></t>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+            </div>
+        </t>
+    </template>
+</odoo>

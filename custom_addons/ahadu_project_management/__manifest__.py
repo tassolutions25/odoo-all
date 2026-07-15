@@ -1,0 +1,37 @@
+{
+    'name': 'Ahadu Bank Project Management',
+    'version': '1.0',
+    'category': 'Project',
+    'summary': 'Core Project Management engine for Ahadu Bank',
+    'description': """
+        Core Engine, Execution, and Scheduling customizations for Ahadu Bank.
+        Defines project states, maker-checker approvals, WBS hierarchy (Programs & Phases),
+        task validation rules, timesheet approvals, and security rules.
+    """,
+    'author': 'Ahadu Bank ERP Implementation Project Team & DevTeam',
+    'depends': [
+        'project',
+        'hr',
+        'hr_timesheet',
+        'mail',
+    ],
+    'data': [
+        'security/security_groups.xml',
+        'security/ir.model.access.csv',
+        'security/security_rules.xml',
+        'data/ir_sequence_data.xml',
+        'data/project_budget_category_data.xml',
+        'data/ir_cron_data.xml',
+        'views/project_views.xml',
+        'views/task_views.xml',
+        'views/timesheet_views.xml',
+        'views/project_budget_views.xml',
+        'views/risk_issue_change_views.xml',
+        'views/project_closure_views.xml',
+        'views/dashboards_views.xml',
+        'views/menu_views.xml',
+    ],
+    'installable': True,
+    'application': True,
+    'license': 'LGPL-3',
+}

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Project Closure Wizard Form View -->
+    <record id="view_project_closure_wizard_form" model="ir.ui.view">
+        <field name="name">project.closure.wizard.form</field>
+        <field name="model">project.closure.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Project Closure Checklist &amp; Review">
+                <sheet>
+                    <p class="oe_grey">
+                        <strong>Project Closure Verification:</strong> Please complete this checklist to formally close and archive the project. 
+                        The system will verify that all tasks are Completed/Cancelled and there are no open High or Critical issues before proceeding.
+                    </p>
+                    <group>
+                        <group>
+                            <field name="project_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="closure_reason"/>
+                        </group>
+                        <group>
+                            <field name="final_cost"/>
+                        </group>
+                    </group>
+                    <group string="Post-Implementation Review &amp; Lessons Learned">
+                        <field name="lessons_learned" placeholder="Provide a summary of the project achievements, challenges faced, and lessons learned for future initiatives..." nolabel="1" required="1" style="height: 120px;"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_close_project" string="Verify &amp; Close Project" type="object" class="btn-danger oe_highlight"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Wizard Action -->
+    <record id="action_project_closure_wizard" model="ir.actions.act_window">
+        <field name="name">Project Closure Verification</field>
+        <field name="res_model">project.closure.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

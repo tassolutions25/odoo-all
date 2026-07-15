@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         FORM VIEW — 4-Tab Notebook
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_risk_register_form" model="ir.ui.view">
+        <field name="name">risk.register.form</field>
+        <field name="model">risk.register</field>
+        <field name="arch" type="xml">
+            <form string="Risk Register">
+                <header>
+                    <!-- Maker-Checker Workflow Buttons -->
+                    <button name="action_submit_to_leader" type="object" string="Submit to Leader"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_submit_to_rcmd" type="object" string="Verify &amp; Submit to RCMD"
+                            class="btn-primary"
+                            invisible="state != 'waiting_leader'"/>
+                    <button name="action_approve" type="object" string="Approve"
+                            class="btn-success"
+                            invisible="state != 'waiting_rcmd'"
+                            groups="ahadu_risk_register.group_rcmd_admin,ahadu_risk_register.group_board_committee"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            class="btn-danger"
+                            invisible="state not in ('waiting_leader', 'waiting_rcmd')"/>
+
+                    <!-- Status Lifecycle (only active after approval) -->
+                    <button name="action_open" type="object" string="Open"
+                            class="btn-secondary"
+                            invisible="state != 'approved' or status == 'open'"/>
+                    <button name="action_in_progress" type="object" string="In Progress"
+                            class="btn-primary"
+                            invisible="state != 'approved' or status in ('in_progress', 'closed')"/>
+                    <button name="action_close" type="object" string="Close"
+                            class="btn-success"
+                            invisible="state != 'approved' or status == 'closed'"/>
+                    <button name="action_overdue" type="object" string="Mark Overdue"
+                            class="btn-warning"
+                            invisible="state != 'approved' or status in ('closed', 'overdue')"/>
+
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,waiting_leader,waiting_rcmd,approved"/>
+                </header>
+                <sheet>
+                    <!-- Risk score badges at top -->
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-exclamation-triangle" type="object" name="action_open">
+                            <div class="o_stat_info">
+                                <field name="inherent_risk_score" class="o_stat_value"/>
+                                <span class="o_stat_text">Inherent Risk</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-shield" type="object" name="action_open">
+                            <div class="o_stat_info">
+                                <field name="control_strength_score" class="o_stat_value"/>
+                                <span class="o_stat_text">Control Strength</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-balance-scale" type="object" name="action_open">
+                            <div class="o_stat_info">
+                                <field name="residual_risk_score" class="o_stat_value"/>
+                                <span class="o_stat_text">Residual Risk</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-wrench" type="object" name="action_view_mitigations"
+                                invisible="state != 'approved'">
+                            <div class="o_stat_info">
+                                <field name="mitigation_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Mitigations</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1" placeholder="RIN (auto-generated)"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Identification">
+                            <field name="is_rcmd_or_board" invisible="1"/>
+                            <field name="branch_id" readonly="not is_rcmd_or_board"/>
+                            <field name="department_id" readonly="not is_rcmd_or_board"/>
+                            <field name="risk_category_id"/>
+                            <field name="risk_maker_id" string="Risk Maker"/>
+                            <field name="risk_owner_ids" string="Risk Owner (Departments)" widget="many2many_tags"/>
+                        </group>
+                        <group string="Dates">
+                            <field name="date_occurred"/>
+                            <field name="date_identified"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- ── Tab 1: Risk Identification ────────────── -->
+                        <page string="Risk Identification" name="tab_identification">
+                            <group>
+                                <field name="business_objective" placeholder="e.g. Maximize loan portfolio quality"/>
+                                <field name="business_process" placeholder="e.g. Credit underwriting"/>
+                                <field name="risk_event" placeholder="Describe the risk event — what could go wrong?"/>
+                                <field name="root_cause" placeholder="Underlying root cause(s)"/>
+                            </group>
+                            <group string="Risk Registration Reference (Optional)">
+                                <field name="reference_document" filename="reference_document_filename" widget="binary"
+                                       string="Reference Document"
+                                       help="Upload supporting reference documents (.pdf, .docx, .xlsx, .png, .jpg, etc.)"/>
+                                <field name="reference_document_filename" invisible="1"/>
+                            </group>
+                        </page>
+
+                        <!-- ── Tab 2: Risk Assessment ────────────────── -->
+                        <page string="Risk Assessment" name="tab_assessment">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Inherent Risk</strong> = Likelihood × Impact.
+                                Rate each factor from 1 (lowest) to 5 (highest).
+                                The inherent risk score and rating are computed automatically.
+                            </div>
+                            <group>
+                                <group string="Inherent Risk Inputs">
+                                    <field name="likelihood"/>
+                                    <field name="impact"/>
+                                </group>
+                                <group string="Computed Inherent Risk">
+                                    <field name="inherent_risk_score" readonly="1"/>
+                                    <field name="inherent_risk_rating" readonly="1"
+                                           widget="badge"
+                                           decoration-danger="inherent_risk_rating in ('very_high', 'high')"
+                                           decoration-warning="inherent_risk_rating == 'medium'"
+                                           decoration-success="inherent_risk_rating in ('low', 'very_low')"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ── Tab 3: Controls & Residual Risk ───────── -->
+                        <page string="Controls &amp; Residual Risk" name="tab_controls">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Control Strength</strong> = Adequacy × Effectiveness.
+                                <strong>Residual Risk</strong> = Inherent Risk × (1 − Control Strength / 25).
+                                The final residual rating uses the BRD matrix.
+                            </div>
+                            <group>
+                                <group string="Existing Controls">
+                                    <field name="existing_controls" placeholder="Describe current controls…"/>
+                                    <field name="control_adequacy"/>
+                                    <field name="control_effectiveness"/>
+                                </group>
+                                <group string="Computed Scores">
+                                    <field name="control_strength_score" readonly="1"/>
+                                    <field name="control_strength_rating" readonly="1"
+                                           widget="badge"
+                                           decoration-success="control_strength_rating in ('very_strong', 'strong')"
+                                           decoration-warning="control_strength_rating == 'moderate'"
+                                           decoration-danger="control_strength_rating in ('weak', 'very_weak')"/>
+                                    <separator string="Residual Risk"/>
+                                    <field name="residual_risk_score" readonly="1"/>
+                                    <field name="residual_risk_rating" readonly="1"
+                                           widget="badge"
+                                           decoration-danger="residual_risk_rating in ('very_high', 'high')"
+                                           decoration-warning="residual_risk_rating == 'medium'"
+                                           decoration-success="residual_risk_rating in ('low', 'very_low')"/>
+                                </group>
+                            </group>
+                            <group string="Additional Mitigation &amp; Monitoring">
+                                <field name="additional_mitigation" placeholder="Planned additional controls…"/>
+                                <field name="key_risk_indicator" placeholder="KRI metrics to monitor this risk…"/>
+                            </group>
+                        </page>
+
+                        <!-- ── Tab 4: System Data ────────────────────── -->
+                        <page string="System Data" name="tab_system">
+                            <group>
+                                <group>
+                                    <field name="create_uid" string="Created By" readonly="1"/>
+                                    <field name="create_date" string="Created On" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="write_uid" string="Last Modified By" readonly="1"/>
+                                    <field name="write_date" string="Last Modified On" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <!-- Chatter for audit trail -->
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TREE VIEW — Color-coded by Residual Risk
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_risk_register_tree" model="ir.ui.view">
+        <field name="name">risk.register.tree</field>
+        <field name="model">risk.register</field>
+        <field name="arch" type="xml">
+            <list string="Risk Register"
+                  decoration-danger="residual_risk_rating in ('very_high', 'high')"
+                  decoration-warning="residual_risk_rating == 'medium'"
+                  decoration-success="residual_risk_rating in ('low', 'very_low')">
+                <field name="name" string="RIN"/>
+                <field name="date_identified"/>
+                <field name="branch_id"/>
+                <field name="department_id"/>
+                <field name="risk_event"/>
+                <field name="risk_category_id"/>
+                <field name="inherent_risk_score"/>
+                <field name="inherent_risk_rating" widget="badge"
+                       decoration-danger="inherent_risk_rating in ('very_high', 'high')"
+                       decoration-warning="inherent_risk_rating == 'medium'"
+                       decoration-success="inherent_risk_rating in ('low', 'very_low')"/>
+                <field name="control_strength_score"/>
+                <field name="control_strength_rating" widget="badge"
+                       decoration-success="control_strength_rating in ('very_strong', 'strong')"
+                       decoration-warning="control_strength_rating == 'moderate'"
+                       decoration-danger="control_strength_rating in ('weak', 'very_weak')"/>
+                <field name="residual_risk_score"/>
+                <field name="residual_risk_rating" widget="badge"
+                       decoration-danger="residual_risk_rating in ('very_high', 'high')"
+                       decoration-warning="residual_risk_rating == 'medium'"
+                       decoration-success="residual_risk_rating in ('low', 'very_low')"/>
+                <field name="risk_maker_id" string="Risk Maker" widget="many2one_avatar_user"/>
+                <field name="status" widget="badge"
+                       decoration-info="status == 'open'"
+                       decoration-warning="status == 'in_progress'"
+                       decoration-success="status == 'closed'"
+                       decoration-danger="status == 'overdue'"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'waiting_leader'"
+                       decoration-warning="state == 'waiting_rcmd'"
+                       decoration-success="state == 'approved'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         SEARCH VIEW — Filters & Group By
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_risk_register_search" model="ir.ui.view">
+        <field name="name">risk.register.search</field>
+        <field name="model">risk.register</field>
+        <field name="arch" type="xml">
+            <search string="Risk Register">
+                <field name="name" string="RIN"/>
+                <field name="risk_event"/>
+                <field name="branch_id"/>
+                <field name="department_id"/>
+                <field name="risk_owner_ids" string="Risk Owner (Departments)"/>
+                <field name="risk_maker_id" string="Risk Maker"/>
+
+                <separator/>
+                <filter name="filter_open" string="Open" domain="[('status','=','open')]"/>
+                <filter name="filter_in_progress" string="In Progress" domain="[('status','=','in_progress')]"/>
+                <filter name="filter_overdue" string="Overdue" domain="[('status','=','overdue')]"/>
+                <filter name="filter_closed" string="Closed" domain="[('status','=','closed')]"/>
+
+                <separator/>
+                <filter name="state_draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="state_waiting_leader" string="Waiting Leader (Checker)" domain="[('state','=','waiting_leader')]"/>
+                <filter name="state_waiting_rcmd" string="Waiting RCMD (Approver)" domain="[('state','=','waiting_rcmd')]"/>
+                <filter name="state_approved" string="Approved" domain="[('state','=','approved')]"/>
+
+                <separator/>
+                <filter name="filter_very_high" string="Very High Risk"
+                        domain="[('residual_risk_rating','=','very_high')]"/>
+                <filter name="filter_high" string="High Risk"
+                        domain="[('residual_risk_rating','=','high')]"/>
+                <filter name="filter_medium" string="Medium Risk"
+                        domain="[('residual_risk_rating','=','medium')]"/>
+                <filter name="filter_low" string="Low Risk"
+                        domain="[('residual_risk_rating','in',['low','very_low'])]"/>
+
+                <separator/>
+                <filter name="filter_my_risks" string="My Risks"
+                        domain="[('risk_maker_id','=',uid)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_risk_category" string="Risk Category"
+                            context="{'group_by': 'risk_category_id'}"/>
+                    <filter name="group_residual_rating" string="Residual Risk Rating"
+                            context="{'group_by': 'residual_risk_rating'}"/>
+                    <filter name="group_state" string="Approval State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_branch" string="Branch"
+                            context="{'group_by': 'branch_id'}"/>
+                    <filter name="group_department" string="Department"
+                            context="{'group_by': 'department_id'}"/>
+                    <filter name="group_risk_maker" string="Risk Maker"
+                            context="{'group_by': 'risk_maker_id'}"/>
+                    <filter name="group_status" string="Status"
+                            context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         KANBAN VIEW — Cards grouped by status
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_risk_register_kanban" model="ir.ui.view">
+        <field name="name">risk.register.kanban</field>
+        <field name="model">risk.register</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="status" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="risk_event"/>
+                <field name="risk_category_id"/>
+                <field name="residual_risk_rating"/>
+                <field name="risk_maker_id"/>
+                <field name="status"/>
+                <field name="inherent_risk_score"/>
+                <field name="residual_risk_score"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_content">
+                             <div class="o_kanban_record_top">
+                                 <div class="o_kanban_record_headings">
+                                     <strong class="o_kanban_record_title">
+                                         <field name="name"/>
+                                     </strong>
+                                 </div>
+                                 <field name="residual_risk_rating" widget="badge"
+                                        decoration-danger="residual_risk_rating in ('very_high', 'high')"
+                                        decoration-warning="residual_risk_rating == 'medium'"
+                                        decoration-success="residual_risk_rating in ('low', 'very_low')"/>
+                             </div>
+                             <div class="o_kanban_record_body">
+                                 <field name="risk_event"/>
+                             </div>
+                             <div class="o_kanban_record_bottom">
+                                 <div class="oe_kanban_bottom_left">
+                                     <field name="risk_category_id"/>
+                                 </div>
+                                 <div class="oe_kanban_bottom_right">
+                                     <field name="risk_maker_id" widget="many2one_avatar_user"/>
+                                 </div>
+                             </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         ACTION
+         ══════════════════════════════════════════════════════════════════ -->
+    <record id="action_risk_register" model="ir.actions.act_window">
+        <field name="name">Risk Register</field>
+        <field name="res_model">risk.register</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="search_view_id" ref="view_risk_register_search"/>
+        <field name="context">{'search_default_filter_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first risk entry
+            </p>
+            <p>
+                Register, assess, and track risks across the bank using the
+                standardised BWRR framework. Each entry is automatically scored
+                for Inherent Risk, Control Strength, and Residual Risk.
+            </p>
+        </field>
+    </record>
+
+</odoo>

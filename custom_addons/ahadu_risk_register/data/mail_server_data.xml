@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Default Outgoing Mail Server to prevent connection refused errors locally -->
+        <record id="local_smtp_server" model="ir.mail_server">
+            <field name="name">Local Mail Server (Dummy)</field>
+            <field name="smtp_host">localhost</field>
+            <field name="smtp_port">1025</field>
+            <field name="smtp_encryption">none</field>
+            <field name="sequence">10</field>
+        </record>
+    </data>
+</odoo>

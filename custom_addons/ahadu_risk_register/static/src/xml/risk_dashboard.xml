@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="ahadu_risk_register.RiskDashboard" owl="1">
+        <div class="o_action o_view_controller h-100">
+            <div class="o_content ahadu_risk_dashboard p-4 h-100 overflow-auto">
+                <div t-if="state.isLoading" class="text-center p-5">
+                    <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw text-primary"/>
+                    <h3>Loading Risk Analytics...</h3>
+                </div>
+            
+            <t t-else="">
+                <!-- Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="text-primary fw-bold">Bank-Wide Risk Analytics</h2>
+                    </div>
+                </div>
+
+                <!-- Filters Bar -->
+                <div class="dashboard_filter_bar mb-4 p-3 bg-white shadow-sm rounded">
+                    <h5 class="filter_label text-primary mb-3">
+                        <i class="fa fa-filter me-2"></i>Filters
+                    </h5>
+                    <div class="dashboard_filters d-flex flex-wrap gap-2">
+                        <select class="form-select" name="time" t-on-change="(ev) => this.onFilterChange('time', ev)" style="width: auto;">
+                            <option value="all" t-att-selected="state.filters.time === 'all'">All Time</option>
+                            <option value="30_days" t-att-selected="state.filters.time === '30_days'">Last 30 Days</option>
+                            <option value="90_days" t-att-selected="state.filters.time === '90_days'">Last 90 Days</option>
+                            <option value="this_year" t-att-selected="state.filters.time === 'this_year'">This Year</option>
+                        </select>
+                        <select class="form-select" name="branch" t-on-change="(ev) => this.onFilterChange('branch', ev)" style="width: auto;">
+                            <option value="all" t-att-selected="state.filters.branch === 'all'">All Branches</option>
+                            <t t-foreach="state.data.availableFilters.branches || []" t-as="branch" t-key="branch.id">
+                                <option t-att-value="branch.id" t-esc="branch.name" t-att-selected="state.filters.branch == branch.id"></option>
+                            </t>
+                        </select>
+                        <select class="form-select" name="department" t-on-change="(ev) => this.onFilterChange('department', ev)" style="width: auto;">
+                            <option value="all" t-att-selected="state.filters.department === 'all'">All Departments</option>
+                            <t t-foreach="state.data.availableFilters.departments || []" t-as="dept" t-key="dept.id">
+                                <option t-att-value="dept.id" t-esc="dept.name" t-att-selected="state.filters.department == dept.id"></option>
+                            </t>
+                        </select>
+                        <select class="form-select" name="category" t-on-change="(ev) => this.onFilterChange('category', ev)" style="width: auto;">
+                            <option value="all" t-att-selected="state.filters.category === 'all'">All Categories</option>
+                            <t t-foreach="state.data.availableFilters.categories || []" t-as="cat" t-key="cat.id">
+                                <option t-att-value="cat.id" t-esc="cat.name" t-att-selected="state.filters.category == cat.id"></option>
+                            </t>
+                        </select>
+                        <select class="form-select" name="rating" t-on-change="(ev) => this.onFilterChange('rating', ev)" style="width: auto;">
+                            <option value="all" t-att-selected="state.filters.rating === 'all'">All Residual Ratings</option>
+                            <option value="very_high" t-att-selected="state.filters.rating === 'very_high'">Very High</option>
+                            <option value="high" t-att-selected="state.filters.rating === 'high'">High</option>
+                            <option value="medium" t-att-selected="state.filters.rating === 'medium'">Medium</option>
+                            <option value="low" t-att-selected="state.filters.rating === 'low'">Low</option>
+                            <option value="very_low" t-att-selected="state.filters.rating === 'very_low'">Very Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="row mb-5">
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-total">
+                            <div class="kpi-icon"><i class="fa fa-exclamation-triangle"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value"><t t-esc="state.data.total_risks"/></div>
+                                <div class="kpi-label">Total Registered Risks</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-vacant">
+                            <div class="kpi-icon"><i class="fa fa-clock-o"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value"><t t-esc="state.data.open_risks"/></div>
+                                <div class="kpi-label">Pending Approval</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="kpi-card-light kpi-card-filled">
+                            <div class="kpi-icon"><i class="fa fa-check-circle"/></div>
+                            <div class="kpi-content">
+                                <div class="kpi-value"><t t-esc="state.data.approved_risks"/></div>
+                                <div class="kpi-label">Approved Risks</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                    <!-- Charts Row 1 -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card ahadu-card p-3 h-100">
+                                <h4 class="card-title">Risks by Category</h4>
+                                <div class="chart-container" style="position: relative; height:300px;">
+                                    <canvas id="categoryChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card ahadu-card p-3 h-100">
+                                <h4 class="card-title">Risks by Status</h4>
+                                <div class="chart-container" style="position: relative; height:300px;">
+                                    <canvas id="statusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 2 -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card ahadu-card p-3 h-100">
+                                <h4 class="card-title">Branch-wise Risk Concentration</h4>
+                                <div class="chart-container" style="position: relative; height:300px;">
+                                    <canvas id="branchChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card ahadu-card p-3 h-100">
+                                <h4 class="card-title">Department-wise Risk Trends</h4>
+                                <div class="chart-container" style="position: relative; height:300px;">
+                                    <canvas id="departmentChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Heatmaps Row -->
+                    <div class="row mb-4">
+                        <!-- Inherent Risk Heatmap -->
+                        <div class="col-md-4">
+                            <div class="card ahadu-card p-2">
+                                <h5 class="card-title text-center">Inherent Risk Heatmap</h5>
+                                <table class="table table-bordered text-center heatmap-table" style="font-size: 11px;">
+                                    <tr>
+                                        <td rowspan="6" class="align-middle fw-bold heatmap-axis" style="width: 20px;">Likelihood</td>
+                                        <td class="fw-bold" style="width: 20px;">5</td>
+                                        <t t-foreach="[1,2,3,4,5]" t-as="i" t-key="i">
+                                            <td t-attf-class="heatmap-cell #{getTextColor(getInherentColor(5, i))}" t-attf-style="background-color: #{getInherentColor(5, i)};"><t t-esc="state.data.inherent_heatmap[5][i]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">4</td>
+                                        <t t-foreach="[1,2,3,4,5]" t-as="i" t-key="i">
+                                            <td t-attf-class="heatmap-cell #{getTextColor(getInherentColor(4, i))}" t-attf-style="background-color: #{getInherentColor(4, i)};"><t t-esc="state.data.inherent_heatmap[4][i]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">3</td>
+                                        <t t-foreach="[1,2,3,4,5]" t-as="i" t-key="i">
+                                            <td t-attf-class="heatmap-cell #{getTextColor(getInherentColor(3, i))}" t-attf-style="background-color: #{getInherentColor(3, i)};"><t t-esc="state.data.inherent_heatmap[3][i]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">2</td>
+                                        <t t-foreach="[1,2,3,4,5]" t-as="i" t-key="i">
+                                            <td t-attf-class="heatmap-cell #{getTextColor(getInherentColor(2, i))}" t-attf-style="background-color: #{getInherentColor(2, i)};"><t t-esc="state.data.inherent_heatmap[2][i]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">1</td>
+                                        <t t-foreach="[1,2,3,4,5]" t-as="i" t-key="i">
+                                            <td t-attf-class="heatmap-cell #{getTextColor(getInherentColor(1, i))}" t-attf-style="background-color: #{getInherentColor(1, i)};"><t t-esc="state.data.inherent_heatmap[1][i]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold"></td>
+                                        <td class="fw-bold">1</td>
+                                        <td class="fw-bold">2</td>
+                                        <td class="fw-bold">3</td>
+                                        <td class="fw-bold">4</td>
+                                        <td class="fw-bold">5</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"></td>
+                                        <td colspan="5" class="fw-bold heatmap-axis">Impact</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Control Assessment Heatmap -->
+                        <div class="col-md-4">
+                            <div class="card ahadu-card p-2">
+                                <h5 class="card-title text-center">Control Assessment Heatmap</h5>
+                                <table class="table table-bordered text-center heatmap-table" style="font-size: 11px;">
+                                    <tr>
+                                        <td rowspan="6" class="align-middle fw-bold heatmap-axis" style="width: 20px;">Adequacy</td>
+                                        <td class="fw-bold" style="width: 20px;">5</td>
+                                        <t t-foreach="[1,2,3,4,5]" t-as="i" t-key="i">
+                                            <td t-attf-class="heatmap-cell #{getTextColor(getControlColor(5, i))}" t-attf-style="background-color: #{getControlColor(5, i)};"><t t-esc="state.data.control_heatmap[5][i]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">4</td>
+                                        <t t-foreach="[1,2,3,4,5]" t-as="i" t-key="i">
+                                            <td t-attf-class="heatmap-cell #{getTextColor(getControlColor(4, i))}" t-attf-style="background-color: #{getControlColor(4, i)};"><t t-esc="state.data.control_heatmap[4][i]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">3</td>
+                                        <t t-foreach="[1,2,3,4,5]" t-as="i" t-key="i">
+                                            <td t-attf-class="heatmap-cell #{getTextColor(getControlColor(3, i))}" t-attf-style="background-color: #{getControlColor(3, i)};"><t t-esc="state.data.control_heatmap[3][i]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">2</td>
+                                        <t t-foreach="[1,2,3,4,5]" t-as="i" t-key="i">
+                                            <td t-attf-class="heatmap-cell #{getTextColor(getControlColor(2, i))}" t-attf-style="background-color: #{getControlColor(2, i)};"><t t-esc="state.data.control_heatmap[2][i]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">1</td>
+                                        <t t-foreach="[1,2,3,4,5]" t-as="i" t-key="i">
+                                            <td t-attf-class="heatmap-cell #{getTextColor(getControlColor(1, i))}" t-attf-style="background-color: #{getControlColor(1, i)};"><t t-esc="state.data.control_heatmap[1][i]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold"></td>
+                                        <td class="fw-bold">1</td>
+                                        <td class="fw-bold">2</td>
+                                        <td class="fw-bold">3</td>
+                                        <td class="fw-bold">4</td>
+                                        <td class="fw-bold">5</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"></td>
+                                        <td colspan="5" class="fw-bold heatmap-axis">Effectiveness</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Residual Risk Heatmap -->
+                        <div class="col-md-4">
+                            <div class="card ahadu-card p-2">
+                                <h5 class="card-title text-center">Residual Risk Heatmap</h5>
+                                <t t-set="ratings" t-value="['very_high', 'high', 'medium', 'low', 'very_low']"/>
+                                <t t-set="control_ratings" t-value="['very_weak', 'weak', 'moderate', 'strong', 'very_strong']"/>
+                                <t t-set="rating_labels" t-value="{'very_high': 'VH', 'high': 'H', 'medium': 'M', 'low': 'L', 'very_low': 'VL'}"/>
+                                <t t-set="control_labels" t-value="{'very_weak': 'VW', 'weak': 'W', 'moderate': 'M', 'strong': 'S', 'very_strong': 'VS'}"/>
+                                <table class="table table-bordered text-center heatmap-table" style="font-size: 11px;">
+                                    <t t-foreach="ratings" t-as="r" t-key="r">
+                                        <tr>
+                                            <td t-if="r == 'very_high'" rowspan="5" class="align-middle fw-bold heatmap-axis" style="width: 20px; writing-mode: vertical-rl; transform: rotate(180deg);">Inherent</td>
+                                            <td class="fw-bold" style="width: 20px;"><t t-esc="rating_labels[r]"/></td>
+                                            <t t-foreach="control_ratings" t-as="c" t-key="c">
+                                                <td t-attf-class="heatmap-cell #{getTextColor(getResidualColor(r, c))}" t-attf-style="background-color: #{getResidualColor(r, c)};">
+                                                    <t t-esc="state.data.residual_heatmap[r][c]"/>
+                                                </td>
+                                            </t>
+                                        </tr>
+                                    </t>
+                                    <tr>
+                                        <td class="fw-bold"></td>
+                                        <t t-foreach="control_ratings" t-as="c" t-key="c">
+                                            <td class="fw-bold"><t t-esc="control_labels[c]"/></td>
+                                        </t>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"></td>
+                                        <td colspan="5" class="fw-bold heatmap-axis">Control</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <!-- Category-wise Risk Distribution Heatmap -->
+                        <div class="col-md-12">
+                            <div class="card ahadu-card p-2">
+                                <h5 class="card-title text-center">Category-wise Risk Distribution (Residual)</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered text-center heatmap-table" style="font-size: 11px;">
+                                        <tr>
+                                            <td class="align-middle fw-bold heatmap-axis" style="width: 250px;">Risk Category</td>
+                                            <td class="fw-bold">Very Low</td>
+                                            <td class="fw-bold">Low</td>
+                                            <td class="fw-bold">Medium</td>
+                                            <td class="fw-bold">High</td>
+                                            <td class="fw-bold">Very High</td>
+                                        </tr>
+                                        <t t-foreach="Object.keys(state.data.category_heatmap || {})" t-as="cat" t-key="cat">
+                                            <tr>
+                                                <td class="fw-bold text-start"><t t-esc="cat"/></td>
+                                                <t t-foreach="['very_low', 'low', 'medium', 'high', 'very_high']" t-as="rating" t-key="rating">
+                                                    <td t-attf-class="heatmap-cell #{getTextColor(getRatingColor(rating))}" t-attf-style="background-color: #{getRatingColor(rating)};">
+                                                        <t t-esc="state.data.category_heatmap[cat][rating]"/>
+                                                    </td>
+                                                </t>
+                                            </tr>
+                                        </t>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

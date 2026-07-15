@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- RIN Sequence for Risk Register -->
+        <record id="seq_risk_register" model="ir.sequence">
+            <field name="name">Risk Register Sequence</field>
+            <field name="code">risk.register</field>
+            <field name="prefix"></field>
+            <field name="padding">2</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+    </data>
+</odoo>
