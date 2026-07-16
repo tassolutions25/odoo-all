@@ -9,6 +9,8 @@ class AhaduJournalEntry(models.Model):
     name = fields.Char(string='Reference', required=True, readonly=True)
     date = fields.Date(string='Date', required=True, default=fields.Date.context_today, readonly=True)
     payslip_run_id = fields.Many2one('hr.payslip.run', string='Payslip Batch', readonly=True)
+    termination_run_id = fields.Many2one('hr.termination.run', string='Termination Batch', readonly=True)
+    resignation_run_id = fields.Many2one('hr.resignation.run', string='Resignation Batch', readonly=True)
     line_ids = fields.One2many('ahadu.journal.entry.line', 'entry_id', string='Journal Lines')
     state = fields.Selection([('draft', 'Draft'), ('posted', 'Posted')], default='posted', string='Status')
 

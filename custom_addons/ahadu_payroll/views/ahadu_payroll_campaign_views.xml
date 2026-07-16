@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Campaign Form View -->
+    <record id="view_ahadu_payroll_campaign_form" model="ir.ui.view">
+        <field name="name">ahadu.payroll.campaign.form</field>
+        <field name="model">ahadu.payroll.campaign</field>
+        <field name="arch" type="xml">
+            <form string="Payroll Campaign">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" invisible="active" />
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="e.g. Fund Raising 1 Child 1 Branch"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="credit_account_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Campaign details..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Campaign Tree View -->
+    <record id="view_ahadu_payroll_campaign_tree" model="ir.ui.view">
+        <field name="name">ahadu.payroll.campaign.tree</field>
+        <field name="model">ahadu.payroll.campaign</field>
+        <field name="arch" type="xml">
+            <list string="Payroll Campaigns">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="credit_account_id"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Campaign Action -->
+    <record id="action_ahadu_payroll_campaign" model="ir.actions.act_window">
+        <field name="name">Payroll Campaigns</field>
+        <field name="res_model">ahadu.payroll.campaign</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Payroll Campaign
+            </p>
+            <p>
+                Campaigns allow you to deduct specific amounts from employee salaries towards a specific cause/account.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item (Under Configuration -> Payroll) -->
+    <menuitem id="menu_ahadu_payroll_campaign"
+              name="Payroll Campaigns"
+              parent="menu_ahadu_config_root"
+              action="action_ahadu_payroll_campaign"
+              sequence="55"/>
+
+</odoo>

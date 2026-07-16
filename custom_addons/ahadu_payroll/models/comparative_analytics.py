@@ -15,6 +15,10 @@ class AhaduComparativeAnalytics(models.TransientModel):
     pay_group_id = fields.Many2one('ahadu.pay.group', string='Pay Group', help="Select pay group to filter analytics. Leave empty for all.")
     is_head_office = fields.Boolean(compute='_compute_is_head_office')
 
+    # Headcount Summary
+    headcount_prev = fields.Integer(string='Employees at Start of Period')
+    headcount_cur = fields.Integer(string='Employees at End of Period')
+
     # Summary Counts - Current Period
     additions_cur = fields.Integer(string='New Additions (Current)')
     promotions_cur = fields.Integer(string='Promotions (Current)')
@@ -75,6 +79,60 @@ class AhaduComparativeAnalytics(models.TransientModel):
             if not is_ho and not rec.branch_id:
                 rec.branch_id = self.env.user.employee_id.branch_id
 
+    def get_headcount_at_date(self, target_date):
+        # 1. Fetch all employees whose date_of_joining <= target_date
+        employees = self.env['hr.employee'].sudo().with_context(active_test=False).search([
+            ('date_of_joining', '<=', target_date),
+            ('date_of_joining', '!=', False)
+        ])
+        
+        # 2. Filter out those who departed on or before target_date
+        valid_employees = []
+        for emp in employees:
+            if not emp.active and emp.departure_date and emp.departure_date <= target_date:
+                continue
+            termination = self.env['hr.employee.termination'].sudo().search([
+                ('employee_id', '=', emp.id),
+                ('state', '=', 'approved'),
+                ('termination_date', '<=', target_date)
+            ], limit=1)
+            if termination:
+                continue
+            valid_employees.append(emp)
+            
+        # 3. For each valid employee, find their branch, department, region, pay group as of target_date
+        count = 0
+        for emp in valid_employees:
+            earliest_transfer = self.env['hr.employee.transfer'].sudo().search([
+                ('employee_id', '=', emp.id),
+                ('state', '=', 'approved'),
+                ('transfer_date', '>', target_date)
+            ], order='transfer_date asc, id asc', limit=1)
+            
+            if earliest_transfer:
+                branch = earliest_transfer.current_branch_id
+                dept = earliest_transfer.current_department_id
+            else:
+                branch = emp.branch_id
+                dept = emp.department_id
+                
+            region = branch.region_id if branch else emp.region_id
+            pay_group = emp.contract_id.pay_group_id
+            
+            # Apply filters safely comparing IDs to prevent context/environment mismatches
+            if self.branch_id and branch.id != self.branch_id.id:
+                continue
+            if self.department_id and dept.id != self.department_id.id:
+                continue
+            if self.region_id and region.id != self.region_id.id:
+                continue
+            if self.pay_group_id and pay_group.id != self.pay_group_id.id:
+                continue
+                
+            count += 1
+            
+        return count
+
     def action_refresh(self):
         self.ensure_one()
         # Dates for current period
@@ -86,67 +144,142 @@ class AhaduComparativeAnalytics(models.TransientModel):
         prev_start = start_date - timedelta(days=duration)
         prev_end = start_date - timedelta(days=1)
 
-        # Base domains
-        branch_domain = []
-        if self.branch_id:
-            branch_domain = [('branch_id', '=', self.branch_id.id)]
-        
-        # Helper to join domains
-        def get_domain(date_field, start, end, extra=[]):
-            # For promotions, transfers, etc., branch is linked via employee
-            dom = [(date_field, '>=', start), (date_field, '<=', end)] + extra
-            if self.branch_id:
-                dom += [('employee_id.branch_id', '=', self.branch_id.id)]
-            if self.department_id:
-                dom += [('employee_id.department_id', '=', self.department_id.id)]
-            if self.region_id:
-                dom += [('employee_id.region_id', '=', self.region_id.id)]
-            if self.pay_group_id:
-                dom += [('employee_id.contract_id.pay_group_id', '=', self.pay_group_id.id)]
-            return dom
+        def employee_matches(emp):
+            if self.branch_id and emp.branch_id.id != self.branch_id.id:
+                return False
+            if self.department_id and emp.department_id.id != self.department_id.id:
+                return False
+            region = emp.branch_id.region_id or emp.region_id
+            if self.region_id and region.id != self.region_id.id:
+                return False
+            if self.pay_group_id and emp.contract_id.pay_group_id.id != self.pay_group_id.id:
+                return False
+            return True
 
-        def get_emp_domain(date_field, start, end):
-            # For hr.employee, branch_id is a direct field
-            dom = [(date_field, '>=', start), (date_field, '<=', end)]
-            if self.branch_id:
-                dom += [('branch_id', '=', self.branch_id.id)]
-            if self.department_id:
-                dom += [('department_id', '=', self.department_id.id)]
+        def field_ids(record, field_names):
+            ids = set()
+            for field_name in field_names:
+                if field_name in record._fields and record[field_name]:
+                    ids.add(record[field_name].id)
+            return ids
+
+        def activity_matches(activity):
+            employee = activity.employee_id
+
+            branch_ids = field_ids(activity, ['current_branch_id', 'new_branch_id'])
+            if not branch_ids and employee.branch_id:
+                branch_ids.add(employee.branch_id.id)
+            if self.branch_id and self.branch_id.id not in branch_ids:
+                return False
+
+            dept_ids = field_ids(activity, ['current_department_id', 'new_department_id'])
+            if not dept_ids and employee.department_id:
+                dept_ids.add(employee.department_id.id)
+            if self.department_id and self.department_id.id not in dept_ids:
+                return False
+
             if self.region_id:
-                dom += [('region_id', '=', self.region_id.id)]
-            if self.pay_group_id:
-                dom += [('contract_id.pay_group_id', '=', self.pay_group_id.id)]
-            return dom
+                branches = self.env['hr.branch'].browse(list(branch_ids))
+                region_ids = set(branches.mapped('region_id').ids)
+                if not region_ids and employee.region_id:
+                    region_ids.add(employee.region_id.id)
+                if self.region_id.id not in region_ids:
+                    return False
+
+            if self.pay_group_id and employee.contract_id.pay_group_id.id != self.pay_group_id.id:
+                return False
+
+            return True
+
+        def get_activities(model_name, date_field, start, end, extra=None, use_sudo=False):
+            model = self.env[model_name].sudo() if use_sudo else self.env[model_name]
+            domain = [(date_field, '>=', start), (date_field, '<=', end)] + (extra or [])
+            return model.search(domain).filtered(activity_matches)
+
+        def get_employees(date_field, start, end):
+            return self.env['hr.employee'].search([
+                (date_field, '>=', start),
+                (date_field, '<=', end)
+            ]).filtered(employee_matches)
 
 
         # Current Period Data
-        self.additions_cur = self.env['hr.employee'].search_count(get_emp_domain('date_of_joining', start_date, end_date))
-        self.promotions_cur = self.env['hr.employee.promotion'].search_count(get_domain('promotion_date', start_date, end_date, [('state', '=', 'approved')]))
-        self.transfers_cur = self.env['hr.employee.transfer'].search_count(get_domain('transfer_date', start_date, end_date, [('state', '=', 'approved')]))
-        self.terminations_cur = self.env['hr.employee.termination'].search_count(get_domain('termination_date', start_date, end_date, [('state', '=', 'approved')]))
-        self.salary_cur = self.env['hr.employee.promotion'].search_count(get_domain('promotion_date', start_date, end_date, [('state', '=', 'approved'), ('new_salary', '>', 0)]))
-        self.demotions_cur = self.env['hr.employee.demotion'].search_count(get_domain('demotion_date', start_date, end_date, [('state', '=', 'approved')]))
-        self.acting_cur = self.env['hr.employee.acting'].search_count(get_domain('start_date', start_date, end_date, [('state', '=', 'approved')]))
-        self.temporary_cur = self.env['hr.employee.temporary.assignment'].search_count(get_domain('start_date', start_date, end_date, [('state', '=', 'approved')]))
-        self.suspensions_cur = self.env['hr.employee.suspension'].search_count(get_domain('start_date', start_date, end_date, [('state', 'in', ['approved', 'Approved'])]))
+        additions = get_employees('date_of_joining', start_date, end_date)
+        promotions = get_activities('hr.employee.promotion', 'promotion_date', start_date, end_date, [('state', '=', 'approved')])
+        transfers = get_activities('hr.employee.transfer', 'transfer_date', start_date, end_date, [('state', '=', 'approved')])
+        terminations = get_activities('hr.employee.termination', 'termination_date', start_date, end_date, [('state', '=', 'approved')])
+        salary_adjustments = get_activities('hr.employee.promotion', 'promotion_date', start_date, end_date, [('state', '=', 'approved'), ('new_salary', '>', 0)])
+        demotions = get_activities('hr.employee.demotion', 'demotion_date', start_date, end_date, [('state', '=', 'approved')])
+        acting_assignments = get_activities('hr.employee.acting', 'start_date', start_date, end_date, [('state', '=', 'approved')])
+        temporary_assignments = get_activities('hr.employee.temporary.assignment', 'start_date', start_date, end_date, [('state', '=', 'approved')])
+        suspensions = get_activities('hr.employee.suspension', 'start_date', start_date, end_date, [('state', 'in', ['approved', 'Approved'])], use_sudo=True)
+
+        self.additions_cur = len(additions)
+        self.promotions_cur = len(promotions)
+        self.transfers_cur = len(transfers)
+        self.terminations_cur = len(terminations)
+        self.salary_cur = len(salary_adjustments)
+        self.demotions_cur = len(demotions)
+        self.acting_cur = len(acting_assignments)
+        self.temporary_cur = len(temporary_assignments)
+        self.suspensions_cur = len(suspensions)
 
         # Previous Period Data
-        self.additions_prev = self.env['hr.employee'].search_count(get_emp_domain('date_of_joining', prev_start, prev_end))
-        self.promotions_prev = self.env['hr.employee.promotion'].search_count(get_domain('promotion_date', prev_start, prev_end, [('state', '=', 'approved')]))
-        self.transfers_prev = self.env['hr.employee.transfer'].search_count(get_domain('transfer_date', prev_start, prev_end, [('state', '=', 'approved')]))
-        self.terminations_prev = self.env['hr.employee.termination'].search_count(get_domain('termination_date', prev_start, prev_end, [('state', '=', 'approved')]))
-        self.salary_prev = self.env['hr.employee.promotion'].search_count(get_domain('promotion_date', prev_start, prev_end, [('state', '=', 'approved'), ('new_salary', '>', 0)]))
-        self.demotions_prev = self.env['hr.employee.demotion'].search_count(get_domain('demotion_date', prev_start, prev_end, [('state', '=', 'approved')]))
-        self.acting_prev = self.env['hr.employee.acting'].search_count(get_domain('start_date', prev_start, prev_end, [('state', '=', 'approved')]))
-        self.temporary_prev = self.env['hr.employee.temporary.assignment'].search_count(get_domain('start_date', prev_start, prev_end, [('state', '=', 'approved')]))
-        self.suspensions_prev = self.env['hr.employee.suspension'].search_count(get_domain('start_date', prev_start, prev_end, [('state', 'in', ['approved', 'Approved'])]))
+        self.additions_prev = len(get_employees('date_of_joining', prev_start, prev_end))
+        self.promotions_prev = len(get_activities('hr.employee.promotion', 'promotion_date', prev_start, prev_end, [('state', '=', 'approved')]))
+        self.transfers_prev = len(get_activities('hr.employee.transfer', 'transfer_date', prev_start, prev_end, [('state', '=', 'approved')]))
+        self.terminations_prev = len(get_activities('hr.employee.termination', 'termination_date', prev_start, prev_end, [('state', '=', 'approved')]))
+        self.salary_prev = len(get_activities('hr.employee.promotion', 'promotion_date', prev_start, prev_end, [('state', '=', 'approved'), ('new_salary', '>', 0)]))
+        self.demotions_prev = len(get_activities('hr.employee.demotion', 'demotion_date', prev_start, prev_end, [('state', '=', 'approved')]))
+        self.acting_prev = len(get_activities('hr.employee.acting', 'start_date', prev_start, prev_end, [('state', '=', 'approved')]))
+        self.temporary_prev = len(get_activities('hr.employee.temporary.assignment', 'start_date', prev_start, prev_end, [('state', '=', 'approved')]))
+        self.suspensions_prev = len(get_activities('hr.employee.suspension', 'start_date', prev_start, prev_end, [('state', 'in', ['approved', 'Approved'])], use_sudo=True))
+
+        # Headcount Reconciliation
+        self.headcount_prev = self.get_headcount_at_date(start_date - timedelta(days=1))
+        
+        # Calculate transfers_in and transfers_out in current period for headcount reconciliation
+        transfers_in = 0
+        transfers_out = 0
+        all_transfers = self.env['hr.employee.transfer'].search([
+            ('transfer_date', '>=', start_date),
+            ('transfer_date', '<=', end_date),
+            ('state', '=', 'approved')
+        ])
+        for tr in all_transfers:
+            if self.pay_group_id and tr.employee_id.contract_id.pay_group_id.id != self.pay_group_id.id:
+                continue
+            # Check "before" state safely comparing IDs to prevent context/environment mismatches
+            before_match = True
+            if self.branch_id and tr.current_branch_id.id != self.branch_id.id:
+                before_match = False
+            if self.department_id and tr.current_department_id.id != self.department_id.id:
+                before_match = False
+            if self.region_id and tr.current_branch_id.region_id.id != self.region_id.id:
+                before_match = False
+            
+            # Check "after" state safely comparing IDs
+            after_match = True
+            if self.branch_id and tr.new_branch_id.id != self.branch_id.id:
+                after_match = False
+            if self.department_id and tr.new_department_id.id != self.department_id.id:
+                after_match = False
+            if self.region_id and tr.new_branch_id.region_id.id != self.region_id.id:
+                after_match = False
+                
+            if before_match and not after_match:
+                transfers_out += 1
+            elif not before_match and after_match:
+                transfers_in += 1
+
+        self.headcount_cur = self.headcount_prev + self.additions_cur - transfers_out + transfers_in - self.terminations_cur
 
         # Clear and rebuild details
         self.detail_ids.unlink()
         details = []
 
         # 1. Additions Details
-        for emp in self.env['hr.employee'].search(get_emp_domain('date_of_joining', start_date, end_date)):
+        for emp in additions:
             details.append((0, 0, {
                 'employee_id': emp.id,
                 'change_type': 'addition',
@@ -161,7 +294,7 @@ class AhaduComparativeAnalytics(models.TransientModel):
             }))
 
         # 2. Promotions Details
-        for prom in self.env['hr.employee.promotion'].search(get_domain('promotion_date', start_date, end_date, [('state', '=', 'approved')])):
+        for prom in promotions:
             details.append((0, 0, {
                 'employee_id': prom.employee_id.id,
                 'change_type': 'promotion',
@@ -170,11 +303,18 @@ class AhaduComparativeAnalytics(models.TransientModel):
                 'new_salary': prom.new_salary,
                 'from_job_id': prom.current_job_id.id,
                 'to_job_id': prom.new_job_id.id,
+                'from_branch_id': prom.current_branch_id.id,
+                'to_branch_id': (prom.new_branch_id or prom.current_branch_id or prom.employee_id.branch_id).id,
+                'from_dept_id': prom.current_department_id.id,
+                'to_dept_id': (prom.new_department_id or prom.current_department_id or prom.employee_id.department_id).id,
                 'description': _('Promoted to %s') % (prom.new_job_id.name or 'N/A')
             }))
 
         # 3. Transfers Details
-        for trans in self.env['hr.employee.transfer'].search(get_domain('transfer_date', start_date, end_date, [('state', '=', 'approved')])):
+        for trans in transfers:
+            from_branch_name = trans.current_branch_id.name or 'N/A'
+            to_branch_name = trans.new_branch_id.name or 'N/A'
+
             details.append((0, 0, {
                 'employee_id': trans.employee_id.id,
                 'change_type': 'transfer',
@@ -189,11 +329,11 @@ class AhaduComparativeAnalytics(models.TransientModel):
                 'to_cost_center_id': trans.new_cost_center_id.id,
                 'from_job_id': trans.current_job_id.id,
                 'to_job_id': trans.new_job_id.id,
-                'description': _('Transferred to %s') % (trans.new_branch_id.name or 'N/A')
+                'description': _('Transferred from %s to %s') % (from_branch_name, to_branch_name)
             }))
 
         # 4. Demotions Details
-        for dem in self.env['hr.employee.demotion'].search(get_domain('demotion_date', start_date, end_date, [('state', '=', 'approved')])):
+        for dem in demotions:
             details.append((0, 0, {
                 'employee_id': dem.employee_id.id,
                 'change_type': 'demotion',
@@ -212,18 +352,22 @@ class AhaduComparativeAnalytics(models.TransientModel):
             }))
 
         # 5. Acting Details
-        for act in self.env['hr.employee.acting'].search(get_domain('start_date', start_date, end_date, [('state', '=', 'approved')])):
+        for act in acting_assignments:
             details.append((0, 0, {
                 'employee_id': act.employee_id.id,
                 'change_type': 'acting',
                 'change_date': act.start_date,
                 'to_job_id': act.acting_job_id.id,
+                'from_branch_id': act.current_branch_id.id,
+                'to_branch_id': (act.new_branch_id or act.current_branch_id or act.employee_id.branch_id).id,
+                'from_dept_id': act.current_department_id.id,
+                'to_dept_id': (act.new_department_id or act.current_department_id or act.employee_id.department_id).id,
                 'allowance_amount': act.allowance_amount,
                 'description': _('Acting as %s') % (act.acting_job_id.name or 'N/A')
             }))
 
         # 6. Temporary Assignment Details
-        for temp in self.env['hr.employee.temporary.assignment'].search(get_domain('start_date', start_date, end_date, [('state', '=', 'approved')])):
+        for temp in temporary_assignments:
             details.append((0, 0, {
                 'employee_id': temp.employee_id.id,
                 'change_type': 'temporary',
@@ -241,22 +385,42 @@ class AhaduComparativeAnalytics(models.TransientModel):
             }))
 
         # 7. Terminations Details
-        for term in self.env['hr.employee.termination'].search(get_domain('termination_date', start_date, end_date, [('state', '=', 'approved')])):
+        for term in terminations:
             details.append((0, 0, {
                 'employee_id': term.employee_id.id,
                 'change_type': 'termination',
                 'change_date': term.termination_date,
                 'to_branch_id': term.employee_id.branch_id.id,
+                'to_dept_id': term.employee_id.department_id.id,
                 'description': term.reason or _('Termination')
             }))
 
         # 8. Suspensions Details
-        for susp in self.env['hr.employee.suspension'].search(get_domain('start_date', start_date, end_date, [('state', 'in', ['approved', 'Approved'])])):
+        for susp in suspensions:
             details.append((0, 0, {
                 'employee_id': susp.employee_id.id,
                 'change_type': 'suspension',
                 'change_date': susp.start_date,
+                'to_branch_id': susp.employee_id.branch_id.id,
+                'to_dept_id': susp.employee_id.department_id.id,
                 'description': _('Suspended until %s') % susp.end_date
+            }))
+
+        # 9. Salary Adjustments Details
+        for prom in salary_adjustments:
+            details.append((0, 0, {
+                'employee_id': prom.employee_id.id,
+                'change_type': 'salary',
+                'change_date': prom.promotion_date,
+                'old_salary': prom.current_salary,
+                'new_salary': prom.new_salary,
+                'from_job_id': prom.current_job_id.id,
+                'to_job_id': prom.new_job_id.id,
+                'from_branch_id': prom.current_branch_id.id,
+                'to_branch_id': (prom.new_branch_id or prom.current_branch_id or prom.employee_id.branch_id).id,
+                'from_dept_id': prom.current_department_id.id,
+                'to_dept_id': (prom.new_department_id or prom.current_department_id or prom.employee_id.department_id).id,
+                'description': _('Salary adjusted from %s to %s') % (prom.current_salary, prom.new_salary)
             }))
 
         self.detail_ids = details

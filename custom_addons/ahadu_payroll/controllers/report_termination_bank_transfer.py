@@ -78,10 +78,10 @@ class TerminationBankTransferReport(AhaduReportCommon):
             # 1. Earnings (DEBIT SIDE)
             earnings_map = [
                 (slip.unpaid_salary or 0.0, FUNDING_GL_SALARY, f"{emp_type_name} unpaid salary {month_year}"),
-                (slip.leave_pay_gross or 0.0, '5030220', f"{emp_type_name} leave pay {month_year}"),
                 (slip.unpaid_transport or 0.0, '5030204', f"{emp_type_name} unpaid transport {month_year}"),
                 (slip.unpaid_housing or 0.0, '5030205', f"{emp_type_name} unpaid housing {month_year}"),
                 (slip.unpaid_mobile or 0.0, '5030221', f"{emp_type_name} unpaid mobile {month_year}"),
+                (slip.unpaid_hardship or 0.0, '5030203', f"{emp_type_name} unpaid hardship {month_year}"),
                 (slip.representation_allowance or 0.0, '5030206', f"{emp_type_name} representation allowance {month_year}"),
                 (slip.pension_comp or 0.0, '5030211', f"{emp_type_name} pension comp {month_year}"),
             ]
@@ -89,6 +89,12 @@ class TerminationBankTransferReport(AhaduReportCommon):
             for amt, gl, reason in earnings_map:
                 if amt > 0:
                     aggregated_upload[(f"{branch_prefix}-{gl}", 'D', dept_cc, reason, branch_cc)] += round(amt, 2)
+                    
+            # Special case for Leave Pay with specific GL and empty CCs
+            if slip.leave_pay_gross > 0:
+                gl = '2020217'
+                reason = f"termination {emp_type_name} leave_pay {month_year}"
+                aggregated_upload[(gl, 'D', '', reason, '')] += round(slip.leave_pay_gross, 2)
 
             # 2. Statutory Deductions (CREDIT SIDE)
             pension_total = (slip.pension_emp or 0.0) + (slip.pension_comp or 0.0)
@@ -117,7 +123,7 @@ class TerminationBankTransferReport(AhaduReportCommon):
             net = slip.net_payable or 0.0
             _logger.info("=== DEBUG: Employee %s, Net: %s ===", emp.name, net)
             if net > 0:
-                acc = self._get_bank_account(emp, 'salary') or 'N/A'
+                acc = slip.credit_account_number or self._get_bank_account(emp, 'salary') or 'N/A'
                 _logger.info("=== DEBUG: Employee %s, Account: %s ===", emp.name, acc)
                 file3_payments[(acc, FUNDING_GL_SALARY)]['amount'] += round(net, 2)
                 if emp.name not in file3_payments[(acc, FUNDING_GL_SALARY)]['emp']:

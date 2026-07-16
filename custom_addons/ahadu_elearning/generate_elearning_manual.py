@@ -297,7 +297,7 @@ def ch2_getting_started(doc):
     add_h1(doc, '2. Getting Started')
 
     add_h2(doc, '2.1 Logging In')
-    step(doc, 1, "Open your web browser and navigate to the Ahadu ERP URL (e.g., https://erp.ahadubank.com.et).")
+    step(doc, 1, "Open your web browser and navigate to the Ahadu ERP URL (e.g., erp.ahadubank.com.et).")
     step(doc, 2, "Enter your assigned Email address and Password in the login form.")
     step(doc, 3, "Click 'Log in'. You will be directed to the main Odoo application dashboard.")
 
@@ -509,7 +509,7 @@ def ch6_video(doc):
     add_h2(doc, '6.2 Option B — Google Drive Embed (External / URL)')
     body(doc, "This option allows you to link a video already stored in Google Drive. The system automatically extracts the file ID and renders the video using Google Drive's preview iframe player.")
     step(doc, 1, "Upload/share your video on Google Drive and set it to 'Anyone with the link can view'.")
-    step(doc, 2, "Copy the Google Drive sharing link (e.g., https://drive.google.com/file/d/FILE_ID/view).")
+    step(doc, 2, "Copy the Google Drive sharing link (e.g., drive.google.com/file/d/FILE_ID/view).")
     step(doc, 3, "In the slide form, set Slide Category to 'Video' and Source Type to 'External (URL)'.")
     step(doc, 4, "Paste the Google Drive link into the 'Video URL' field.")
     step(doc, 5, "The system auto-detects the file ID and converts it to an embed URL. No manual extraction needed.")

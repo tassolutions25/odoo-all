@@ -479,7 +479,6 @@ class HrPayslip(models.Model):
         domain = [
             ('employee_id', '=', self.employee_id.id),
             ('state', '=', 'approved'),
-            ('date_start', '<=', self.date_to),
             ('loan_type_id.is_payroll_deduction', '=', True),
         ]
 
@@ -539,7 +538,6 @@ class HrPayslip(models.Model):
         loans = self.env['hr.loan'].search([
             ('employee_id', '=', self.employee_id.id),
             ('state', '=', 'approved'),
-            ('date_start', '<=', self.date_to),
             ('loan_type_id.is_payroll_deduction', '=', True),
         ])
 
@@ -646,6 +644,17 @@ class HrPayslip(models.Model):
         """
         self.ensure_one()
         deductions = self._get_active_deductions('other')
+        return round(sum(d.monthly_amount for d in deductions), 2)
+
+    def _get_ahadu_campaign_deduction(self):
+        """
+        Get total campaign deductions for this payslip.
+        
+        Returns:
+            float: Total monthly campaign deduction amount
+        """
+        self.ensure_one()
+        deductions = self._get_active_deductions('campaign')
         return round(sum(d.monthly_amount for d in deductions), 2)
 
     def _get_ahadu_penalty_deduction(self):
@@ -1124,7 +1133,7 @@ class HrPayslip(models.Model):
         day_end = datetime.combine(check_date, datetime.max.time())
         
         # Check for any attendance record (check-in) on this day
-        attendance_count = self.env['hr.attendance'].search_count([
+        attendance_count = self.env['hr.attendance'].sudo().search_count([
             ('employee_id', '=', self.employee_id.id),
             ('check_in', '>=', day_start),
             ('check_in', '<=', day_end),
@@ -1236,7 +1245,7 @@ class HrPayslip(models.Model):
         
         manual_absent_dates = []
         if mode == 'manual':
-            manual_sheets = self.env['ahadu.attendance.sheet'].search([
+            manual_sheets = self.env['ahadu.attendance.sheet'].sudo().search([
                 ('employee_id', '=', self.employee_id.id),
                 ('state', '=', 'approved'),
                 ('date_from', '<=', self.date_to),
@@ -1500,12 +1509,17 @@ class HrPayslip(models.Model):
                 new_loans = self.env['hr.loan'].search([
                     ('employee_id', '=', slip.employee_id.id),
                     ('state', '=', 'approved'),
-                    ('date_start', '<=', slip.date_to),
                 ])
                 for loan in new_loans:
-                    if loan.paid_installments < loan.installment_months:
+                    is_active = False
+                    if loan.is_external:
+                        if loan.remaining_amount > 0:
+                            is_active = True
+                    elif loan.paid_installments < loan.installment_months:
                         if slip.date_to >= loan.date_start:
-                            loan.increment_paid_installment()
+                            is_active = True
+                    if is_active:
+                        loan.increment_paid_installment()
             
             # 3. Handle Cash Indemnity Balance Update
             # If there is a "ci_to_balance" amount, add it to the cash indemnity account
@@ -1520,13 +1534,8 @@ class HrPayslip(models.Model):
                     # We use SUDO to ensure we can write even if the user has read-only access to bank accounts
                     new_ci_balance = ci_account.balance + slip.ci_to_balance
                     ci_account.sudo().write({'balance': new_ci_balance})
-            
-            # 4. Automatically send Payslip Email to Employee
-            # This ensures emails are sent regardless of whether approved individually or in batch
-            try:
-                slip.action_send_payslip_email()
-            except Exception as e:
-                _logger.error(f"Failed to send payslip email for {slip.employee_id.name}: {str(e)}")
+                    
+            # Note: Email sending has been moved out of this synchronous loop to prevent blocking
                 
         return res
 

@@ -25,48 +25,61 @@ class ComparativeAnalyticsReport(AhaduReportCommon):
 
         # --- SHEET 1: Summary ---
         sheet_summary = workbook.add_worksheet('Summary')
-        sheet_summary.merge_range('A1:D1', 'Comparative Analytics Summary', title_fmt)
-        sheet_summary.merge_range('A2:D2', 'Period: %s to %s' % (analytics.date_from, analytics.date_to), workbook.add_format({'italic': True, 'align': 'center'}))
+        sheet_summary.merge_range('A1:B1', 'Comparative Analytics Summary', title_fmt)
+        sheet_summary.merge_range('A2:B2', 'Period: %s to %s' % (analytics.date_from, analytics.date_to), workbook.add_format({'italic': True, 'align': 'center'}))
+        
+        row = 2
         if analytics.branch_id:
-            sheet_summary.merge_range('A3:D3', 'Branch: %s' % analytics.branch_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
-        
-        row_f = 4
+            sheet_summary.merge_range(row, 0, row, 1, 'Branch: %s' % analytics.branch_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
+            row += 1
         if analytics.department_id:
-            sheet_summary.merge_range(row_f, 0, row_f, 3, 'Department: %s' % analytics.department_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
-            row_f += 1
+            sheet_summary.merge_range(row, 0, row, 1, 'Department: %s' % analytics.department_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
+            row += 1
         if analytics.region_id:
-            sheet_summary.merge_range(row_f, 0, row_f, 3, 'Region: %s' % analytics.region_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
-            row_f += 1
+            sheet_summary.merge_range(row, 0, row, 1, 'Region: %s' % analytics.region_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
+            row += 1
         if analytics.pay_group_id:
-            sheet_summary.merge_range(row_f, 0, row_f, 3, 'Pay Group: %s' % analytics.pay_group_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
-            row_f += 1
+            sheet_summary.merge_range(row, 0, row, 1, 'Pay Group: %s' % analytics.pay_group_id.name, workbook.add_format({'bold': True, 'align': 'center'}))
+            row += 1
         
-        row = row_f + 1
+        # Add 2 rows of padding from period/filters to headcount
+        row += 2
+        
+        # Headcount Reconciliation Section
+        sheet_summary.merge_range(row, 0, row, 1, 'Headcount Reconciliation', workbook.add_format({'bold': True, 'bg_color': '#D3D3D3', 'border': 1, 'align': 'center'}))
+        row += 1
+        sheet_summary.write(row, 0, 'Employees at Start of Period', data_fmt)
+        sheet_summary.write(row, 1, analytics.headcount_prev, num_fmt)
+        row += 1
+        sheet_summary.write(row, 0, 'Employees at End of Period', data_fmt)
+        sheet_summary.write(row, 1, analytics.headcount_cur, num_fmt)
+        
+        # Add 2 rows of padding below from headcount to the table
+        row += 2
+        row += 1
+        
         sheet_summary.write(row, 0, 'Category', header_fmt)
-        sheet_summary.write(row, 1, 'Current Period', header_fmt)
-        sheet_summary.write(row, 2, 'Previous Period', header_fmt)
-        sheet_summary.write(row, 3, 'Variance', header_fmt)
+        sheet_summary.write(row, 1, 'Change in Period', header_fmt)
         
-        sheet_summary.set_column(0, 0, 25)
-        sheet_summary.set_column(1, 3, 15)
+        sheet_summary.set_column(0, 0, 30)
+        sheet_summary.set_column(1, 1, 20)
 
         categories = [
-            ('New Additions', analytics.additions_cur, analytics.additions_prev, analytics.additions_var),
-            ('Promotions', analytics.promotions_cur, analytics.promotions_prev, analytics.promotions_var),
-            ('Salary Adjustments', analytics.salary_cur, analytics.salary_prev, analytics.salary_var),
-            ('Transfers', analytics.transfers_cur, analytics.transfers_prev, analytics.transfers_var),
-            ('Demotions', analytics.demotions_cur, analytics.demotions_prev, analytics.demotions_var),
-            ('Acting', analytics.acting_cur, analytics.acting_prev, analytics.acting_var),
-            ('Temporary', analytics.temporary_cur, analytics.temporary_prev, analytics.temporary_var),
-            ('Terminations', analytics.terminations_cur, analytics.terminations_prev, analytics.terminations_var),
+            ('New Additions', analytics.additions_cur),
+            ('Promotions', analytics.promotions_cur),
+            ('Salary Adjustments', analytics.salary_cur),
+            ('Transfers', analytics.transfers_cur),
+            ('Demotions', analytics.demotions_cur),
+            ('Acting', analytics.acting_cur),
+            ('Temporary', analytics.temporary_cur),
+            ('Suspensions', analytics.suspensions_cur),
+            ('Terminations', analytics.terminations_cur),
         ]
 
         row += 1
-        for cat, cur, prev, var in categories:
+        for cat, change in categories:
             sheet_summary.write(row, 0, cat, data_fmt)
-            sheet_summary.write(row, 1, cur, num_fmt)
-            sheet_summary.write(row, 2, prev, num_fmt)
-            sheet_summary.write(row, 3, var, num_fmt)
+            sheet_summary.write(row, 1, change, num_fmt)
             row += 1
 
         # Helper to add details sheet
@@ -99,6 +112,10 @@ class ComparativeAnalyticsReport(AhaduReportCommon):
                         mapping = [d.from_job_id.name, d.to_job_id.name, d.old_salary, d.new_salary]
                         val = mapping[col_i-3]
                         if col_i in [5, 6]: fmt = money_fmt
+                    elif name == 'Salary Adjustments':
+                        mapping = [d.to_job_id.name or d.from_job_id.name or '', d.old_salary, d.new_salary]
+                        val = mapping[col_i-3]
+                        if col_i in [4, 5]: fmt = money_fmt
                     elif name in ['Transfers', 'Demotions', 'Temporary Assignments']:
                         mapping = [d.from_branch_id.name, d.to_branch_id.name, d.from_dept_id.name, d.to_dept_id.name, d.from_division_id.name, d.to_division_id.name, d.from_cost_center_id.name, d.to_cost_center_id.name, d.from_job_id.name, d.to_job_id.name]
                         val = mapping[col_i-3]
@@ -106,6 +123,8 @@ class ComparativeAnalyticsReport(AhaduReportCommon):
                         mapping = [d.to_job_id.name, d.allowance_amount]
                         val = mapping[col_i-3]
                         if col_i == 4: fmt = money_fmt
+                    elif name == 'Suspensions':
+                        val = d.description
                     elif name == 'Terminations':
                         val = d.description
                     
@@ -116,10 +135,12 @@ class ComparativeAnalyticsReport(AhaduReportCommon):
         # Create the sheets
         add_details_sheet('New Additions', 'addition', ['S/N', 'Employee Name', 'Date', 'Branch', 'Department', 'Division', 'Cost Center', 'Position', 'Salary'])
         add_details_sheet('Promotions', 'promotion', ['S/N', 'Employee Name', 'Date', 'From Position', 'To Position', 'From Salary', 'To Salary'])
+        add_details_sheet('Salary Adjustments', 'salary', ['S/N', 'Employee Name', 'Date', 'Position', 'Old Salary', 'New Salary'])
         add_details_sheet('Transfers', 'transfer', ['S/N', 'Employee Name', 'Date', 'From Branch', 'To Branch', 'From Dept', 'To Dept', 'From Division', 'To Division', 'From Cost Center', 'To Cost Center', 'From Position', 'To Position'])
         add_details_sheet('Demotions', 'demotion', ['S/N', 'Employee Name', 'Date', 'From Branch', 'To Branch', 'From Dept', 'To Dept', 'From Division', 'To Division', 'From Cost Center', 'To Cost Center', 'From Position', 'To Position'])
         add_details_sheet('Acting Assignments', 'acting', ['S/N', 'Employee Name', 'Start Date', 'Acting Position', 'Allowance'])
         add_details_sheet('Temporary Assignments', 'temporary', ['S/N', 'Employee Name', 'Start Date', 'From Branch', 'To Branch', 'From Dept', 'To Dept', 'From Division', 'To Division', 'From Cost Center', 'To Cost Center'])
+        add_details_sheet('Suspensions', 'suspension', ['S/N', 'Employee Name', 'Date', 'Details'])
         add_details_sheet('Terminations', 'termination', ['S/N', 'Employee Name', 'Date', 'Reason'])
 
         workbook.close()

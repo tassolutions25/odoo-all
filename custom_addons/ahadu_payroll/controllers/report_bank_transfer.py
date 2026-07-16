@@ -166,7 +166,6 @@ class BankTransferReport(AhaduReportCommon):
             loans = request.env['hr.loan'].sudo().search([
                 ('employee_id', '=', emp.id),
                 ('state', '=', 'approved'),
-                ('date_start', '<=', batch.date_end),
             ])
             
             adv_actual = sum(slip.line_ids.filtered(lambda l: l.code == 'ADV_LOAN').mapped('total'))

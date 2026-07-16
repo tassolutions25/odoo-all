@@ -1,4 +1,6 @@
+from datetime import datetime, timedelta
 import logging
+from time import time
 from . import ethiopian_calendar
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, UserError
@@ -10,6 +12,10 @@ class HrLeave(models.Model):
     _inherit = 'hr.leave' 
 
     is_half_day = fields.Boolean(string="Half Day Request")
+    half_day_session = fields.Selection([
+        ('morning', 'Morning'),
+        ('afternoon', 'Afternoon')
+    ], string="Half Day Session", copy=False)
 
     can_partial_cancel = fields.Boolean(
         string="Can be Partially Canceled",
@@ -28,6 +34,102 @@ class HrLeave(models.Model):
     new_end_date_pending = fields.Date(string="Pending New End Date", readonly=True, copy=False)
     partial_cancel_reason = fields.Text(string="Reason for Partial Cancellation", readonly=True, copy=False)
     full_cancel_reason = fields.Text(string="Reason for Full Cancellation", readonly=True, copy=False)
+
+    number_of_days = fields.Float(
+        string="Requested (Days)",
+        compute="_compute_number_of_days",
+        readonly=False)
+
+
+    @api.onchange('is_half_day')
+    def _onchange_is_half_day(self):
+        """
+        Automatically defaults the session to Morning when Half Day is checked
+        on the core leave record view.
+        """
+        if self.is_half_day and not self.half_day_session:
+            self.half_day_session = 'morning'
+
+
+    @api.depends('date_from', 'date_to', 'employee_id' , 'is_half_day')
+    def _compute_number_of_days(self):
+        super(HrLeave, self)._compute_number_of_days()
+        for leave in self:
+            # Safely get date boundaries
+            req_from = leave.request_date_from or (leave.date_from.date() if leave.date_from else False)
+            req_to = leave.request_date_to or (leave.date_to.date() if leave.date_to else False)
+
+            if req_from and req_to and leave.employee_id:
+                date_from_dt = datetime.combine(req_from, time.min)
+                date_to_dt = datetime.combine(req_to, time.max)
+                calendar = leave.employee_id.resource_calendar_id
+                
+                # Retrieve custom public holidays within the date range
+                public_holidays = self.env['ahadu.public.holiday'].sudo().search([
+                    ('date', '>=', req_from),
+                    ('date', '<=', req_to)
+                ]).mapped('date')
+                
+                # total_days = 0.0
+                # if calendar:
+                #     # Fetch scheduled working times
+                #     work_time_dict = leave.employee_id._list_work_time_per_day(date_from_dt, date_to_dt)
+                #     work_days = work_time_dict.get(leave.employee_id.id, [])
+                #     hours_per_day = calendar.hours_per_day or 8.0
+                    
+                #     for day_date, hours in work_days:
+                #         if day_date in public_holidays:
+                #             continue
+                        
+                #         # Weekday 5 represents Saturday
+                #         if day_date.weekday() == 5:
+                #             total_days += 0.5
+                #         else:
+                #             total_days += min(1.0, hours / hours_per_day) if hours_per_day else 1.0
+                # else:
+                #     # Fallback if no calendar setup exists
+                #     current_date = req_from
+                #     while current_date <= req_to:
+                #         if current_date not in public_holidays:
+                #             if current_date.weekday() == 5:
+                #                 total_days += 0.5
+                #             else:
+                #                 total_days += 1.0
+                #         current_date += timedelta(days=1)
+                
+                # leave.number_of_days = total_days
+                # leave.number_of_days_display = total_days
+
+                work_hours_by_date = {}
+                if calendar:
+                    work_time_dict = leave.employee_id._list_work_time_per_day(date_from_dt, date_to_dt)
+                    work_hours_by_date = {day_date: hours for day_date, hours in work_time_dict.get(leave.employee_id.id, [])}
+                    hours_per_day = calendar.hours_per_day or 8.0
+
+                total_days = 0.0
+                current_date = req_from
+                
+                while current_date <= req_to:
+                    if current_date in public_holidays:
+                        pass
+                    elif current_date.weekday() == 5:  # Saturday
+                        total_days += 0.5
+                    else:
+                        if calendar:
+                            hours = work_hours_by_date.get(current_date, 0.0)
+                            if hours > 0:
+                                if leave.is_half_day:
+                                    total_days += 0.5
+                                else:
+                                    total_days += min(1.0, hours / hours_per_day) if hours_per_day else 1.0
+                        else:
+                            if current_date.weekday() != 6:  # Exclude Sunday
+                                total_days += 0.5 if leave.is_half_day else 1.0
+                    
+                    current_date += timedelta(days=1)
+                
+                leave.number_of_days = total_days
+                leave.number_of_days_display = total_days
 
     # --- 3. NEW Partial Cancellation Approval Methods ---
 
@@ -426,33 +528,115 @@ class HrLeave(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        import datetime
         sick_leave_type = self.env.ref('ahadu_hr_leave.ahadu_sick_leave_request', raise_if_not_found=False)
         if not sick_leave_type:
             return super(HrLeave, self).create(vals_list)
 
+        new_vals_list = []
         for vals in vals_list:
-            if vals.get('holiday_status_id') == sick_leave_type.id:
-                employee = self.env['hr.employee'].browse(vals.get('employee_id'))
-                request_start_date = fields.Date.from_string(
-                    vals.get('date_from') or vals.get('request_date_from')
-                )
-                if not employee or not request_start_date:
-                    continue
-                
-                # --- NEW 1-YEAR RESET LOGIC ---
-                spell_start_date = employee.first_sick_leave_date_in_spell
-                one_year_after_spell_start = spell_start_date + relativedelta(years=1) if spell_start_date else None
+            if vals.get('holiday_status_id') != sick_leave_type.id:
+                new_vals_list.append(vals)
+                continue
 
-                # Start a new spell if no spell exists, or if the current request
-                # is after the 1-year anniversary of the old spell's start.
-                if not spell_start_date or request_start_date >= one_year_after_spell_start:
-                    spell_start_date = request_start_date
-                    employee.write({'first_sick_leave_date_in_spell': spell_start_date})
-                
-                # --- CALCULATION LOGIC (uses the determined spell_start_date) ---
-                vals['sick_leave_pay_tier'] = self._compute_sick_leave_pay_tier(employee, spell_start_date)
+            employee = self.env['hr.employee'].browse(vals.get('employee_id'))
+            request_start_date = fields.Date.from_string(
+                vals.get('request_date_from') or vals.get('date_from')
+            )
+            if not employee or not request_start_date:
+                new_vals_list.append(vals)
+                continue
 
-        records = super(HrLeave, self).create(vals_list)
+            # 1. 1-Year Reset / Spell Management
+            spell_start_date = employee.first_sick_leave_date_in_spell
+            one_year_after_spell_start = spell_start_date + relativedelta(years=1) if spell_start_date else None
+
+            if not spell_start_date or request_start_date >= one_year_after_spell_start:
+                spell_start_date = request_start_date
+                employee.write({'first_sick_leave_date_in_spell': spell_start_date})
+
+            # 2. Compute days already taken in current spell
+            past_leaves = self.search([
+                ('employee_id', '=', employee.id),
+                ('state', '=', 'validate'),
+                ('holiday_status_id', '=', sick_leave_type.id),
+                ('request_date_from', '>=', spell_start_date),
+            ])
+            days_already_taken = sum(leave.number_of_days for leave in past_leaves)
+
+            # 3. Retrieve request dates and fetch working dates
+            req_date_from = fields.Date.from_string(vals.get('request_date_from'))
+            req_date_to = fields.Date.from_string(vals.get('request_date_to'))
+            if not req_date_from and vals.get('date_from'):
+                req_date_from = fields.Datetime.from_string(vals.get('date_from')).date()
+            if not req_date_to and vals.get('date_to'):
+                req_date_to = fields.Datetime.from_string(vals.get('date_to')).date()
+
+            if not req_date_from or not req_date_to:
+                new_vals_list.append(vals)
+                continue
+
+            # Fetch precise work dates for this request
+            work_time_dict = employee._list_work_time_per_day(
+                datetime.datetime.combine(req_date_from, datetime.time.min),
+                datetime.datetime.combine(req_date_to, datetime.time.max)
+            )
+            work_days = [t[0] for t in work_time_dict.get(employee.id, [])]
+
+            if not work_days:
+                new_vals_list.append(vals)
+                continue
+
+            # 4. Group working days into pay tiers
+            segments = []
+            current_segment = []
+            current_tier = None
+
+            for idx, d in enumerate(work_days):
+                cum_day = days_already_taken + idx + 1
+                if cum_day <= 60:
+                    tier = 'full_pay'
+                elif cum_day <= 120:
+                    tier = 'half_pay'
+                else:
+                    tier = 'no_pay'
+
+                if current_tier is None:
+                    current_tier = tier
+                    current_segment = [d]
+                elif tier == current_tier:
+                    current_segment.append(d)
+                else:
+                    segments.append((current_tier, current_segment))
+                    current_tier = tier
+                    current_segment = [d]
+
+            if current_segment:
+                segments.append((current_tier, current_segment))
+
+            # 5. Populate new vals list based on segments
+            for s_idx, (tier, seg_days) in enumerate(segments):
+                # Calculate correct datetime values using Odoo's native computation
+                leave_tmp = self.env['hr.leave'].new({
+                    'employee_id': vals.get('employee_id'),
+                    'holiday_status_id': vals.get('holiday_status_id'),
+                    'request_date_from': seg_days[0],
+                    'request_date_to': seg_days[-1],
+                })
+                leave_tmp._compute_date_from_to()
+
+                seg_vals = vals.copy()
+                seg_vals.update({
+                    'request_date_from': fields.Date.to_string(seg_days[0]),
+                    'request_date_to': fields.Date.to_string(seg_days[-1]),
+                    'date_from': fields.Datetime.to_string(leave_tmp.date_from),
+                    'date_to': fields.Datetime.to_string(leave_tmp.date_to),
+                    'number_of_days': leave_tmp.number_of_days,
+                    'sick_leave_pay_tier': tier,
+                })
+                new_vals_list.append(seg_vals)
+
+        records = super(HrLeave, self).create(new_vals_list)
         records._check_probation_period()
         
         return records
@@ -470,6 +654,7 @@ class HrLeave(models.Model):
             ('state', '=', 'validate'),
             ('holiday_status_id', '=', sick_leave_type.id),
             ('date_from', '>=', spell_start_date),
+            ('id', 'not in', self.ids),
         ])
         days_already_taken = sum(leave.number_of_days for leave in past_leaves)
         

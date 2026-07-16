@@ -311,13 +311,15 @@
         groups="ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
         sequence="30" />
 
-    <menuitem
+     -->
+
+     <menuitem
         id="menu_report_custom_payroll"
         name="Custom Payroll Report"
         parent="menu_ahadu_reports_root"
         action="action_ahadu_payroll_custom_report_wizard"
         groups="ahadu_payroll.group_branch_payroll,ahadu_payroll.group_branch_payroll_manager,ahadu_payroll.group_head_office_payroll_officer,ahadu_payroll.group_head_office_payroll,base.group_system"
-        sequence="40" /> -->
+        sequence="40" />
 
     <!-- <menuitem
         id="menu_report_employee_promotion"

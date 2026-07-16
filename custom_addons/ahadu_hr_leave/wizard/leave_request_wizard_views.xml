@@ -10,16 +10,22 @@
                         Balance</strong> to deduct from, or choose a <strong>Leave Type</strong>
                         directly for other leaves like Sick Leave or Leave Without Pay. </div> -->
                     <group>
-                        <field name="allocation_id"
+                        <!-- <field name="allocation_id"
                             placeholder="Optional: Select a specific balance"
                             options="{'no_create': True, 'no_open': True}"
-                            context="{'employee_id': employee_id}" />
+                            context="{'employee_id': employee_id}" /> -->
                         <field name="holiday_status_id"
                             options="{'no_create': True, 'no_open': True}"
                             readonly="allocation_id != False"
                             force_save="1" />
                         <field name="available_days"
                             invisible="not holiday_status_id or not holiday_status_id.requires_allocation == 'yes'" />
+
+                        <!-- Half Day Options -->
+                        <field name="is_half_day" widget="boolean_toggle" />
+                        <field name="half_day_session" widget="radio" options="{'horizontal': true}"
+                            invisible="not is_half_day" required="is_half_day" />
+
                     </group>
                     <group>
                         <label for="request_date_from" string="Dates (Gregorian)" />
@@ -28,6 +34,8 @@
                             <span>→</span>
                             <field name="request_date_to" nolabel="1" />
                         </div>
+
+
                         <label for="ethiopian_date_from" string="Dates (Ethiopian)" />
                         <div class="o_row text-muted">
                             <field name="ethiopian_date_from" nolabel="1" />

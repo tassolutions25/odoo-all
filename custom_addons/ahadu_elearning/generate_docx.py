@@ -139,7 +139,7 @@ def create_manual(output_path):
     doc.add_heading('2.1 Accessing Ahadu eLearning', level=2).runs[0].font.color.rgb = CRIMSON
     
     doc.add_paragraph("To access the Ahadu eLearning module, follow these steps:")
-    doc.add_paragraph("1. Open your web browser and navigate to the Ahadu ERP URL (e.g., https://erp.ahadubank.com.et).", style='List Number')
+    doc.add_paragraph("1. Open your web browser and navigate to the Ahadu ERP URL (e.g.,erp.ahadubank.com.et).", style='List Number')
     doc.add_paragraph("2. Enter your login credentials (email and password) provided by your system administrator.", style='List Number')
     doc.add_paragraph('3. Click the "Log in" button to access the main dashboard.', style='List Number')
     

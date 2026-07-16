@@ -8,8 +8,7 @@ class HrResignationPayslip(models.Model):
 
     name = fields.Char(string='Name', readonly=True, compute='_compute_name')
     employee_id = fields.Many2one('hr.employee', string='Employee', required=True, tracking=True)
-    # Removing run_id for now as there's no resignation run model, or leaving it out if unused.
-    # run_id = fields.Many2one('hr.resignation.run', string='Batch', ondelete='cascade', tracking=True)
+    run_id = fields.Many2one('hr.resignation.run', string='Batch', ondelete='cascade', tracking=True)
     
     resignation_date = fields.Date(string='Resignation Date', required=True, tracking=True)
     state = fields.Selection([
@@ -34,6 +33,9 @@ class HrResignationPayslip(models.Model):
         readonly=True, 
         tracking=True
     )
+    is_settled = fields.Boolean(string='Settled', default=False, copy=False, readonly=True, tracking=True)
+    settled_date = fields.Date(string='Settled Date', copy=False, readonly=True, tracking=True)
+    settled_by_id = fields.Many2one('res.users', string='Settled By', copy=False, readonly=True, tracking=True)
 
     # --- Leave Pay Fields ---
     wage = fields.Monetary(string='Basic Salary')
@@ -59,6 +61,7 @@ class HrResignationPayslip(models.Model):
     gross_amount = fields.Monetary(string='Gross Amount (Salary)')
     taxable_amount = fields.Monetary(string='Taxable Amount')
     tax_salary = fields.Monetary(string='Tax Amount (Salary)')
+    credit_account_number = fields.Char(string='Credit Account Number', tracking=True)
     
     # --- Deductions ---
     grand_tax = fields.Monetary(string='Total Tax', compute='_compute_grand_tax', store=True)
@@ -117,8 +120,10 @@ class HrResignationPayslip(models.Model):
     @api.model
     def create(self, vals):
         self._check_officer_only()
-        if 'employee_id' in vals and not vals.get('resignation_date'):
+        if 'employee_id' in vals:
             employee = self.env['hr.employee'].browse(vals['employee_id'])
+            self._check_employee_not_settled(employee)
+        if 'employee_id' in vals and not vals.get('resignation_date'):
             resignation = self.env['hr.employee.resignation'].search([
                 ('employee_id', '=', employee.id),
                 ('state', 'in', ['approved', 'Approved'])
@@ -133,6 +138,27 @@ class HrResignationPayslip(models.Model):
                 raise UserError(_("Please provide a Resignation Date."))
             
         return super(HrResignationPayslip, self).create(vals)
+
+    def _check_employee_not_settled(self, employee):
+        from odoo.exceptions import UserError
+        if not employee:
+            return
+
+        resignation = self.env['hr.resignation.payslip'].search([
+            ('employee_id', '=', employee.id),
+            '|', ('is_settled', '=', True), ('state', '=', 'done'),
+        ], limit=1)
+        termination = self.env['hr.termination.payslip'].search([
+            ('employee_id', '=', employee.id),
+            '|', ('is_settled', '=', True), ('state', '=', 'done'),
+        ], limit=1)
+
+        if resignation or termination:
+            settlement = resignation or termination
+            raise UserError(_("%s is already settled in %s and cannot be processed again.") % (
+                employee.name,
+                settlement.run_id.name or settlement.name,
+            ))
 
     def _compute_name(self):
         for rec in self:
@@ -160,14 +186,22 @@ class HrResignationPayslip(models.Model):
         # PART A: UNUTILIZED LEAVE PAYMENT
         DAYS_IN_MONTH = 26
         
+        wage = self.wage
         daily_wage = self.wage / DAYS_IN_MONTH
         leave_pay_gross = daily_wage * self.leave_days
         self.leave_pay_gross = round(leave_pay_gross, 2)
         
         leave_pay_per_month = leave_pay_gross / 12.0
-        tax_included_annual = self.wage + leave_pay_per_month
-        less_tax_1 = self._calculate_dynamic_tax(tax_included_annual)
-        less_tax_2 = self._calculate_dynamic_tax(self.wage)
+        
+        
+        if self.leave_days > 0:
+            tax_included_annual = wage + leave_pay_per_month
+            less_tax_1 = self._calculate_dynamic_tax(tax_included_annual)
+            less_tax_2 = self._calculate_dynamic_tax(wage)
+        else:
+            tax_included_annual = 0.0
+            less_tax_1 = 0.0
+            less_tax_2 = 0.0
         tax_difference = less_tax_1 - less_tax_2
         leave_pay_tax = tax_difference * 12.0
         self.leave_pay_tax = round(leave_pay_tax, 2)
@@ -175,12 +209,18 @@ class HrResignationPayslip(models.Model):
         # PART B: SALARY & BENEFITS (PRESENT DAYS)
         resig_date = self.resignation_date
         
-        present_days = resig_date.day
+        present_days = max(0, resig_date.day - 1)
         self.present_days = present_days
         
-        if present_days > 30: present_days = 30
+        # Calculate actual calendar days in the resignation month
+        import calendar
+        days_in_month = calendar.monthrange(resig_date.year, resig_date.month)[1]
         
-        ratio = present_days / 30.0
+        if present_days > days_in_month: 
+            present_days = days_in_month
+        
+        # Ratio based on the actual days of the month
+        ratio = present_days / float(days_in_month) if days_in_month else 0.0
         
         unpaid_salary = self.wage * ratio
         self.unpaid_salary = round(unpaid_salary, 2)
@@ -242,16 +282,27 @@ class HrResignationPayslip(models.Model):
              pass
         
         if not leave_type:
-             leave_type = self.env['hr.leave.type'].search(['|', ('name', '=', 'ahadu_leave_type_annual'), ('name', 'ilike', 'Annual')], limit=1)
+             leave_type = self.env['hr.leave.type'].sudo().search(['|', ('name', '=', 'ahadu_leave_type_annual'), ('name', 'ilike', 'Annual')], limit=1)
 
         if not leave_type:
             return 0.0
 
-        allocations = self.env['hr.leave.allocation'].search([
+        term_date = self.resignation_date or fields.Date.context_today(self)
+        domain = [
             ('employee_id', '=', self.employee_id.id),
             ('holiday_status_id', '=', leave_type.id),
             ('state', '=', 'validate'),
-        ])
+        ]
+
+        allocation_model_sudo = self.env['hr.leave.allocation'].sudo()
+        
+        if 'expiry_date' in allocation_model_sudo._fields:
+            domain.extend(['|', ('expiry_date', '>=', term_date), ('expiry_date', '=', False)])
+            
+        if 'date_to' in allocation_model_sudo._fields:
+            domain.extend(['|', ('date_to', '>=', term_date), ('date_to', '=', False)])
+
+        allocations = allocation_model_sudo.search(domain)
         
         total_days = sum(allocations.mapped('effective_remaining_leaves')) if allocations else 0.0
         return total_days
@@ -260,7 +311,12 @@ class HrResignationPayslip(models.Model):
         for rec in self:
             rec._check_manager_only()
             rec.approved_by_id = self.env.user.id
-        self.write({'state': 'done'})
+        self.write({
+            'state': 'done',
+            'is_settled': True,
+            'settled_date': fields.Date.context_today(self),
+            'settled_by_id': self.env.user.id,
+        })
 
     def action_cancel(self):
         self.write({'state': 'cancel'})

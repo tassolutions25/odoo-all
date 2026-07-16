@@ -57,6 +57,7 @@
         'views/cash_indemnity_views.xml', # New view file
         'views/hr_branch_mapping_views.xml',
         'views/res_config_settings_views.xml',
+        'views/ahadu_payroll_campaign_views.xml',
         'views/hr_termination_views.xml',
         'views/hr_resignation_payslip_views.xml',
         'views/hr_report_views.xml',

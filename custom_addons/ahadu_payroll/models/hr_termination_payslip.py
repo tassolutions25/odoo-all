@@ -33,6 +33,9 @@ class HrTerminationPayslip(models.Model):
         readonly=True, 
         tracking=True
     )
+    is_settled = fields.Boolean(string='Settled', default=False, copy=False, readonly=True, tracking=True)
+    settled_date = fields.Date(string='Settled Date', copy=False, readonly=True, tracking=True)
+    settled_by_id = fields.Many2one('res.users', string='Settled By', copy=False, readonly=True, tracking=True)
 
     # --- Leave Pay Fields ---
     wage = fields.Monetary(string='Basic Salary')
@@ -51,13 +54,17 @@ class HrTerminationPayslip(models.Model):
     present_days = fields.Integer(string='Present Days')
     unpaid_salary = fields.Monetary(string='Unpaid Salary')
     unpaid_transport = fields.Monetary(string='Unpaid Transport')
+    fuel_rate = fields.Monetary(string='Fuel Rate')
     unpaid_housing = fields.Monetary(string='Unpaid Housing')
     unpaid_mobile = fields.Monetary(string='Unpaid Mobile')
+    unpaid_hardship = fields.Monetary(string='Unpaid Hardship')
     representation_allowance = fields.Monetary(string='Representation')
     
     gross_amount = fields.Monetary(string='Gross Amount (Salary)')
     taxable_amount = fields.Monetary(string='Taxable Amount')
     tax_salary = fields.Monetary(string='Tax Amount (Salary)')
+    
+    credit_account_number = fields.Char(string='Credit Account Number', tracking=True)
     
     # --- Deductions ---
     grand_tax = fields.Monetary(string='Total Tax', compute='_compute_grand_tax', store=True)
@@ -97,6 +104,7 @@ class HrTerminationPayslip(models.Model):
     def create(self, vals):
         if 'employee_id' in vals:
             employee = self.env['hr.employee'].browse(vals['employee_id'])
+            self._check_employee_not_settled(employee)
             # STRICT CHECK: Only use Contract End Date
             if not employee.contract_id.date_end:
                 from odoo.exceptions import UserError
@@ -109,6 +117,27 @@ class HrTerminationPayslip(models.Model):
             vals['termination_date'] = employee.contract_id.date_end
             
         return super(HrTerminationPayslip, self).create(vals)
+
+    def _check_employee_not_settled(self, employee):
+        from odoo.exceptions import UserError
+        if not employee:
+            return
+
+        termination = self.env['hr.termination.payslip'].search([
+            ('employee_id', '=', employee.id),
+            '|', ('is_settled', '=', True), ('state', '=', 'done'),
+        ], limit=1)
+        resignation = self.env['hr.resignation.payslip'].search([
+            ('employee_id', '=', employee.id),
+            '|', ('is_settled', '=', True), ('state', '=', 'done'),
+        ], limit=1)
+
+        if termination or resignation:
+            settlement = termination or resignation
+            raise UserError(_("%s is already settled in %s and cannot be processed again.") % (
+                employee.name,
+                settlement.run_id.name or settlement.name,
+            ))
 
     def _compute_name(self):
         for rec in self:
@@ -148,6 +177,7 @@ class HrTerminationPayslip(models.Model):
         # User said "working days of the month". Odoo standard is 30 for monthly.
         DAYS_IN_MONTH = 26
         
+        wage = self.wage
         daily_wage = self.wage / DAYS_IN_MONTH
         leave_pay_gross = daily_wage * self.leave_days
         self.leave_pay_gross = round(leave_pay_gross, 2)
@@ -159,14 +189,14 @@ class HrTerminationPayslip(models.Model):
         
         # 5. Tax Included Annual Leave
         # "basic salary plus leave pay for each month"
-        tax_included_annual = self.wage + leave_pay_per_month
-        
-        # 6. Less Tax = Tax on (Tax Included Annual)
-        less_tax_1 = self._calculate_dynamic_tax(tax_included_annual)
-        
-        # 7. Tax Excluded Annual Tax = Basic Salary
-        # 8. Less: Tax = Tax on (Basic Salary)
-        less_tax_2 = self._calculate_dynamic_tax(self.wage)
+        if self.leave_days > 0:
+            tax_included_annual = wage + leave_pay_per_month
+            less_tax_1 = self._calculate_dynamic_tax(tax_included_annual)
+            less_tax_2 = self._calculate_dynamic_tax(wage)
+        else:
+            tax_included_annual = 0.0
+            less_tax_1 = 0.0
+            less_tax_2 = 0.0
         
         # 9. Tax Difference
         tax_difference = less_tax_1 - less_tax_2
@@ -195,21 +225,69 @@ class HrTerminationPayslip(models.Model):
         # Let's assume Present Days = Day of Termination Date (e.g. 14th -> 14 days)
         # But we need to check if they joined mid-month? Unlikely for termination but possible.
         # Let's use simple day count for now.
-        present_days = term_date.day
+        present_days = max(0, term_date.day - 1)
         self.present_days = present_days
         
-        if present_days > 30: present_days = 30 # Cap at 30
+        # Calculate actual calendar days in the termination month
+        import calendar
+        days_in_month = calendar.monthrange(term_date.year, term_date.month)[1]
         
-        # Ratio
-        ratio = present_days / 30.0
+        if present_days > days_in_month: 
+            present_days = days_in_month
+        
+        # Ratio based on the actual days of the month
+        ratio = present_days / float(days_in_month) if days_in_month else 0.0
         
         # 11. Unpaid Salary
         unpaid_salary = self.wage * ratio
         self.unpaid_salary = round(unpaid_salary, 2)
         
-        # 12. Unpaid Transport
-        # "transport_allowance divided by the number of days in that month multiplied by the present days."
-        trans_allowance = getattr(self.employee_id, 'transport_allowance_amount', 0.0)
+        # 12. Unpaid Transport & Fuel Rate
+        import calendar
+        from datetime import date, timedelta
+        
+        term_date = self.termination_date
+        month_start = date(term_date.year, term_date.month, 1)
+        days_in_month = calendar.monthrange(term_date.year, term_date.month)[1]
+        month_end = date(term_date.year, term_date.month, days_in_month)
+        
+        company = self.company_id or self.employee_id.company_id
+        
+        # Calculate fuel rate for termination month using employee's method
+        current_rate = 0.0
+        try:
+            current_rate = self.employee_id._get_weighted_fuel_price(company.id, month_start, month_end)
+        except Exception:
+            current_rate = float(self.env['ir.config_parameter'].sudo().get_param('ahadu_hr.fuel_price_per_liter', default=0.0))
+            
+        adjustment_rate = 0.0
+        config_cutoff_date = company.fuel_price_cutoff_date
+        if config_cutoff_date:
+            cutoff_day = config_cutoff_date.day
+            prev_month_end = month_start - timedelta(days=1)
+            prev_month_start = date(prev_month_end.year, prev_month_end.month, 1)
+            prev_month_days = calendar.monthrange(prev_month_start.year, prev_month_start.month)[1]
+            actual_cutoff_day = min(cutoff_day, prev_month_days)
+            prev_cutoff_date = date(prev_month_start.year, prev_month_start.month, actual_cutoff_day)
+            
+            try:
+                rate_real = self.employee_id._get_weighted_fuel_price(company.id, prev_month_start, prev_month_end)
+                rate_snapshot = self.employee_id._get_weighted_fuel_price(company.id, prev_month_start, prev_month_end, cutoff_date=prev_cutoff_date)
+                adjustment_rate = rate_real - rate_snapshot
+            except Exception:
+                pass
+                
+        fuel_rate = current_rate + adjustment_rate
+        self.fuel_rate = round(fuel_rate, 2)
+        
+        # Calculate transport allowance based on liters and fuel rate (if liters configured),
+        # otherwise fallback to transport_allowance_amount.
+        liters = getattr(self.employee_id, 'transport_allowance_liters', 0.0)
+        if liters > 0:
+            trans_allowance = liters * fuel_rate
+        else:
+            trans_allowance = getattr(self.employee_id, 'transport_allowance_amount', 0.0)
+            
         self.unpaid_transport = round(trans_allowance * ratio, 2)
         
         # 13. Representation Allowance (Percentage from employee profile or Fixed)
@@ -230,22 +308,35 @@ class HrTerminationPayslip(models.Model):
         mobile_base = self.employee_id.mobile_allowance or 0.0
         self.unpaid_mobile = round(mobile_base * ratio, 2)
         
+        # 15b. Unpaid Hardship Allowance
+        hardship_level = getattr(self.employee_id, 'hardship_allowance_level_id', False)
+        total_percentage = getattr(hardship_level, 'value_percentage', 0.0) if hardship_level else 0.0
+        
+        exemption_percentage = 0.0
+        city = getattr(self.employee_id, 'city_id', False)
+        if city:
+            config = self.env['ahadu.payroll.city.hardship.config'].search([
+                ('city_id', '=', city.id)
+            ], limit=1)
+            if config:
+                exemption_percentage = config.non_taxable_percentage / 100.0
+                
+        taxable_percentage = max(0.0, total_percentage - exemption_percentage)
+        
+        # We calculate the total hardship based on the prorated basic salary (unpaid_salary)
+        self.unpaid_hardship = round(self.unpaid_salary * total_percentage, 2)
+        taxable_hardship = round(self.unpaid_salary * taxable_percentage, 2)
+        exempt_hardship = max(0.0, self.unpaid_hardship - taxable_hardship)
+        
         # 16. Gross amount
         gross_amount = (self.unpaid_salary + self.unpaid_transport + self.representation_allowance + 
-                        self.unpaid_housing + self.unpaid_mobile)
+                        self.unpaid_housing + self.unpaid_mobile + self.unpaid_hardship)
         self.gross_amount = round(gross_amount, 2)
         
         # 17. Taxable amount
         # "Gross amount - 600"
-        # Note: Usually Transport is exempted up to 600. 
-        # Here user creates a simplified "Gross - 600".
-        # We must ensure we don't go below zero.
-        # Also, is it ONLY transport that is exempted? yes usually.
-        # If Unpaid Transport < 600, we should only subtract Unpaid Transport?
-        # The formula says "Gross amount - 600", strict interpretation.
-        # But standard law is Exemption = min(Transport, 600).
-        # Let's follow strict instruction "Gross amount - 600" but cap at 0.
-        self.taxable_amount = max(0.0, self.gross_amount - 600.0)
+        # Transport is exempted up to 600. We also subtract exempt hardship.
+        self.taxable_amount = max(0.0, self.gross_amount - 600.0 - exempt_hardship)
         
         # 18. Less:Tax (Salary)
         self.tax_salary = self._calculate_dynamic_tax(self.taxable_amount)
@@ -316,35 +407,35 @@ class HrTerminationPayslip(models.Model):
         with 'ahadu_leave_type_annual' and field 'effective_remaining_leaves'.
         """
         # 1. Resolve Leave Type ID
-        # Try to find by XML ID first (assuming it is 'ahadu_hr_leave.ahadu_leave_type_annual' or similar)
-        # If not, fallback to name search just in case
         leave_type = None
         try:
-            # Since I don't know the exact module name of the XML ID, I'll search by the ID string if possible
-            # But ref() needs module.xml_id.
-            # I will try 'ahadu_hr_leave.ahadu_leave_type_annual' as a best guess for the module name
             leave_type = self.env.ref('ahadu_hr_leave.ahadu_leave_type_annual', raise_if_not_found=False)
         except:
              pass
         
         if not leave_type:
-             # Fallback: Search by XML ID string in ir.model.data directly if module is unknown?
-             # Or search by name if XML ID failed.
-             # User gave "ahadu_leave_type_annual", might be the Name?
-             # Let's try searching by Name too.
-             leave_type = self.env['hr.leave.type'].search(['|', ('name', '=', 'ahadu_leave_type_annual'), ('name', 'ilike', 'Annual')], limit=1)
+             leave_type = self.env['hr.leave.type'].sudo().search(['|', ('name', '=', 'ahadu_leave_type_annual'), ('name', 'ilike', 'Annual')], limit=1)
 
         if not leave_type:
             return 0.0
 
-        # 2. Query Allocations
-        # "fetch the leave information from the "hr.leave.allocation" model ... "
-        # "and the annual leave balance field is "effective_remaining_leaves""
-        allocations = self.env['hr.leave.allocation'].search([
+        # 2. Query Allocations that have not expired
+        term_date = self.termination_date or fields.Date.context_today(self)
+        domain = [
             ('employee_id', '=', self.employee_id.id),
             ('holiday_status_id', '=', leave_type.id),
             ('state', '=', 'validate'),
-        ])
+        ]
+
+        allocation_model_sudo = self.env['hr.leave.allocation'].sudo()
+        
+        if 'expiry_date' in allocation_model_sudo._fields:
+            domain.extend(['|', ('expiry_date', '>=', term_date), ('expiry_date', '=', False)])
+            
+        if 'date_to' in allocation_model_sudo._fields:
+            domain.extend(['|', ('date_to', '>=', term_date), ('date_to', '=', False)])
+
+        allocations = allocation_model_sudo.search(domain)
         
         # Sum up 'effective_remaining_leaves'
         total_days = sum(allocations.mapped('effective_remaining_leaves')) if allocations else 0.0
@@ -356,7 +447,12 @@ class HrTerminationPayslip(models.Model):
     def action_confirm(self):
         for rec in self:
             rec.approved_by_id = self.env.user.id
-        self.write({'state': 'done'})
+        self.write({
+            'state': 'done',
+            'is_settled': True,
+            'settled_date': fields.Date.context_today(self),
+            'settled_by_id': self.env.user.id,
+        })
 
     def action_cancel(self):
         self.write({'state': 'cancel'})

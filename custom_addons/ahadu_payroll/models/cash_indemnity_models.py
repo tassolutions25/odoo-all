@@ -67,11 +67,29 @@ class CashIndemnityTracking(models.Model):
 
     @api.model
     def create(self, vals):
+        is_manager = self.env.user.has_group('ahadu_payroll.group_attendance_manager') or self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')
+        is_admin = self.env.user.has_group('base.group_system')
+        if is_manager and not is_admin and not self.env.su:
+            raise UserError(_("Attendance Managers are restricted from creating cash indemnity tracking sheets. This action is reserved for Attendance Officers."))
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code('cash.indemnity.tracking') or 'New'
         return super(CashIndemnityTracking, self).create(vals)
 
+    def write(self, vals):
+        is_manager = self.env.user.has_group('ahadu_payroll.group_attendance_manager') or self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')
+        is_admin = self.env.user.has_group('base.group_system')
+        if is_manager and not is_admin and not self.env.su:
+            allowed_keys = {'state', 'name', 'approved_by_id', 'approved_date', 'message_attachment_ids'}
+            blocked_keys = set(vals.keys()) - allowed_keys - {'message_follower_ids', 'activity_ids', 'message_ids'}
+            if blocked_keys:
+                raise UserError(_("Attendance Managers are restricted from editing cash indemnity tracking sheets. They can only approve/reject them."))
+        return super(CashIndemnityTracking, self).write(vals)
+
     def action_verify(self):
+        is_manager = self.env.user.has_group('ahadu_payroll.group_attendance_manager') or self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')
+        is_admin = self.env.user.has_group('base.group_system')
+        if is_manager and not is_admin and not self.env.su:
+            raise UserError(_("Attendance Managers cannot verify cash indemnity tracking sheets. This action is reserved for Attendance Officers."))
         self.write({
             'state': 'verified',
             'verified_by_id': self.env.user.id,
@@ -79,6 +97,9 @@ class CashIndemnityTracking(models.Model):
         })
 
     def action_approve(self):
+        if not (self.env.user.has_group('ahadu_payroll.group_attendance_manager') or 
+                self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')):
+            raise UserError(_("Only Attendance Managers can approve cash indemnity tracking sheets."))
         # 1. Update Name
         new_name = f"CIA For {self.employee_id.name} From {self.date_from} To {self.date_to}"
         

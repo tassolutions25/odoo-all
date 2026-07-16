@@ -315,7 +315,8 @@
           name="Job Description with Sticky Sidebar">
 
     <!-- Wrap description and sidebar in a row -->
-    <xpath expr="//div[@id='wrap']//div[@itemtype='https://schema.org/JobPosting']//div[@t-field='job.website_description']" position="replace">
+    <!-- <xpath expr="//div[@id='wrap']//div[@itemtype='http://schema.org/JobPosting']//div[@t-field='job.website_description']" position="replace"> -->
+    <xpath expr="//div[@id='wrap']//div[@t-field='job.website_description']" position="after">    
         <section class="mt-4 mb-4">
             <div class="container">
                 <div class="row">

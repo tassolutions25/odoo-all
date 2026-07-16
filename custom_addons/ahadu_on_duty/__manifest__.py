@@ -11,7 +11,6 @@
         - Banking compliance: attachment requirements, GPS tracking.
     """,
     'author': "ERP Team",
-    'website': "https://www.ahadubank.com",
     'category': 'Human Resources/Attendances',
     'version': '18.0.1.0.0',
     'depends': [

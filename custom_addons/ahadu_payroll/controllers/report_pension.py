@@ -32,6 +32,12 @@ class PensionReport(AhaduReportCommon):
             elif batch.branch_ids and any(b.region_id.name == 'Addis Ababa' for b in batch.branch_ids):
                 is_aa_region = True
                 
+        # Fallback: check the actual payslips in the batch
+        if not is_aa_region:
+            slips = self._get_payslip_lines(batch)
+            if slips:
+                is_aa_region = any(s.employee_id.region_id.name == 'Addis Ababa' for s in slips)
+                
         aa_header_text = "በአዲስ አበባ ከተማ አስተዳደር የአዲስ አበባ ከፍተኛ ግብር ከፋዮች ቅርንጫፍ ጽሕፈት ቤት" if is_aa_region else ""
         
         # Header Section 1

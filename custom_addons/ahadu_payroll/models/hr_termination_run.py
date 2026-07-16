@@ -126,8 +126,21 @@ class HrTerminationRun(models.Model):
             'target': 'new',
         }
 
+    def action_batch_upload(self):
+        """Returns a URL action to download the CBS Batch Upload ZIP file for terminations."""
+        self.ensure_one()
+        if self.state not in ['calculated', 'done']:
+            raise UserError(_("You cannot generate the Batch Upload files until the termination batch is Verified or Closed."))
+            
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/ahadu_payroll/termination_batch_upload/{self.id}',
+            'target': 'new',
+        }
+
     def action_generate_payslips(self):
         self._check_manager_restriction()
+        skipped_names = []
         for run in self:
             domain = [
                 ('contract_id.date_end', '>=', run.date_start),
@@ -140,7 +153,21 @@ class HrTerminationRun(models.Model):
             
             # Filter out employees already in the batch
             existing_employee_ids = run.slip_ids.mapped('employee_id').ids
-            employees_to_add = employees.filtered(lambda e: e.id not in existing_employee_ids)
+            candidates = employees.filtered(lambda e: e.id not in existing_employee_ids)
+
+            settled_termination_employee_ids = self.env['hr.termination.payslip'].search([
+                ('employee_id', 'in', candidates.ids),
+                '|', ('is_settled', '=', True), ('state', '=', 'done'),
+            ]).mapped('employee_id').ids
+            settled_resignation_employee_ids = self.env['hr.resignation.payslip'].search([
+                ('employee_id', 'in', candidates.ids),
+                '|', ('is_settled', '=', True), ('state', '=', 'done'),
+            ]).mapped('employee_id').ids
+            settled_employee_ids = set(settled_termination_employee_ids + settled_resignation_employee_ids)
+
+            skipped = candidates.filtered(lambda e: e.id in settled_employee_ids)
+            skipped_names.extend(skipped.mapped('name'))
+            employees_to_add = candidates.filtered(lambda e: e.id not in settled_employee_ids)
             
             slip_vals = []
             for emp in employees_to_add:
@@ -152,3 +179,18 @@ class HrTerminationRun(models.Model):
                 
             if slip_vals:
                 self.env['hr.termination.payslip'].create(slip_vals)
+
+            if skipped:
+                run.message_post(body=_("Skipped already settled employees: %s") % ", ".join(skipped.mapped('name')))
+
+        if skipped_names:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Already Settled'),
+                    'message': _('Skipped already settled employees: %s') % ", ".join(sorted(set(skipped_names))),
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }

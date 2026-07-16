@@ -13,8 +13,11 @@ class HrEmployeeDeduction(models.Model):
         ('credit_association', 'Credit Association'),
         ('cost_sharing', 'Cost Sharing'),
         ('penalty', 'Penalty Deduction'),
+        ('campaign', 'Campaign Contribution'),
         ('other', 'Other Deduction')
     ], string='Type', required=True, default='other')
+    
+    campaign_id = fields.Many2one('ahadu.payroll.campaign', string='Campaign', help="Select the campaign to contribute to")
     
     # Loan-specific fields
     principal_amount = fields.Float(string='Principal Amount', help="Original loan amount")

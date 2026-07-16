@@ -135,6 +135,18 @@ class AhaduBackpayBatch(models.Model):
             'target': 'new',
         }
 
+    def action_batch_upload(self):
+        """Returns a URL action to download the CBS Batch Upload ZIP file for backpay."""
+        self.ensure_one()
+        if self.state != 'approved':
+            raise UserError(_("You cannot generate the Batch Upload files until the backpay batch is Approved."))
+            
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/ahadu_payroll/backpay_batch_upload/{self.id}',
+            'target': 'new',
+        }
+
     def action_generate_lines(self):
         """Fetch approved CTCs for the target month/year that haven't been backpaid in this batch."""
         self._check_manager_restriction()
@@ -430,141 +442,250 @@ class AhaduBackpayLine(models.Model):
 
         # 3. Compute New Values using Monthly Weighted Average Logic
         
-        # Attendance factor from original payslip (used for fuel weighting)
-        lop_ratio = get_total('LOP_LEAVE') / (self.old_basic or 1.0)
-        penalty_ratio = get_total('PENALTY') / (self.old_basic or 1.0)
-        attendance_ratio = (1.0 - lop_ratio) if lop_ratio < 1.0 else 0.0
+        # # Attendance factor from original payslip (used for fuel weighting)
+        # lop_ratio = get_total('LOP_LEAVE') / (self.old_basic or 1.0)
+        # penalty_ratio = get_total('PENALTY') / (self.old_basic or 1.0)
+        # attendance_ratio = (1.0 - lop_ratio) if lop_ratio < 1.0 else 0.0
         
-        # Get segments for the month
-        segments = self.payslip_id._get_salary_and_job_segments()
+        # # Get segments for the month
+        # segments = self.payslip_id._get_salary_and_job_segments()
         
-        # Weighted Summaries
-        w_basic = 0.0
-        w_housing = 0.0
-        w_mobile = 0.0
-        w_liters = 0.0
-        w_rep = 0.0
-        w_hard = 0.0
-        w_trans = 0.0
+        # # Weighted Summaries
+        # w_basic = 0.0
+        # w_housing = 0.0
+        # w_mobile = 0.0
+        # w_liters = 0.0
+        # w_rep = 0.0
+        # w_hard = 0.0
+        # w_trans = 0.0
         
-        # Fetch configurations (sorted) for correct segmental lookup
-        all_ctcs = self.env['hr.employee.ctc'].search([
-            ('employee_id', '=', self.employee_id.id),
-            ('state', '=', 'approved'),
-            ('date', '<=', month_end)
-        ], order='date desc')
+        # # Fetch configurations (sorted) for correct segmental lookup
+        # all_ctcs = self.env['hr.employee.ctc'].search([
+        #     ('employee_id', '=', self.employee_id.id),
+        #     ('state', '=', 'approved'),
+        #     ('date', '<=', month_end)
+        # ], order='date desc')
         
-        all_proms = self.env['hr.employee.promotion'].search([
-            ('employee_id', '=', self.employee_id.id),
-            ('state', '=', 'approved'),
-            ('promotion_date', '<=', month_end)
-        ], order='promotion_date desc')
+        # all_proms = self.env['hr.employee.promotion'].search([
+        #     ('employee_id', '=', self.employee_id.id),
+        #     ('state', '=', 'approved'),
+        #     ('promotion_date', '<=', month_end)
+        # ], order='promotion_date desc')
 
-        for seg in segments:
-            seg_days = seg['calendar_days']
-            seg_ratio = seg_days / total_month_days
+        # for seg in segments:
+        #     seg_days = seg['calendar_days']
+        #     seg_ratio = seg_days / total_month_days
             
-            # Find the adjustment active at the START of this segment
-            c = all_ctcs.filtered(lambda x: x.date <= seg['start'])[:1]
-            p = all_proms.filtered(lambda x: x.promotion_date <= seg['start'])[:1]
-            use_p = p and (not c or p.promotion_date >= c.date)
+        #     # Find the adjustment active at the START of this segment
+        #     c = all_ctcs.filtered(lambda x: x.date <= seg['start'])[:1]
+        #     p = all_proms.filtered(lambda x: x.promotion_date <= seg['start'])[:1]
+        #     use_p = p and (not c or p.promotion_date >= c.date)
             
-            if use_p:
-                sal = p.new_salary
-                h = p.new_housing_allowance
-                m = p.new_mobile_allowance
-                lt = p.new_transport_allowance_liters
-                rp = p.new_representation_allowance / 100.0
-                rp_fixed = getattr(p, "new_representation_allowance_fixed", 0.0)
-                hr = getattr(p.new_hardship_allowance_level_id, "value_percentage", 0.0)
-            elif c:
-                sal = c.new_wage
-                h = c.new_housing_allowance
-                m = c.new_mobile_allowance
-                lt = c.new_transport_allowance_liters
-                rp = c.new_representation_allowance / 100.0
-                rp_fixed = getattr(c, "new_representation_allowance_fixed", 0.0)
-                hr = getattr(c.new_hardship_allowance_level_id, "value_percentage", 0.0)
+        #     if use_p:
+        #         sal = p.new_salary
+        #         h = p.new_housing_allowance
+        #         m = p.new_mobile_allowance
+        #         lt = p.new_transport_allowance_liters
+        #         rp = p.new_representation_allowance / 100.0
+        #         rp_fixed = getattr(p, "new_representation_allowance_fixed", 0.0)
+        #         hr = getattr(p.new_hardship_allowance_level_id, "value_percentage", 0.0)
+        #     elif c:
+        #         sal = c.new_wage
+        #         h = c.new_housing_allowance
+        #         m = c.new_mobile_allowance
+        #         lt = c.new_transport_allowance_liters
+        #         rp = c.new_representation_allowance / 100.0
+        #         rp_fixed = getattr(c, "new_representation_allowance_fixed", 0.0)
+        #         hr = getattr(c.new_hardship_allowance_level_id, "value_percentage", 0.0)
+        #     else:
+        #         if self.promotion_id:
+        #             sal = self.promotion_id.current_salary
+        #             h = self.promotion_id.current_housing_allowance
+        #             m = self.promotion_id.current_mobile_allowance
+        #             lt = self.promotion_id.current_transport_allowance_liters
+        #             rp = (
+        #                 getattr(
+        #                     self.promotion_id, "current_representation_allowance", 0.0
+        #                 )
+        #                 / 100.0
+        #             )
+        #             rp_fixed = getattr(
+        #                 self.promotion_id, "current_representation_allowance_fixed", 0.0
+        #             )
+        #             hr = getattr(
+        #                 self.promotion_id.current_hardship_allowance_level_id,
+        #                 "value_percentage",
+        #                 0.0,
+        #             )
+        #         elif self.ctc_id:
+        #             sal = getattr(self.ctc_id, 'current_salary', getattr(self.ctc_id, 'current_wage', 0.0))
+        #             h = self.ctc_id.current_housing_allowance
+        #             m = self.ctc_id.current_mobile_allowance
+        #             lt = self.ctc_id.current_transport_allowance_liters
+        #             rp = (
+        #                 getattr(self.ctc_id, "current_representation_allowance", 0.0)
+        #                 / 100.0
+        #             )
+        #             rp_fixed = getattr(
+        #                 self.ctc_id, "current_representation_allowance_fixed", 0.0
+        #             )
+        #             hr = getattr(
+        #                 self.ctc_id.current_hardship_allowance_level_id,
+        #                 "value_percentage",
+        #                 0.0,
+        #             )
+        #         else:
+        #             sal = self.old_basic
+        #             h = self.old_housing
+        #             m = self.old_mobile
+        #             lt = self.old_fuel_liters
+        #             rp = (
+        #                 (self.old_representation / self.old_basic)
+        #                 if self.old_basic
+        #                 else 0.0
+        #             )
+        #             rp_fixed = 0.0
+        #             hr = (self.old_hardship / self.old_basic) if self.old_basic else 0.0
+
+        #     fuel_price = self._get_fuel_price_at(seg['start'])
+            
+        #     # Accumulate Weighted Totals
+        #     w_basic += sal * seg_ratio
+        #     w_housing += h * seg_ratio
+        #     w_mobile += m * seg_ratio
+        #     w_liters += lt * seg_ratio
+        #     if rp_fixed > 0:
+        #         w_rep += rp_fixed * seg_ratio
+        #     else:
+        #         w_rep += (sal * rp) * seg_ratio
+        #     w_hard += (sal * hr) * seg_ratio
+        #     w_trans += (lt * attendance_ratio * fuel_price) * seg_ratio
+
+        # self.new_basic = w_basic
+        # self.new_housing = w_housing
+        # self.new_mobile = w_mobile
+        # self.new_representation = w_rep
+        # self.new_hardship = w_hard
+        # self.new_fuel_liters = w_liters * attendance_ratio
+        # self.new_fuel_rate = self._get_weighted_fuel_rate(month_start, month_end) # Monthly Average
+        # self.new_transport = w_trans
+        # self.new_ot = self.old_ot
+        
+        # self.new_gross = self.new_basic + self.new_transport + self.new_housing + self.new_mobile + self.new_representation + self.new_hardship + self.new_ot
+        
+        # exemption = self._get_region_exemption()
+        # self.new_taxable_transport = max(0, self.new_transport - exemption)
+        
+        # earned_basic = w_basic * (1.0 - lop_ratio - penalty_ratio)
+        # self.new_taxable_gross = earned_basic + self.new_taxable_transport + self.new_representation + self.new_hardship + self.new_housing + self.new_mobile + self.new_ot
+        
+        # self.new_income_tax = self._get_ahadu_income_tax(self.new_taxable_gross)
+        # self.new_pension_emp = self.new_basic * 0.07
+        # self.new_pension_comp = self.new_basic * 0.11
+        
+        # self.new_other_deductions = self.old_other_deductions
+        # self.new_cost_sharing = self.old_cost_sharing
+        # self.new_total_deductions = self.new_income_tax + self.new_pension_emp + self.new_other_deductions
+        # self.new_net = self.new_gross - self.new_total_deductions
+
+        # 3. Determine New Base Rates from Adjustment Source
+        ctc = self.ctc_id
+        prom = self.promotion_id
+        
+        if prom:
+            new_basic_rate = prom.new_salary
+            new_housing_rate = prom.new_housing_allowance
+            new_mobile_rate = prom.new_mobile_allowance
+            new_liters = prom.new_transport_allowance_liters
+            
+            rep_fixed = getattr(prom, "new_representation_allowance_fixed", 0.0)
+            if rep_fixed > 0:
+                new_rep_rate = rep_fixed
             else:
-                if self.promotion_id:
-                    sal = self.promotion_id.current_salary
-                    h = self.promotion_id.current_housing_allowance
-                    m = self.promotion_id.current_mobile_allowance
-                    lt = self.promotion_id.current_transport_allowance_liters
-                    rp = (
-                        getattr(
-                            self.promotion_id, "current_representation_allowance", 0.0
-                        )
-                        / 100.0
-                    )
-                    rp_fixed = getattr(
-                        self.promotion_id, "current_representation_allowance_fixed", 0.0
-                    )
-                    hr = getattr(
-                        self.promotion_id.current_hardship_allowance_level_id,
-                        "value_percentage",
-                        0.0,
-                    )
-                elif self.ctc_id:
-                    sal = getattr(self.ctc_id, 'current_salary', getattr(self.ctc_id, 'current_wage', 0.0))
-                    h = self.ctc_id.current_housing_allowance
-                    m = self.ctc_id.current_mobile_allowance
-                    lt = self.ctc_id.current_transport_allowance_liters
-                    rp = (
-                        getattr(self.ctc_id, "current_representation_allowance", 0.0)
-                        / 100.0
-                    )
-                    rp_fixed = getattr(
-                        self.ctc_id, "current_representation_allowance_fixed", 0.0
-                    )
-                    hr = getattr(
-                        self.ctc_id.current_hardship_allowance_level_id,
-                        "value_percentage",
-                        0.0,
-                    )
-                else:
-                    sal = self.old_basic
-                    h = self.old_housing
-                    m = self.old_mobile
-                    lt = self.old_fuel_liters
-                    rp = (
-                        (self.old_representation / self.old_basic)
-                        if self.old_basic
-                        else 0.0
-                    )
-                    rp_fixed = 0.0
-                    hr = (self.old_hardship / self.old_basic) if self.old_basic else 0.0
-
-            fuel_price = self._get_fuel_price_at(seg['start'])
+                new_rep_rate = new_basic_rate * (prom.new_representation_allowance / 100.0)
+                
+            hr_level = prom.new_hardship_allowance_level_id
+            new_hard_rate = new_basic_rate * (hr_level.value_percentage) if hr_level else 0.0
             
-            # Accumulate Weighted Totals
-            w_basic += sal * seg_ratio
-            w_housing += h * seg_ratio
-            w_mobile += m * seg_ratio
-            w_liters += lt * seg_ratio
-            if rp_fixed > 0:
-                w_rep += rp_fixed * seg_ratio
+        elif ctc:
+            new_basic_rate = getattr(ctc, 'new_wage', getattr(ctc, 'new_salary', 0.0))
+            new_housing_rate = ctc.new_housing_allowance
+            new_mobile_rate = ctc.new_mobile_allowance
+            new_liters = ctc.new_transport_allowance_liters
+            
+            rep_fixed = getattr(ctc, "new_representation_allowance_fixed", 0.0)
+            if rep_fixed > 0:
+                new_rep_rate = rep_fixed
             else:
-                w_rep += (sal * rp) * seg_ratio
-            w_hard += (sal * hr) * seg_ratio
-            w_trans += (lt * attendance_ratio * fuel_price) * seg_ratio
+                new_rep_rate = new_basic_rate * (ctc.new_representation_allowance / 100.0)
+                
+            hr_level = ctc.new_hardship_allowance_level_id
+            new_hard_rate = new_basic_rate * (hr_level.value_percentage) if hr_level else 0.0
+        else:
+            new_basic_rate = self.old_basic
+            new_housing_rate = self.old_housing
+            new_mobile_rate = self.old_mobile
+            new_rep_rate = self.old_representation
+            new_hard_rate = self.old_hardship
+            new_liters = self.old_fuel_liters
 
-        self.new_basic = w_basic
-        self.new_housing = w_housing
-        self.new_mobile = w_mobile
-        self.new_representation = w_rep
-        self.new_hardship = w_hard
-        self.new_fuel_liters = w_liters * attendance_ratio
-        self.new_fuel_rate = self._get_weighted_fuel_rate(month_start, month_end) # Monthly Average
-        self.new_transport = w_trans
+        # Calculate New Transport Allowance rate based on liters
+        fuel_price = self._get_weighted_fuel_rate(month_start, month_end)
+        self.new_fuel_rate = fuel_price
+        if new_liters > 0:
+            new_trans_rate = new_liters * fuel_price
+        else:
+            new_trans_rate = getattr(self.employee_id, 'transport_allowance_amount', 0.0)
+
+        # 4. Proration Logic using Effective Date (ed)
+        ed = self.effective_date
+        
+        if not ed or ed <= month_start:
+            # The adjustment applies to the entire month
+            self.new_basic = new_basic_rate
+            self.new_housing = new_housing_rate
+            self.new_mobile = new_mobile_rate
+            self.new_representation = new_rep_rate
+            self.new_hardship = new_hard_rate
+            self.new_transport = new_trans_rate
+            self.new_fuel_liters = new_liters
+        elif ed > month_end:
+            # The adjustment does not apply to this month at all
+            self.new_basic = self.old_basic
+            self.new_housing = self.old_housing
+            self.new_mobile = self.old_mobile
+            self.new_representation = self.old_representation
+            self.new_hardship = self.old_hardship
+            self.new_transport = self.old_transport
+            self.new_fuel_liters = self.old_fuel_liters
+        else:
+            # Split month logic: Apply requested proration formula
+            days_before = ed.day - 1
+            days_after = total_month_days - days_before
+            
+            ratio_before = days_before / float(total_month_days)
+            ratio_after = days_after / float(total_month_days)
+            
+            # Prorating each allowance
+            self.new_basic = (self.old_basic * ratio_before) + (new_basic_rate * ratio_after)
+            self.new_housing = (self.old_housing * ratio_before) + (new_housing_rate * ratio_after)
+            self.new_mobile = (self.old_mobile * ratio_before) + (new_mobile_rate * ratio_after)
+            self.new_representation = (self.old_representation * ratio_before) + (new_rep_rate * ratio_after)
+            self.new_hardship = (self.old_hardship * ratio_before) + (new_hard_rate * ratio_after)
+            self.new_transport = (self.old_transport * ratio_before) + (new_trans_rate * ratio_after)
+            self.new_fuel_liters = (self.old_fuel_liters * ratio_before) + (new_liters * ratio_after)
+
+        # 5. Downstream calculations (OT, Gross, Tax, Pension, Net)
         self.new_ot = self.old_ot
-        
         self.new_gross = self.new_basic + self.new_transport + self.new_housing + self.new_mobile + self.new_representation + self.new_hardship + self.new_ot
         
         exemption = self._get_region_exemption()
         self.new_taxable_transport = max(0, self.new_transport - exemption)
         
-        earned_basic = w_basic * (1.0 - lop_ratio - penalty_ratio)
+        lop_ratio = get_total('LOP_LEAVE') / (self.old_basic or 1.0)
+        penalty_ratio = get_total('PENALTY') / (self.old_basic or 1.0)
+        earned_basic = self.new_basic * (1.0 - lop_ratio - penalty_ratio)
+        
         self.new_taxable_gross = earned_basic + self.new_taxable_transport + self.new_representation + self.new_hardship + self.new_housing + self.new_mobile + self.new_ot
         
         self.new_income_tax = self._get_ahadu_income_tax(self.new_taxable_gross)
@@ -575,6 +696,8 @@ class AhaduBackpayLine(models.Model):
         self.new_cost_sharing = self.old_cost_sharing
         self.new_total_deductions = self.new_income_tax + self.new_pension_emp + self.new_other_deductions
         self.new_net = self.new_gross - self.new_total_deductions
+
+        ######################################################
 
     def _get_fuel_price_at(self, check_date):
         """Get the fuel price active at a specific date."""

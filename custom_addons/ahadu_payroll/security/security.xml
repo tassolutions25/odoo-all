@@ -238,6 +238,22 @@
             <field name="groups" eval="[(4, ref('group_attendance_officer')), (4, ref('group_attendance_manager'))]"/>
             <field name="domain_force">[(1, '=', 1)]</field>
         </record>
+
+        <!-- I. Loan Visibility -->
+
+        <record id="rule_ahadu_payroll_loan_branch" model="ir.rule">
+            <field name="name">Ahadu Payroll: Loan Branch Restriction</field>
+            <field name="model_id" ref="model_hr_loan"/>
+            <field name="groups" eval="[(4, ref('group_branch_payroll')), (4, ref('group_branch_payroll_manager'))]"/>
+            <field name="domain_force">[('employee_id.branch_id', '=', user.employee_id.branch_id.id)]</field>
+        </record>
+
+        <record id="rule_ahadu_payroll_loan_global" model="ir.rule">
+            <field name="name">Ahadu Payroll: Loan Global Access</field>
+            <field name="model_id" ref="model_hr_loan"/>
+            <field name="groups" eval="[(4, ref('group_head_office_payroll_officer')), (4, ref('group_head_office_payroll')), (4, ref('group_loan_credit_committee'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
     </data>
 </odoo>
 

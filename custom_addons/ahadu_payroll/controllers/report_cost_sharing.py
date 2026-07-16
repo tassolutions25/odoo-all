@@ -56,7 +56,7 @@ class CostSharingReport(AhaduReportCommon):
         
         # Row 6: Data Row 1
         worksheet.merge_range('A6:D6', "Ahadu Bank S.C", fmt_data)
-        worksheet.merge_range('E6:G6', "0067033716", fmt_data) # Hardcoded TIN as per screenshot/prior tasks
+        worksheet.merge_range('E6:G6', "", fmt_data) # Hardcoded TIN as per screenshot/prior tasks
         worksheet.merge_range('H6:K6', "", fmt_data)
         
         # Period Table (Month | Last date | Year)
@@ -73,14 +73,14 @@ class CostSharingReport(AhaduReportCommon):
         worksheet.write('M7', y_val, fmt_data)
         
         # Row 8: Region Value | Tax Center Value | Doc Num
-        worksheet.write('A8', "Addis Ababa", fmt_data)
-        worksheet.merge_range('E8:K8', "LARG TAXPAYERS BRANCH OFFICE", fmt_data)
+        worksheet.write('A8', "", fmt_data)
+        worksheet.merge_range('E8:K8', "", fmt_data)
         worksheet.merge_range('L8:M8', "Document Number (For Official Use Only)", fmt_box_label) # Grey box
         
         # Row 9: Woreda, Zone, Kebele, House, Tel, Fax
         # Just generic placeholders to match structure
         worksheet.write('A9', "2c Woreda", fmt_label)
-        worksheet.merge_range('B9:C9', "2b Zone / Kirkos", fmt_label) # Substituted
+        worksheet.merge_range('B9:C9', "2b Zone / ", fmt_label) # Substituted
         worksheet.merge_range('D9:E9', "2d. Kebele / Farmers Association", fmt_label)
         worksheet.write('F9', "2e House Number", fmt_label)
         worksheet.merge_range('G9:H9', "6 Telephone Number", fmt_label)
@@ -91,8 +91,8 @@ class CostSharingReport(AhaduReportCommon):
         worksheet.write('A10', "", fmt_data)
         worksheet.merge_range('B10:C10', "", fmt_data)
         worksheet.merge_range('D10:E10', "", fmt_data)
-        worksheet.write('F10', "New", fmt_data) 
-        worksheet.merge_range('G10:H10', "011-558-44-78", fmt_data)
+        worksheet.write('F10', "", fmt_data) 
+        worksheet.merge_range('G10:H10', "", fmt_data)
         worksheet.merge_range('I10:K10', "", fmt_data)
         worksheet.merge_range('L10:M10', "", workbook.add_format({'bg_color': '#bfbfbf', 'border': 1}))
         

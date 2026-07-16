@@ -1,7 +1,7 @@
 from ..models import ethiopian_calendar
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 class LeaveRequestWizard(models.TransientModel):
     _name = 'ahadu.leave.request.wizard'
@@ -18,6 +18,12 @@ class LeaveRequestWizard(models.TransientModel):
     holiday_status_id = fields.Many2one(
         'hr.leave.type', string="Leave Type", required=True,
     )
+
+    is_half_day = fields.Boolean(string="Half Day")
+    half_day_session = fields.Selection([
+        ('morning', 'Morning'),
+        ('afternoon', 'Afternoon')
+    ], string="Session")
     
     # This field is for UX only, to show the user their balance.
     available_days = fields.Float(string="Available Days", readonly=True, digits=(16, 2))
@@ -25,10 +31,75 @@ class LeaveRequestWizard(models.TransientModel):
     request_date_from = fields.Date(string="Start Date", required=True, default=fields.Date.context_today)
     request_date_to = fields.Date(string="End Date", required=True, default=fields.Date.context_today)
     name = fields.Char(string="Description")
-    number_of_days = fields.Float(string="Requested (Days)", readonly=False)
+    number_of_days = fields.Float(
+        string="Requested (Days)",
+        compute="_compute_number_of_days",
+        readonly=False)
 
     is_attachment_mandatory = fields.Boolean(string="Attachment is Mandatory", compute='_compute_is_attachment_mandatory')
     attachment_ids = fields.Many2many('ir.attachment', string="Supporting Document")
+
+
+    @api.onchange('is_half_day')
+    def _onchange_is_half_day(self):
+        """
+        Automatically defaults the session to Morning when Half Day is checked.
+        This satisfies client-side validation instantly and allows the calculation to run.
+        """
+        if self.is_half_day and not self.half_day_session:
+            self.half_day_session = 'morning'
+
+
+    @api.depends('request_date_from', 'request_date_to', 'employee_id', 'is_half_day')
+    def _compute_number_of_days(self):
+        """
+        Calculates the requested days automatically and triggers an instant 
+        UI update when dates, employee, or half-day options are toggled.
+        """
+        for wizard in self:
+            if wizard.request_date_from and wizard.request_date_to and wizard.employee_id:
+                from datetime import datetime, time, timedelta
+                date_from_dt = datetime.combine(wizard.request_date_from, time.min)
+                date_to_dt = datetime.combine(wizard.request_date_to, time.max)
+                
+                calendar = wizard.employee_id.resource_calendar_id
+                
+                # Fetch custom public holidays
+                public_holidays = self.env['ahadu.public.holiday'].sudo().search([
+                    ('date', '>=', wizard.request_date_from),
+                    ('date', '<=', wizard.request_date_to)
+                ]).mapped('date')
+                
+                work_hours_by_date = {}
+                if calendar:
+                    work_time_dict = wizard.employee_id._list_work_time_per_day(date_from_dt, date_to_dt)
+                    work_hours_by_date = {day_date: hours for day_date, hours in work_time_dict.get(wizard.employee_id.id, [])}
+                    hours_per_day = calendar.hours_per_day or 8.0
+
+                total_days = 0.0
+                current_date = wizard.request_date_from
+                while current_date <= wizard.request_date_to:
+                    if current_date in public_holidays:
+                        pass
+                    elif current_date.weekday() == 5:  # Saturday
+                        total_days += 0.5
+                    else:
+                        if calendar:
+                            hours = work_hours_by_date.get(current_date, 0.0)
+                            if hours > 0:
+                                if wizard.is_half_day:
+                                    total_days += 0.5
+                                else:
+                                    total_days += min(1.0, hours / hours_per_day) if hours_per_day else 1.0
+                        else:
+                            if current_date.weekday() != 6:
+                                total_days += 0.5 if wizard.is_half_day else 1.0
+                    
+                    current_date += timedelta(days=1)
+                        
+                wizard.number_of_days = total_days
+            else:
+                wizard.number_of_days = 0
 
     @api.depends('holiday_status_id')
     def _compute_is_attachment_mandatory(self):
@@ -85,18 +156,85 @@ class LeaveRequestWizard(models.TransientModel):
             res['holiday_status_id']['domain'] = [('id', 'in', allowed_leave_type_ids)]
         return res
 
-    @api.onchange('request_date_from', 'request_date_to', 'employee_id')
+    @api.onchange('request_date_from', 'request_date_to', 'employee_id', 'is_half_day')
     def _onchange_dates(self):
         if self.request_date_from and self.request_date_to and self.employee_id:
             date_from_dt = datetime.combine(self.request_date_from, time.min)
             date_to_dt = datetime.combine(self.request_date_to, time.max)
             calendar = self.employee_id.resource_calendar_id
+
+            # Fetch custom public holidays
+            public_holidays = self.env['ahadu.public.holiday'].sudo().search([
+                ('date', '>=', self.request_date_from),
+                ('date', '<=', self.request_date_to)
+            ]).mapped('date')
+
+        #     total_days = 0.0
+
+        #     if calendar:
+        #         work_time_dict = self.employee_id._list_work_time_per_day(date_from_dt, date_to_dt)
+        #         work_days = work_time_dict.get(self.employee_id.id, [])
+        #         hours_per_day = calendar.hours_per_day or 8.0
+                
+        #         for day_date, hours in work_days:
+        #             if day_date in public_holidays:
+        #                 continue
+                    
+        #             # Weekday 5 represents Saturday
+        #             if day_date.weekday() == 5:
+        #                 total_days += 0.5
+        #             else:
+        #                 total_days += min(1.0, hours / hours_per_day) if hours_per_day else 1.0
+        #     else:
+        #         # Fallback calculation without resource calendars
+        #         current_date = self.request_date_from
+        #         while current_date <= self.request_date_to:
+        #             if current_date not in public_holidays:
+        #                 if current_date.weekday() == 5:
+        #                     total_days += 0.5
+        #                 else:
+        #                     total_days += 1.0
+        #             current_date += timedelta(days=1)
+                    
+        #     self.number_of_days = total_days
+        # else:
+        #     self.number_of_days = 0
+
+        # Map work hours per day if calendar is present
+            work_hours_by_date = {}
             if calendar:
-                work_hours = calendar.get_work_hours_count(date_from_dt, date_to_dt)
-                hours_per_day = calendar.hours_per_day or 8
-                self.number_of_days = work_hours / hours_per_day if hours_per_day else 0
-            else:
-                self.number_of_days = (self.request_date_to - self.request_date_from).days + 1
+                work_time_dict = self.employee_id._list_work_time_per_day(date_from_dt, date_to_dt)
+                work_hours_by_date = {day_date: hours for day_date, hours in work_time_dict.get(self.employee_id.id, [])}
+                hours_per_day = calendar.hours_per_day or 8.0
+
+            total_days = 0.0
+            current_date = self.request_date_from
+            
+            # Step through each day in the request range individually
+            while current_date <= self.request_date_to:
+                if current_date in public_holidays:
+                    # Public Holiday: always 0
+                    pass
+                elif current_date.weekday() == 5:
+                    # Saturday: always counts as 0.5 (even if absent from calendar schedule)
+                    total_days += 0.5
+                else:
+                    # Other days (Mon-Fri, Sun)
+                    if calendar:
+                        hours = work_hours_by_date.get(current_date, 0.0)
+                        if hours > 0:
+                            if self.is_half_day:
+                                total_days += 0.5
+                            else:
+                                total_days += min(1.0, hours / hours_per_day) if hours_per_day else 1.0
+                    else:
+                        # Fallback without calendar: exclude Sundays (6)
+                        if current_date.weekday() != 6:
+                            total_days += 0.5 if self.is_half_day else 1.0
+                
+                current_date += timedelta(days=1)
+                    
+            self.number_of_days = total_days
         else:
             self.number_of_days = 0
             
@@ -106,6 +244,9 @@ class LeaveRequestWizard(models.TransientModel):
         leave_type = self.holiday_status_id
         if not leave_type:
             raise UserError(_("You must select a Leave Type."))
+
+        if self.is_half_day and not self.half_day_session:
+            raise UserError(_("Please select a session (Morning or Afternoon) for your half-day request."))
 
         if self.number_of_days <= 0:
             raise UserError(_("The requested leave duration must be positive."))
@@ -152,6 +293,8 @@ class LeaveRequestWizard(models.TransientModel):
             'name': self.name,
             # This is the key: we ensure allocation_id is set for all allocated leaves.
             'allocation_id': target_allocation.id if target_allocation else False,
+            'is_half_day': self.is_half_day,
+            'half_day_session': self.half_day_session if self.is_half_day else False,
         }
         new_leave = self.env['hr.leave'].create(leave_values)
 

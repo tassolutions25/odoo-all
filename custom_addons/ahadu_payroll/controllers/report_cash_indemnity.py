@@ -266,60 +266,6 @@ class CashIndemnityReport(AhaduReportCommon):
                 
                 row += 1 # Spacer
 
-        # --- SHEET 3: BANK TRANSFER (CASH INDEMNITY) ---
-        worksheet3 = workbook.add_worksheet('Bank Transfer')
-        
-        # Styles
-        style_text_s3 = workbook.add_format({'font_name': 'Times New Roman', 'font_size': 11})
-        style_money_s3 = workbook.add_format({'font_name': 'Times New Roman', 'font_size': 11, 'num_format': '#,##0.00'})
-        
-        worksheet3.set_column(0, 0, 20)
-        worksheet3.set_column(1, 1, 5)
-        worksheet3.set_column(2, 2, 15)
-        worksheet3.set_column(3, 3, 30) # LOG column
-        
-        # Aggregation: { account: { 'amount': sum, 'emp': [names] } }
-        from collections import defaultdict
-        ci_aggregated = defaultdict(lambda: {'amount': 0.0, 'emp': []})
-        ci_total_credit = 0.0
-        
-        for slip in self._get_payslip_lines(batch):
-            if slip.ci_to_balance > 0:
-                acc = get_acc(slip.employee_id, 'cash_indemnity') or 'N/A'
-                ci_aggregated[acc]['amount'] += slip.ci_to_balance
-                if slip.employee_id.name not in ci_aggregated[acc]['emp']:
-                    ci_aggregated[acc]['emp'].append(slip.employee_id.name)
-                ci_total_credit += slip.ci_to_balance
-
-            if slip.ci_to_salary > 0:
-                acc = get_acc(slip.employee_id, 'salary') or 'N/A'
-                ci_aggregated[acc]['amount'] += slip.ci_to_salary
-                if slip.employee_id.name not in ci_aggregated[acc]['emp']:
-                    ci_aggregated[acc]['emp'].append(slip.employee_id.name)
-                ci_total_credit += slip.ci_to_salary
-
-        row_s3 = 0
-        funding_acc = '9999-1040309' 
-        worksheet3.write(row_s3, 0, funding_acc, style_text_s3)
-        worksheet3.write(row_s3, 1, 'D', style_text_s3)
-        worksheet3.write(row_s3, 2, ci_total_credit, style_money_s3)
-        worksheet3.write(row_s3, 3, 'Funding Account', style_text_s3)
-        row_s3 += 1
-        
-        for acc, data in ci_aggregated.items():
-            # In the Cash Indemnity Report, we no longer call the API.
-            # We just list the payments that will be performed by the Bank Transfer button.
-            status = "Transfer pending Bank Transfer action"
-            
-            worksheet3.write(row_s3, 0, acc, style_text_s3)
-            worksheet3.write(row_s3, 1, 'C', style_text_s3)
-            worksheet3.write(row_s3, 2, data['amount'], style_money_s3)
-            worksheet3.write(row_s3, 3, status, style_text_s3) # LOG column
-            row_s3 += 1
-
-        # NOTE: We no longer mark the batch as cash_indemnity_done here.
-        # This allows the report to be generated multiple times before the actual transfer.
-
         workbook.close() 
         output.seek(0)
         return self._make_excel_response(output, f'Cash_Indemnity_{batch.name}.xlsx')

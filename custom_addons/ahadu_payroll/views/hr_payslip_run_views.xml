@@ -27,13 +27,17 @@
                 <button name="action_draft" type="object" string="Reject / Reset"
                     invisible="state != 'verify'"
                     groups="payroll.group_payroll_manager" />
+                    
+                <!-- Button: Email Payslips -->
+                <button name="action_send_batch_payslip_emails" type="object" string="Email Payslips"
+                    invisible="state != 'close'" class="oe_highlight" />
 
                 <!-- Bank Transfer File -->
-                <button name="action_print_bank_transfer" type="object" string="Bank Transfer File"
-                    invisible="state != 'close'"  class="oe_highlight" />
+                <!-- <button name="action_print_bank_transfer" type="object" string="Bank Transfer File"
+                    invisible="state != 'close'"  class="oe_highlight" /> -->
 
                 <button name="action_print_pension_report" type="object" string="Pension Report"
-                    invisible="state == 'draft'" />
+                    invisible="state == 'draft'"  class="oe_highlight"/>
 
 
 
@@ -53,6 +57,11 @@
                     invisible="state != 'close'" class="oe_highlight" />
             </xpath>
 
+            <!-- Hide original Set to Draft button -->
+            <xpath expr="//button[@name='draft_payslip_run']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
             <!-- Add the Status Bar -->
             <xpath expr="//field[@name='state']" position="replace">
                 <field name="state" widget="statusbar" statusbar_visible="draft,verify,close" />
@@ -60,15 +69,15 @@
 
             <!-- Add Pay Group, Cost Center, Branch, Region, and Department Filters at the end of the first group in sheet -->
             <xpath expr="//sheet//group" position="inside">
-                <field name="pay_group_ids" widget="many2many_tags" 
+                <field name="pay_group_ids" widget="many2many_tags" options="{'no_create': True}"
                     placeholder="All Pay Groups (optional filter)" />
-                <field name="cost_center_ids" widget="many2many_tags" 
+                <field name="cost_center_ids" widget="many2many_tags" options="{'no_create': True}"
                     placeholder="All Cost Centers (optional filter)" />
-                <field name="branch_ids" widget="many2many_tags" 
+                <field name="branch_ids" widget="many2many_tags" options="{'no_create': True}"
                     placeholder="All Branches (optional filter)" />
-                <field name="region_ids" widget="many2many_tags" 
+                <field name="region_ids" widget="many2many_tags" options="{'no_create': True}"
                     placeholder="All Regions (optional filter)" />
-                <field name="department_ids" widget="many2many_tags" 
+                <field name="department_ids" widget="many2many_tags" options="{'no_create': True}"
                     placeholder="All Departments (optional filter)" />
             </xpath>
 
@@ -107,9 +116,16 @@
 
                 <!-- Generation Logs -->
                 <group string="Generation Logs" invisible="not missed_reason_ids">
+                    <div colspan="2" class="mb-2">
+                        <button name="action_export_generation_logs" type="object"
+                            string="⬇ Export to Excel" class="btn btn-sm btn-success"
+                            icon="fa-file-excel-o"
+                            invisible="not missed_reason_ids" />
+                    </div>
                     <field name="missed_reason_ids" nolabel="1" colspan="2" readonly="1">
                         <list>
                             <field name="employee_id" />
+                            <field name="salary_account" />
                             <field name="reason" />
                         </list>
                     </field>

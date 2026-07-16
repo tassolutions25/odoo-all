@@ -7,7 +7,6 @@
         This module provides customizations for the Odoo 18 eLearning (website_slides) module.
     """,
     'author': 'Ahadu ',
-    'website': 'https://www.ahadu.com',
     'depends': ['website_slides'],
     'data': [
         'security/ir.model.access.csv',

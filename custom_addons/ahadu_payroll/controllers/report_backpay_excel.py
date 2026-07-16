@@ -4,8 +4,9 @@ from odoo.http import request
 import io
 import xlsxwriter
 from datetime import datetime
+from .common import AhaduReportCommon
 
-class BackpayExcelReportController(http.Controller):
+class BackpayExcelReportController(AhaduReportCommon):
 
     @http.route('/ahadu_payroll/backpay_excel/<int:batch_id>', type='http', auth='user')
     def download_backpay_excel(self, batch_id, **kw):
@@ -156,6 +157,43 @@ class BackpayExcelReportController(http.Controller):
             
             row += 1
             s_no += 1
+
+        month_label = dict(batch._fields['month'].selection).get(batch.month)
+        period_label = f"{month_label},{batch.year}"
+
+        def total(field_name):
+            return sum(getattr(line, field_name, 0.0) or 0.0 for line in batch.line_ids)
+
+        ticket_entries = [
+            {'side': 'debit', 'description': 'Backpay Basic Salary', 'account': self._get_gl_codes('BASIC', 'debit'), 'amount': total('diff_basic'), 'period_label': period_label},
+            {'side': 'debit', 'description': 'Backpay Transportation Allowance', 'account': self._get_gl_codes('TRANS', 'debit'), 'amount': total('diff_transport'), 'period_label': period_label},
+            {'side': 'debit', 'description': 'Backpay Representation Allowance', 'account': self._get_gl_codes('REP', 'debit'), 'amount': total('diff_representation'), 'period_label': period_label},
+            {'side': 'debit', 'description': 'Backpay Housing Allowance', 'account': self._get_gl_codes('HOUSE', 'debit'), 'amount': total('diff_housing'), 'period_label': period_label},
+            {'side': 'debit', 'description': 'Backpay Mobile Allowance', 'account': self._get_gl_codes('MOBILE', 'debit'), 'amount': total('diff_mobile'), 'period_label': period_label},
+            {'side': 'debit', 'description': 'Backpay Hardship Allowance', 'account': self._get_gl_codes('HARDSHIP', 'debit'), 'amount': total('diff_hardship'), 'period_label': period_label},
+            {'side': 'debit', 'description': 'Backpay Overtime', 'account': self._get_gl_codes('OT', 'debit'), 'amount': total('diff_ot'), 'period_label': period_label},
+            {'side': 'debit', 'description': 'Backpay Employer Pension Contribution', 'account': self._get_gl_codes('PENSION_COMP', 'debit'), 'amount': total('diff_pension_comp'), 'period_label': period_label},
+            {'side': 'credit', 'description': 'Backpay Income Tax', 'account': self._get_gl_codes('TAX', 'credit'), 'amount': total('diff_tax'), 'period_label': period_label},
+            {'side': 'credit', 'description': 'Backpay Pension Payable', 'account': self._get_gl_codes(['PENSION_EMP', 'PENSION_COMP'], 'credit'), 'amount': total('diff_pension_emp') + total('diff_pension_comp'), 'period_label': period_label},
+            {'side': 'credit', 'description': 'Backpay Cost Sharing Payable', 'account': self._get_gl_codes('COST_SHARING', 'credit'), 'amount': total('diff_cost_sharing'), 'period_label': period_label},
+            {'side': 'credit', 'description': 'Backpay Other Deductions Payable', 'account': self._get_gl_codes('OTHER_DED', 'credit'), 'amount': total('diff_other_deductions'), 'period_label': period_label},
+            {'side': 'credit', 'description': 'Backpay Net Payable', 'account': self._get_gl_codes('NET', 'credit'), 'amount': total('diff_net'), 'period_label': period_label},
+        ]
+        branches = [name for name in batch.line_ids.mapped('employee_id.branch_id.name') if name]
+        departments = [name for name in batch.line_ids.mapped('employee_id.department_id.name') if name]
+        filter_texts = []
+        if branches:
+            filter_texts.append(f"Branches: {', '.join(branches)}")
+        if departments:
+            filter_texts.append(f"Departments: {', '.join(departments)}")
+        ticket_branch_name = " | ".join(filter_texts) if filter_texts else 'All Branches / Departments'
+        self._write_ticket_claim_sheet(
+            workbook,
+            ticket_entries,
+            period_label=period_label,
+            branch_name=ticket_branch_name,
+            processed_date=batch.approved_on or batch.verified_on or batch.prepared_on or batch.date,
+        )
 
         workbook.close()
         output.seek(0)

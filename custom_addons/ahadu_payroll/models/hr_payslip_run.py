@@ -14,7 +14,15 @@ class HrPayslipRunMissed(models.Model):
 
     batch_id = fields.Many2one('hr.payslip.run', string='Batch', ondelete='cascade')
     employee_id = fields.Many2one('hr.employee', string='Employee', required=True)
+    salary_account = fields.Char(string='Salary Account', compute='_compute_salary_account')
     reason = fields.Char(string='Reason', required=True)
+
+    @api.depends('employee_id.bank_account_ids.account_number', 'employee_id.bank_account_ids.account_type')
+    def _compute_salary_account(self):
+        for rec in self:
+            emp = rec.employee_id
+            salary_acc = emp.bank_account_ids.filtered(lambda a: a.account_type == 'salary')[:1] if emp else False
+            rec.salary_account = salary_acc.account_number if (salary_acc and salary_acc.account_number) else 'UNKNOWN'
 
 
 class HrPayslipRun(models.Model):
@@ -305,7 +313,7 @@ class HrPayslipRun(models.Model):
         terminated_emp_ids = set(terminated_slips.mapped('employee_id').ids + ending_contracts.mapped('employee_id').ids)
 
         # 2. Suspended
-        suspended_records = self.env['hr.employee.suspension'].search([
+        suspended_records = self.env['hr.employee.suspension'].sudo().search([
             ('state', 'in', ['approved', 'Approved']),
             ('end_date', '>', date_end)
         ])
@@ -320,6 +328,46 @@ class HrPayslipRun(models.Model):
         resigning_emp_ids = set(resigning_records.mapped('employee_id').ids)
 
         return terminated_emp_ids | suspended_emp_ids | resigning_emp_ids
+
+    def _get_missing_cash_indemnity_account_employee_ids(self, employees, date_start, date_end):
+        """
+        Return employee IDs that have an approved/done Cash Indemnity allowance in
+        the payslip period but do not have a Cash Indemnity bank account.
+        """
+        if not employees:
+            return set()
+
+        cash_indemnities = self.env['cash.indemnity'].search([
+            ('employee_id', 'in', employees.ids),
+            ('state', 'in', ['approved', 'done']),
+            ('date_to', '>=', date_start),
+            ('date_to', '<=', date_end),
+            ('total_amount', '>', 0),
+        ])
+        employees_with_ci = set(cash_indemnities.mapped('employee_id').ids)
+        ci_tracking = self.env['cash.indemnity.tracking'].search([
+            ('employee_id', 'in', employees.ids),
+            ('state', 'in', ['approved', 'done']),
+            ('date_from', '<=', date_end),
+            ('date_to', '>=', date_start),
+        ])
+        for tracking in ci_tracking:
+            has_line_in_period = tracking.line_ids.filtered(
+                lambda line: date_start <= line.date <= date_end
+            )
+            if has_line_in_period:
+                employees_with_ci.add(tracking.employee_id.id)
+
+        if not employees_with_ci:
+            return set()
+
+        missing_emp_ids = set()
+        for emp in employees.filtered(lambda e: e.id in employees_with_ci):
+            ci_account = emp.bank_account_ids.filtered(lambda a: a.account_type == 'cash_indemnity')[:1]
+            if not ci_account:
+                missing_emp_ids.add(emp.id)
+
+        return missing_emp_ids
 
     def action_generate_payslips_filtered(self):
         """
@@ -376,7 +424,7 @@ class HrPayslipRun(models.Model):
         ])
         terminated_emp_ids = set(terminated_slips.mapped('employee_id').ids) | set(ending_contracts.mapped('employee_id').ids)
 
-        suspended_records = self.env['hr.employee.suspension'].search([
+        suspended_records = self.env['hr.employee.suspension'].sudo().search([
             ('state', 'in', ['approved', 'Approved']),
             ('end_date', '>', self.date_end)
         ])
@@ -420,6 +468,46 @@ class HrPayslipRun(models.Model):
         for eid in resigning_emp_ids:
             if eid in emps_with_open_contracts and eid not in terminated_emp_ids and eid not in suspended_emp_ids and eid not in existing_employee_ids:
                 missed_data.append({'employee_id': eid, 'reason': _("Excluded (Pending Resignation Settlement).")})
+
+        # MISS REASON: CBS Salary Account Status
+        cbs_excluded_emp_ids = set()
+        for emp in contracts.mapped('employee_id'):
+            if emp.id in existing_employee_ids or emp.id in terminated_emp_ids or emp.id in suspended_emp_ids or emp.id in resigning_emp_ids:
+                continue
+            
+            salary_account = emp.bank_account_ids.filtered(lambda a: a.account_type == 'salary')[:1]
+            if not salary_account:
+                cbs_excluded_emp_ids.add(emp.id)
+                missed_data.append({'employee_id': emp.id, 'reason': _("Excluded (Missing Salary Account).")})
+            elif salary_account.cbs_status != 'ACTIVE':
+                cbs_excluded_emp_ids.add(emp.id)
+                status_msg = salary_account.cbs_status or 'UNKNOWN'
+                missed_data.append({'employee_id': emp.id, 'reason': _(f"Excluded (Salary Account Status: {status_msg}).")})
+
+        excluded_emp_ids.update(cbs_excluded_emp_ids)
+
+        # MISS REASON: Cash Indemnity Account
+        ci_excluded_emp_ids = self._get_missing_cash_indemnity_account_employee_ids(
+            contracts.mapped('employee_id'), self.date_start, self.date_end
+        )
+        ci_excluded_emp_ids -= (
+            set(existing_employee_ids) | terminated_emp_ids | suspended_emp_ids | resigning_emp_ids | cbs_excluded_emp_ids
+        )
+        for eid in ci_excluded_emp_ids:
+            missed_data.append({'employee_id': eid, 'reason': _("Cash indemnity account missing")})
+
+        excluded_emp_ids.update(ci_excluded_emp_ids)
+
+        # MISS REASON: Missing Cost Center
+        cc_excluded_emp_ids = set()
+        for emp in contracts.mapped('employee_id'):
+            if emp.id in existing_employee_ids or emp.id in terminated_emp_ids or emp.id in suspended_emp_ids or emp.id in resigning_emp_ids or emp.id in cbs_excluded_emp_ids or emp.id in ci_excluded_emp_ids:
+                continue
+            if not emp.cost_center_id:
+                cc_excluded_emp_ids.add(emp.id)
+                missed_data.append({'employee_id': emp.id, 'reason': _("Excluded (Missing Cost Center).")})
+
+        excluded_emp_ids.update(cc_excluded_emp_ids)
 
         # 5. FILTER CONTRACTS TO GENERATE
         final_contracts = contracts.filtered(
@@ -483,6 +571,7 @@ class HrPayslipRun(models.Model):
                 'message': _(f'{len(new_payslips)} payslips created and computed successfully.'),
                 'type': 'success',
                 'sticky': False,
+                'next': {'type': 'ir.actions.client', 'tag': 'reload'},
             }
         }
 
@@ -557,7 +646,7 @@ class HrPayslipRun(models.Model):
                     ])
                     terminated_emp_ids = set(terminated_slips.mapped('employee_id').ids) | set(ending_contracts.mapped('employee_id').ids)
 
-                    suspended_records = self.env['hr.employee.suspension'].search([
+                    suspended_records = self.env['hr.employee.suspension'].sudo().search([
                         ('state', 'in', ['approved', 'Approved']),
                         ('end_date', '>', self.date_end)
                     ])
@@ -597,6 +686,46 @@ class HrPayslipRun(models.Model):
                         if eid in emps_with_contracts and eid not in terminated_emp_ids and eid not in suspended_emp_ids and eid not in existing_employee_ids:
                             missed_data.append({'employee_id': eid, 'reason': _("Excluded (Pending Resignation Settlement).")})
                     
+                    # Log CBS Salary Account Status
+                    cbs_excluded_emp_ids = set()
+                    for emp in contracts.mapped('employee_id'):
+                        if emp.id in existing_employee_ids or emp.id in terminated_emp_ids or emp.id in suspended_emp_ids or emp.id in resigning_emp_ids:
+                            continue
+                        
+                        salary_account = emp.bank_account_ids.filtered(lambda a: a.account_type == 'salary')[:1]
+                        if not salary_account:
+                            cbs_excluded_emp_ids.add(emp.id)
+                            missed_data.append({'employee_id': emp.id, 'reason': _("Excluded (Missing Salary Account).")})
+                        elif salary_account.cbs_status != 'ACTIVE':
+                            cbs_excluded_emp_ids.add(emp.id)
+                            status_msg = salary_account.cbs_status or 'UNKNOWN'
+                            missed_data.append({'employee_id': emp.id, 'reason': _(f"Excluded (Salary Account Status: {status_msg}).")})
+
+                    excluded_emp_ids.update(cbs_excluded_emp_ids)
+
+                    # Log Cash Indemnity Account
+                    ci_excluded_emp_ids = self._get_missing_cash_indemnity_account_employee_ids(
+                        contracts.mapped('employee_id'), self.date_start, self.date_end
+                    )
+                    ci_excluded_emp_ids -= (
+                        set(existing_employee_ids) | terminated_emp_ids | suspended_emp_ids | resigning_emp_ids | cbs_excluded_emp_ids
+                    )
+                    for eid in ci_excluded_emp_ids:
+                        missed_data.append({'employee_id': eid, 'reason': _("Cash indemnity account missing")})
+
+                    excluded_emp_ids.update(ci_excluded_emp_ids)
+
+                    # Log Missing Cost Center
+                    cc_excluded_emp_ids = set()
+                    for emp in contracts.mapped('employee_id'):
+                        if emp.id in existing_employee_ids or emp.id in terminated_emp_ids or emp.id in suspended_emp_ids or emp.id in resigning_emp_ids or emp.id in cbs_excluded_emp_ids or emp.id in ci_excluded_emp_ids:
+                            continue
+                        if not emp.cost_center_id:
+                            cc_excluded_emp_ids.add(emp.id)
+                            missed_data.append({'employee_id': emp.id, 'reason': _("Excluded (Missing Cost Center).")})
+
+                    excluded_emp_ids.update(cc_excluded_emp_ids)
+
                     self.missed_reason_ids.unlink()
                     if missed_data:
                         self.write({'missed_reason_ids': [(0, 0, d) for d in missed_data]})
@@ -646,6 +775,7 @@ class HrPayslipRun(models.Model):
                     'message': _(f'{payslips_created} payslips were automatically generated for the selected filters.'),
                     'type': 'success',
                     'sticky': False,
+                    'next': {'type': 'ir.actions.client', 'tag': 'reload'},
                 }
             }
 
@@ -659,16 +789,16 @@ class HrPayslipRun(models.Model):
         """
         Override the standard close action to:
         1. Generate Standalone Journal Entries.
-        2. Set all Payslips to 'Done'.
+        2. Set all Payslips to 'Done' in bulk.
         3. Track Approver.
-        4. Send emails asynchronously.
+        (Email sending moved to a separate manual action to prevent UI freezing)
         """
         for batch in self:
             if batch.state == 'verify':
                 # 1. Generate Journal Entries
                 batch.generate_standalone_journal_entry()
                 
-                # 2. Confirm all Payslips
+                # 2. Confirm all Payslips (Loop required because base module expects singleton)
                 slips_to_confirm = batch.slip_ids.filtered(lambda s: s.state in ['draft', 'verify'])
                 if slips_to_confirm:
                     for slip in slips_to_confirm:
@@ -680,9 +810,15 @@ class HrPayslipRun(models.Model):
                     'approved_date': fields.Datetime.now(),
                     'state': 'close'
                 })
-                # 4. Automatically send Payslips to Employees (Background queuing)
-                batch.slip_ids.sudo().action_send_payslip_email()
         
+        return True
+
+    def action_send_batch_payslip_emails(self):
+        """
+        Trigger payslip emails for the entire batch.
+        """
+        for batch in self:
+            batch.slip_ids.sudo().action_send_payslip_email()
         return True
 
     def generate_standalone_journal_entry(self):
@@ -743,6 +879,30 @@ class HrPayslipRun(models.Model):
                     d_acc, c_acc = credit_account, debit_account
                 
                 abs_amount = abs(amount)
+
+                # --- INTERCEPT CAMPAIGN DEDUCTION ---
+                if line.code == 'CAMPAIGN':
+                    campaign_deductions = slip.employee_id.deduction_ids.filtered(lambda d: 
+                        d.deduction_type == 'campaign' and d.state == 'active' and 
+                        (not d.start_date or d.start_date <= slip.date_to) and
+                        (not d.end_date or d.end_date >= slip.date_from)
+                    )
+                    total_campaign_target = sum(d.monthly_amount for d in campaign_deductions)
+                    
+                    if total_campaign_target > 0:
+                        for d in campaign_deductions:
+                            camp_amt = round((d.monthly_amount / total_campaign_target) * abs_amount, 2)
+                            if camp_amt > 0 and d.campaign_id and d.campaign_id.credit_account_id:
+                                journal_lines_to_create.append({
+                                    'entry_id': entry.id,
+                                    'account_id': d.campaign_id.credit_account_id.id,
+                                    'cost_center_id': employee_cc.id,
+                                    'description': f"{description} - {d.campaign_id.name}",
+                                    'debit': 0.0,
+                                    'credit': camp_amt,
+                                })
+                    # Disable standard credit line generation for CAMPAIGN since we just generated split lines
+                    c_acc = None
 
                 # --- GENERATE DEBIT LINE ---
                 if d_acc:
@@ -861,3 +1021,76 @@ class HrPayslipRun(models.Model):
             'url': f'/ahadu_payroll/batch_upload/{self.id}',
             'target': 'new',
         }
+
+    def action_export_generation_logs(self):
+        """Download Generation Logs as Excel."""
+        self.ensure_one()
+        if not self.missed_reason_ids:
+            raise UserError(_("No generation logs to export."))
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/ahadu_payroll/generation_logs/{self.id}',
+            'target': 'new',
+        }
+
+
+class HrPayslipEmployees(models.TransientModel):
+    _inherit = 'hr.payslip.employees'
+
+    def compute_sheet(self):
+        self.ensure_one()
+        active_id = self.env.context.get("active_id")
+        if active_id:
+            payslip_run = self.env['hr.payslip.run'].browse(active_id)
+            # Filter out employees whose CBS status of their salary account is not ACTIVE
+            valid_employees = self.env['hr.employee']
+            missed_data = []
+            
+            for emp in self.employee_ids:
+                salary_account = emp.bank_account_ids.filtered(lambda a: a.account_type == 'salary')[:1]
+                if not salary_account:
+                    missed_data.append({
+                        'batch_id': payslip_run.id,
+                        'employee_id': emp.id,
+                        'reason': _("Excluded (Missing Salary Account).")
+                    })
+                elif salary_account.cbs_status != 'ACTIVE':
+                    status_msg = salary_account.cbs_status or 'UNKNOWN'
+                    missed_data.append({
+                        'batch_id': payslip_run.id,
+                        'employee_id': emp.id,
+                        'reason': _(f"Excluded (Salary Account Status: {status_msg}).")
+                    })
+                else:
+                    ci_missing_emp_ids = payslip_run._get_missing_cash_indemnity_account_employee_ids(
+                        emp, payslip_run.date_start, payslip_run.date_end
+                    )
+                    if emp.id in ci_missing_emp_ids:
+                        missed_data.append({
+                            'batch_id': payslip_run.id,
+                            'employee_id': emp.id,
+                            'reason': _("Cash indemnity account missing")
+                        })
+                    elif not emp.cost_center_id:
+                        missed_data.append({
+                            'batch_id': payslip_run.id,
+                            'employee_id': emp.id,
+                            'reason': _("Excluded (Missing Cost Center).")
+                        })
+                    else:
+                        valid_employees += emp
+            
+            if missed_data:
+                # Add to missed reasons logs, avoiding duplicates for the same employee in this run
+                existing_missed = payslip_run.missed_reason_ids
+                for d in missed_data:
+                    if not existing_missed.filtered(lambda m: m.employee_id.id == d['employee_id']):
+                        self.env['hr.payslip.run.missed'].create(d)
+            
+            if not valid_employees:
+                raise UserError(_("No payslips could be generated. Selected employees have inactive or missing CBS salary accounts, or missing Cash Indemnity accounts. Check the Generation Logs."))
+            
+            # Update the wizard record's employee_ids before processing
+            self.write({'employee_ids': [(6, 0, valid_employees.ids)]})
+            
+        return super(HrPayslipEmployees, self).compute_sheet()

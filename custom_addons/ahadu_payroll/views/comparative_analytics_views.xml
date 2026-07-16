@@ -26,6 +26,12 @@
                     </group>
 
                     <separator string="Period-on-Period Summary" invisible="not detail_ids"/>
+                    <group invisible="not detail_ids">
+                        <group string="Headcount Summary" col="2">
+                            <field name="headcount_prev" string="Employees at Start of Period" readonly="1"/>
+                            <field name="headcount_cur" string="Employees at End of Period" readonly="1"/>
+                        </group>
+                    </group>
                     <div class="o_row" invisible="not detail_ids">
                         <group col="4">
                             <!-- New Additions -->

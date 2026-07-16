@@ -9,11 +9,11 @@
 
         <!-- Modify the label for the 'login' field from 'Email' to 'AHADU ID' -->
         <xpath expr="//div[contains(@class, 'field-login')]//label[@for='login']" position="replace">
-            <label for="login" class="form-label d-flex justify-content-between" >AHADU ID</label>
+            <label for="login" class="form-label d-flex justify-content-between" >EMAIL</label>
         </xpath>
 
         <xpath expr="//div[contains(@class, 'field-login')]//input[@name='login']" position="attributes">
-            <attribute name="placeholder">ID</attribute>
+            <attribute name="placeholder">workemail</attribute>
             <attribute name="maxlength">250</attribute> 
             <attribute name="required">required</attribute> 
         </xpath>

@@ -239,7 +239,7 @@ def create_manual(output_path):
     add_h1('2. Getting Started')
     add_h2('2.1 Accessing Ahadu eLearning')
     doc.add_paragraph("To access the Ahadu eLearning module, follow these steps:")
-    create_callout_box(doc, "Step 1: Open your web browser and navigate to the Ahadu ERP URL (e.g., https://erp.ahadubank.com.et).", LIGHT_CRIMSON, CRIMSON)
+    create_callout_box(doc, "Step 1: Open your web browser and navigate to the Ahadu ERP URL (e.g.,erp.ahadubank.com.et).", LIGHT_CRIMSON, CRIMSON)
     create_callout_box(doc, "Step 2: Enter your login credentials (email and password) provided by your system administrator.", LIGHT_CRIMSON, CRIMSON)
     create_callout_box(doc, 'Step 3: Click the "Log in" button to access the main dashboard.', LIGHT_CRIMSON, CRIMSON)
     

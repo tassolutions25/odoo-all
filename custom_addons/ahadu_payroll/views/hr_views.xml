@@ -20,6 +20,7 @@
                         type="action"
                         class="oe_stat_button"
                         icon="fa-credit-card"
+                        groups="payroll.group_payroll_user,payroll.group_payroll_manager,ahadu_payroll.group_loan_credit_committee"
                         context="{'search_default_employee_id': id, 'default_employee_id': id}">
                     <div class="o_stat_info">
                         <span class="o_stat_text">Loans</span>

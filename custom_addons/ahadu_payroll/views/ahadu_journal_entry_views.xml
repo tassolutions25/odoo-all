@@ -9,6 +9,8 @@
                 <field name="date" />
                 <field name="name" />
                 <field name="payslip_run_id" />
+                <field name="termination_run_id" />
+                <field name="resignation_run_id" />
                 <field name="state" widget="badge" decoration-success="state == 'posted'" />
             </list>
         </field>
@@ -34,6 +36,8 @@
                         <group>
                             <field name="date" />
                             <field name="payslip_run_id" />
+                            <field name="termination_run_id" />
+                            <field name="resignation_run_id" />
                         </group>
                     </group>
                     <notebook>

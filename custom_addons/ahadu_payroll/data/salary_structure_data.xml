@@ -2,7 +2,7 @@
 <odoo>
     <data noupdate="0">
 
-        <!-- Categories -->
+        <!-- Salary rule categories -->
         <record id="ahadu_category_basic" model="hr.salary.rule.category">
             <field name="name">Basic</field>
             <field name="code">BASIC</field>
@@ -23,10 +23,6 @@
             <field name="name">Net</field>
             <field name="code">NET</field>
         </record>
-        <record id="ahadu_category_alc" model="hr.salary.rule.category">
-            <field name="name">Account Allocation</field>
-            <field name="code">ALC</field>
-        </record>
         <record id="ahadu_category_comp" model="hr.salary.rule.category">
             <field name="name">Company Contribution</field>
             <field name="code">COMP</field>
@@ -35,385 +31,659 @@
             <field name="name">Information</field>
             <field name="code">INFO</field>
         </record>
+        <record id="ahadu_category_alc" model="hr.salary.rule.category">
+            <field name="name">Account Allocation</field>
+            <field name="code">ALC</field>
+        </record>
 
-        <!-- RULES -->
-
-        <!-- Basic Salary -->
+        <!-- Salary rules -->
         <record id="hr_rule_basic" model="hr.salary.rule">
             <field name="name">Basic Salary</field>
-            <field name="sequence" eval="1" />
             <field name="code">BASIC</field>
+            <field name="sequence">1</field>
             <field name="category_id" ref="ahadu_category_basic" />
             <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = payslip._get_ahadu_basic_salary()</field>
-            <field name="ahadu_debit_account_id" ref="account_5030101" />
-        </record>
-
-        <!-- Transport -->
-        <record id="hr_rule_transport" model="hr.salary.rule">
-            <field name="name">Transport Allowance</field>
-            <field name="sequence" eval="10" />
-            <field name="code">TRANS</field>
-            <field name="category_id" ref="ahadu_category_alw" />
-            <field name="condition_select">none</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_transport()</field>
-            <field name="ahadu_debit_account_id" ref="account_5030204" />
-        </record>
-
-        <!-- Housing -->
-        <record id="hr_rule_housing" model="hr.salary.rule">
-            <field name="name">Housing Allowance</field>
-            <field name="sequence" eval="20" />
-            <field name="code">HOUSE</field>
-            <field name="category_id" ref="ahadu_category_alw" />
-            <field name="condition_select">none</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_housing()</field>
-            <field name="ahadu_debit_account_id" ref="account_5030205" />
-        </record>
-
-        <!-- Hardship -->
-        <record id="hr_rule_hardship" model="hr.salary.rule">
-            <field name="name">Hardship Allowance</field>
-            <field name="sequence" eval="27" />
-            <field name="code">HARDSHIP</field>
-            <field name="category_id" ref="ahadu_category_alw" />
-            <field name="condition_select">none</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_hardship()</field>
-            <field name="ahadu_debit_account_id" ref="account_5030203" />
-        </record>
-
-        <!-- Representation -->
-        <record id="hr_rule_representation" model="hr.salary.rule">
-            <field name="name">Representation Allowance</field>
-            <field name="sequence" eval="30" />
-            <field name="code">REP</field>
-            <field name="category_id" ref="ahadu_category_alw" />
-            <field name="condition_select">none</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_representation()</field>
-            <field name="ahadu_debit_account_id" ref="account_5030206" />
-        </record>
-
-        <!-- Cash Indemnity -->
-        <record id="hr_rule_cash_indemnity" model="hr.salary.rule">
-            <field name="name">Cash Indemnity Allowance</field>
-            <field name="sequence" eval="35" />
-            <field name="code">CASH_IND</field>
-            <field name="category_id" ref="ahadu_category_alw" />
-            <field name="condition_select">none</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip.cash_indemnity_allowance</field>
-            <field name="ahadu_debit_account_id" ref="account_5030201" />
-        </record>
-
-        <!-- Mobile -->
-        <record id="hr_rule_mobile" model="hr.salary.rule">
-            <field name="name">Mobile Allowance</field>
-            <field name="sequence" eval="40" />
-            <field name="code">MOBILE</field>
-            <field name="category_id" ref="ahadu_category_alw" />
-            <field name="condition_select">none</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_mobile()</field>
-
-            <field name="ahadu_debit_account_id" ref="account_5030221" />
-        </record>
-
-        <!-- Other Benefits -->
-        <record id="hr_rule_other_benefits" model="hr.salary.rule">
-            <field name="name">Other Benefits</field>
-            <field name="sequence" eval="45" />
-            <field name="code">OTHER_BEN</field>
-            <field name="category_id" ref="ahadu_category_alw" />
-            <field name="condition_select">none</field>
-            <field name="amount_select">code</field>
-            <!-- Benefits are primarily on employee profile; this rule handles remaining items from profile or package if configured -->
-            <field name="amount_python_compute">result = payslip._get_ahadu_other_benefits()</field>
-
-            <field name="ahadu_debit_account_id" ref="account_5030220" />
-        </record>
-
-        <!-- Overtime -->
-        <record id="hr_rule_ot" model="hr.salary.rule">
-            <field name="name">Overtime</field>
-            <field name="sequence" eval="50" />
-            <field name="code">OT</field>
-            <field name="category_id" ref="ahadu_category_alw" />
-            <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip.overtime_amount > 0</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip.overtime_amount</field>
-            <field name="ahadu_debit_account_id" ref="account_5030222" />
-        </record>
-
-        <!-- LOP Adjustment (Credit Back) -->
-        <record id="hr_rule_lop_adjustment" model="hr.salary.rule">
-            <field name="name">LOP Adjustment (Credit)</field>
-            <field name="sequence" eval="95" />
-            <field name="code">LOP_ADJ</field>
-            <field name="category_id" ref="ahadu_category_alw" />
-            <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip.lop_adjustment > 0</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_lop_adjustment()</field>
+            <field name="quantity">1.0</field>
             <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_debit_account_id" ref="account_5030101" />
         </record>
-
-        <!-- Gross -->
-        <record id="hr_rule_gross" model="hr.salary.rule">
-            <field name="name">Gross Salary</field>
-            <field name="sequence" eval="100" />
-            <field name="code">GROSS</field>
-            <field name="category_id" ref="ahadu_category_gross" />
-            <field name="condition_select">none</field>
+        <record id="hr_rule_penalty" model="hr.salary.rule">
+            <field name="name">Penalty Deduction</field>
+            <field name="code">PENALTY</field>
+            <field name="sequence">5</field>
+            <field name="category_id" ref="ahadu_category_basic" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip._get_ahadu_penalty_deduction() &gt; 0</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = categories.BASIC + categories.ALW</field>
-        </record>
-
-        <!-- Leave Deduction -->
-        <record id="hr_rule_leave_deduction" model="hr.salary.rule">
-            <field name="name">Leave Deduction</field>
-            <field name="sequence" eval="190" />
-            <field name="code">LOP_LEAVE</field>
-            <field name="category_id" ref="ahadu_category_ded" />
-            <field name="condition_select">none</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_ahadu_leave_deduction()</field>
+            <field name="amount_python_compute">result = -payslip._get_ahadu_penalty_deduction()</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_5030101" />
         </record>
+        <record id="hr_rule_transport" model="hr.salary.rule">
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRANS</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
 
-        <!-- Income Tax -->
-        <record id="hr_rule_income_tax" model="hr.salary.rule">
-            <field name="name">Income Tax</field>
-            <field name="sequence" eval="200" />
-            <field name="code">TAX</field>
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_transport()</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_debit_account_id" ref="account_5030204" />
+        </record>
+        <record id="hr_rule_housing" model="hr.salary.rule">
+            <field name="name">Housing Allowance</field>
+            <field name="code">HOUSE</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_housing()</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_debit_account_id" ref="account_5030205" />
+        </record>
+        <record id="hr_rule_hardship" model="hr.salary.rule">
+            <field name="name">Hardship Allowance</field>
+            <field name="code">HARDSHIP</field>
+            <field name="sequence">27</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_hardship()</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_debit_account_id" ref="account_5030203" />
+        </record>
+        <record id="hr_rule_representation" model="hr.salary.rule">
+            <field name="name">Representation Allowance</field>
+            <field name="code">REP</field>
+            <field name="sequence">30</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_representation()</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_debit_account_id" ref="account_5030206" />
+        </record>
+        <record id="hr_rule_cash_indemnity" model="hr.salary.rule">
+            <field name="name">Cash Indemnity Allowance</field>
+            <field name="code">CASH_IND</field>
+            <field name="sequence">35</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.cash_indemnity_allowance</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_debit_account_id" ref="account_5030201" />
+        </record>
+        <record id="hr_rule_mobile" model="hr.salary.rule">
+            <field name="name">Mobile Allowance</field>
+            <field name="code">MOBILE</field>
+            <field name="sequence">40</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_mobile()</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_debit_account_id" ref="account_5030221" />
+        </record>
+        <record id="hr_rule_other_benefits" model="hr.salary.rule">
+            <field name="name">Other Benefits</field>
+            <field name="code">OTHER_BEN</field>
+            <field name="sequence">45</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_other_benefits()</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_debit_account_id" ref="account_5030220" />
+        </record>
+        <record id="hr_rule_ot" model="hr.salary.rule">
+            <field name="name">Overtime</field>
+            <field name="code">OT</field>
+            <field name="sequence">50</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.overtime_amount &gt; 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.overtime_amount</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_debit_account_id" ref="account_5030222" />
+        </record>
+        <record id="hr_rule_lop_adjustment" model="hr.salary.rule">
+            <field name="name">LOP Adjustment (Credit)</field>
+            <field name="code">LOP_ADJ</field>
+            <field name="sequence">95</field>
+            <field name="category_id" ref="ahadu_category_alw" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.lop_adjustment &gt; 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_lop_adjustment()</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_debit_account_id" ref="account_5030101" />
+        </record>
+        <record id="hr_rule_gross" model="hr.salary.rule">
+            <field name="name">Gross Salary</field>
+            <field name="code">GROSS</field>
+            <field name="sequence">100</field>
+            <field name="category_id" ref="ahadu_category_gross" />
+            <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.BASIC + categories.ALW</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+        </record>
+        <record id="hr_rule_leave_deduction" model="hr.salary.rule">
+            <field name="name">Leave Deduction</field>
+            <field name="code">LOP_LEAVE</field>
+            <field name="sequence">190</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_ahadu_leave_deduction()</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_5030101" />
+        </record>
+        <record id="hr_rule_income_tax" model="hr.salary.rule">
+            <field name="name">Income Tax</field>
+            <field name="code">TAX</field>
+            <field name="sequence">200</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = payslip._get_ahadu_income_tax(payslip._get_ahadu_taxable_gross())</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_2020301" />
         </record>
-
-        <!-- Pension Emp -->
         <record id="hr_rule_pension_emp" model="hr.salary.rule">
             <field name="name">Pension (Employee 7%)</field>
-            <field name="sequence" eval="210" />
             <field name="code">PENSION_EMP</field>
+            <field name="sequence">210</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">python</field>
-            <field name="condition_python">result = contract.pay_group_id.code != 'CONTEMPWOP'</field>
+            <field name="condition_python">result = contract.pay_group_id.code != &#x27;CONTEMPWOP&#x27;</field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = (categories.BASIC - payslip._get_ahadu_leave_deduction()) * 0.07</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_2020308" />
         </record>
-
-        <!-- Pension Comp -->
+        <record id="hr_rule_cost_sharing" model="hr.salary.rule">
+            <field name="name">Cost Sharing</field>
+            <field name="code">COST_SHARING</field>
+            <field name="sequence">212</field>
+            <field name="category_id" ref="ahadu_category_ded" />
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip._get_ahadu_cost_sharing_deduction() &gt; 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_cost_sharing_deduction(), categories.GROSS - categories.DED)</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_2020309" />
+        </record>
         <record id="hr_rule_pension_comp" model="hr.salary.rule">
             <field name="name">Pension (Company 11%)</field>
-            <field name="sequence" eval="215" />
             <field name="code">PENSION_COMP</field>
+            <field name="sequence">215</field>
             <field name="category_id" ref="ahadu_category_comp" />
             <field name="condition_select">python</field>
-            <field name="condition_python">result = contract.pay_group_id.code != 'CONTEMPWOP'</field>
+            <field name="condition_python">result = contract.pay_group_id.code != &#x27;CONTEMPWOP&#x27;</field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = (categories.BASIC - payslip._get_ahadu_leave_deduction()) * 0.11</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_debit_account_id" ref="account_5030211" />
             <field name="ahadu_credit_account_id" ref="account_2020308" />
         </record>
-
-        <!-- Advance Loan Repayment -->
         <record id="hr_rule_adv_loan" model="hr.salary.rule">
             <field name="name">Adv. Loan Repayment</field>
-            <field name="sequence" eval="220" />
             <field name="code">ADV_LOAN</field>
+            <field name="sequence">220</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip._get_ahadu_advance_loan_deduction() > 0</field>
+            <field name="condition_python">result = payslip._get_ahadu_advance_loan_deduction() &gt; 0</field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_advance_loan_deduction(), categories.GROSS - categories.DED)</field>
-
+            <field name="quantity">1.0</field>
             <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_1010202" />
         </record>
-
-        <!-- Personal Loan Repayment -->
         <record id="hr_rule_pers_loan" model="hr.salary.rule">
             <field name="name">Pers. Loan Repayment</field>
-            <field name="sequence" eval="221" />
             <field name="code">PERS_LOAN</field>
+            <field name="sequence">221</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip._get_ahadu_personal_loan_deduction() > 0</field>
+            <field name="condition_python">result = payslip._get_ahadu_personal_loan_deduction() &gt; 0</field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_personal_loan_deduction(), categories.GROSS - categories.DED)</field>
-
+            <field name="quantity">1.0</field>
             <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_1010203" />
         </record>
-
-        <!-- Other Loan Repayment -->
         <record id="hr_rule_loan" model="hr.salary.rule">
             <field name="name">Other Loan Repayment</field>
-            <field name="sequence" eval="222" />
             <field name="code">OTHER_LOAN</field>
+            <field name="sequence">222</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip._get_ahadu_other_loan_deduction() > 0</field>
+            <field name="condition_python">result = payslip._get_ahadu_other_loan_deduction() &gt; 0</field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_other_loan_deduction(), categories.GROSS - categories.DED)</field>
-
+            <field name="quantity">1.0</field>
             <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_1010202" />
         </record>
-
-        <!-- Savings Deduction -->
         <record id="hr_rule_savings" model="hr.salary.rule">
             <field name="name">Savings</field>
-            <field name="sequence" eval="225" />
             <field name="code">SAVINGS</field>
+            <field name="sequence">225</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip._get_ahadu_savings_deduction() > 0</field>
+            <field name="condition_python">result = payslip._get_ahadu_savings_deduction() &gt; 0</field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_savings_deduction(), categories.GROSS - categories.DED)</field>
-
+            <field name="quantity">1.0</field>
             <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_2020310" />
         </record>
-
-        <!-- Credit Association Deduction -->
         <record id="hr_rule_credit_assoc" model="hr.salary.rule">
             <field name="name">Credit Association</field>
-            <field name="sequence" eval="230" />
             <field name="code">CREDIT_ASSOC</field>
+            <field name="sequence">230</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip._get_ahadu_credit_association_deduction() > 0</field>
+            <field name="condition_python">result = payslip._get_ahadu_credit_association_deduction() &gt; 0</field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_credit_association_deduction(), categories.GROSS - categories.DED)</field>
-
+            <field name="quantity">1.0</field>
             <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_2020311" />
         </record>
-
-        <!-- Cost Sharing Deduction -->
-        <record id="hr_rule_cost_sharing" model="hr.salary.rule">
-            <field name="name">Cost Sharing</field>
-            <field name="sequence" eval="212" />
-            <field name="code">COST_SHARING</field>
+        <record id="hr_rule_campaign" model="hr.salary.rule">
+            <field name="name">Campaign Contribution</field>
+            <field name="code">CAMPAIGN</field>
+            <field name="sequence">235</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip._get_ahadu_cost_sharing_deduction() > 0</field>
+            <field name="condition_python">result = payslip._get_ahadu_campaign_deduction() &gt; 0</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_cost_sharing_deduction(), categories.GROSS - categories.DED)</field>
-
+            <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_campaign_deduction(), categories.GROSS - categories.DED)</field>
+            <field name="quantity">1.0</field>
             <field name="appears_on_payslip" eval="True" />
-            <field name="ahadu_credit_account_id" ref="account_2020309" />
+            <field name="active" eval="True" />
         </record>
-
-        <!-- Other Deductions -->
         <record id="hr_rule_other_deductions" model="hr.salary.rule">
             <field name="name">Other Deductions</field>
-            <field name="sequence" eval="240" />
             <field name="code">OTHER_DED</field>
+            <field name="sequence">240</field>
             <field name="category_id" ref="ahadu_category_ded" />
             <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip._get_ahadu_other_deduction() > 0</field>
+            <field name="condition_python">result = payslip._get_ahadu_other_deduction() &gt; 0</field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = payslip._get_capped_amount(payslip._get_ahadu_other_deduction(), categories.GROSS - categories.DED)</field>
-
+            <field name="quantity">1.0</field>
             <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_2020312" />
         </record>
- 
-        <!-- Archived Cash Indemnity Tax (35%) - Kept to prevent upgrade constraint errors -->
         <record id="hr_rule_ci_tax" model="hr.salary.rule">
             <field name="name">Cash Indemnity Tax (35%)</field>
-            <field name="sequence" eval="244" />
             <field name="code">CI_TAX</field>
+            <field name="sequence">244</field>
             <field name="category_id" ref="ahadu_category_ded" />
-            <field name="active" eval="False" />
             <field name="condition_select">none</field>
+            <field name="condition_python">result = payslip.cash_indemnity_tax &gt; 0</field>
             <field name="amount_select">fix</field>
+            <field name="amount_python_compute">result = payslip.cash_indemnity_tax</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="False" />
+            <field name="ahadu_credit_account_id" ref="account_2020301" />
         </record>
-
-        <!-- Cash Indemnity to CI Account (Allocation) -->
         <record id="hr_rule_ci_to_acc" model="hr.salary.rule">
             <field name="name">Cash Indemnity to CI Account</field>
-            <field name="sequence" eval="245" />
             <field name="code">CI_ACC</field>
+            <field name="sequence">245</field>
             <field name="category_id" ref="ahadu_category_alc" />
             <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip.ci_to_balance > 0</field>
+            <field name="condition_python">result = payslip.ci_to_balance &gt; 0</field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = payslip.ci_to_balance</field>
+            <field name="quantity">1.0</field>
             <field name="appears_on_payslip" eval="True" />
-            <field name="ahadu_credit_account_id" ref="account_2020300" /> <!-- Generic Credit to Salary Payable, balance update is handled in Python -->
+            <field name="active" eval="True" />
+            <field name="ahadu_credit_account_id" ref="account_2020300" />
         </record>
-
-        <!-- Net Pay -->
         <record id="hr_rule_net" model="hr.salary.rule">
             <field name="name">Net Pay</field>
-            <field name="sequence" eval="300" />
             <field name="code">NET</field>
+            <field name="sequence">300</field>
             <field name="category_id" ref="ahadu_category_net" />
             <field name="condition_select">none</field>
+            <field name="condition_python"><![CDATA[# Available variables:
+#-------------------------------
+# payslip: hr.payslip object
+# payslips: object containing payslips (browsable)
+# employee: hr.employee object
+# contract: hr.contract object
+# rules: object containing the rules code (previously computed)
+# categories: object containing the computed salary rule categories
+#    (sum of amount of all rules belonging to that category).
+# worked_days: object containing the computed worked days.
+# inputs: object containing the computed inputs.
+# payroll: object containing miscellaneous values related to payroll
+# current_contract: object with values calculated from the current contract
+# result_rules: object with a dict of qty, rate, amount an total of calculated rules
+# tools: object that contain libraries and tools that can be used in calculations
+
+# Available compute variables:
+#-------------------------------
+# result: returned value have to be set in the variable 'result'
+
+# Example:
+#-------------------------------
+# result = worked_days.WORK0 and worked_days.WORK0.number_of_days > 0]]></field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">result = categories.GROSS - categories.DED - categories.ALC</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="active" eval="True" />
             <field name="ahadu_credit_account_id" ref="account_2020300" />
         </record>
 
-        <!-- Penalty Deduction (negative rule in BASIC category to reduce GROSS) -->
-        <record id="hr_rule_penalty" model="hr.salary.rule">
-            <field name="name">Penalty Deduction</field>
-            <field name="sequence" eval="5" />
-            <field name="code">PENALTY</field>
-            <field name="category_id" ref="ahadu_category_basic" />
-            <field name="condition_select">python</field>
-            <field name="condition_python">result = payslip._get_ahadu_penalty_deduction() > 0</field>
-            <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = -payslip._get_ahadu_penalty_deduction()</field>
-            <field name="appears_on_payslip" eval="True" />
-            <field name="ahadu_credit_account_id" ref="account_5030101" />
-        </record>
-
-        <!-- Salary Structure -->
+        <!-- Payroll structures -->
         <record id="structure_ahadu_monthly" model="hr.payroll.structure">
             <field name="name">Ahadu Bank Monthly Salary</field>
             <field name="code">AHADU-MONTHLY</field>
-            <field name="rule_ids"
-                eval="[
-                (4, ref('hr_rule_basic')),
-                (4, ref('hr_rule_penalty')),
-                (4, ref('hr_rule_transport')),
-                (4, ref('hr_rule_housing')),
-                (4, ref('hr_rule_hardship')),
-                (4, ref('hr_rule_representation')),
-                (4, ref('hr_rule_cash_indemnity')),
-                (4, ref('hr_rule_mobile')),
-                (4, ref('hr_rule_other_benefits')),
-                (4, ref('hr_rule_ot')),
-                (4, ref('hr_rule_lop_adjustment')),
-                (4, ref('hr_rule_gross')),
-                (4, ref('hr_rule_leave_deduction')),
-                (4, ref('hr_rule_income_tax')),
-                (4, ref('hr_rule_pension_emp')),
-                (4, ref('hr_rule_pension_comp')),
-                (4, ref('hr_rule_adv_loan')),
-                (4, ref('hr_rule_pers_loan')),
-                (4, ref('hr_rule_loan')),
-                (4, ref('hr_rule_savings')),
-                (4, ref('hr_rule_credit_assoc')),
-                (4, ref('hr_rule_cost_sharing')),
-                (4, ref('hr_rule_other_deductions')),
-                (4, ref('hr_rule_ci_to_acc')),
-                (4, ref('hr_rule_net')),
-            ]" />
+            <field name="rule_ids" eval="[(6, 0, [ref(&#x27;hr_rule_basic&#x27;), ref(&#x27;hr_rule_penalty&#x27;), ref(&#x27;hr_rule_transport&#x27;), ref(&#x27;hr_rule_housing&#x27;), ref(&#x27;hr_rule_hardship&#x27;), ref(&#x27;hr_rule_representation&#x27;), ref(&#x27;hr_rule_cash_indemnity&#x27;), ref(&#x27;hr_rule_mobile&#x27;), ref(&#x27;hr_rule_other_benefits&#x27;), ref(&#x27;hr_rule_ot&#x27;), ref(&#x27;hr_rule_lop_adjustment&#x27;), ref(&#x27;hr_rule_gross&#x27;), ref(&#x27;hr_rule_leave_deduction&#x27;), ref(&#x27;hr_rule_income_tax&#x27;), ref(&#x27;hr_rule_pension_emp&#x27;), ref(&#x27;hr_rule_cost_sharing&#x27;), ref(&#x27;hr_rule_pension_comp&#x27;), ref(&#x27;hr_rule_adv_loan&#x27;), ref(&#x27;hr_rule_pers_loan&#x27;), ref(&#x27;hr_rule_loan&#x27;), ref(&#x27;hr_rule_savings&#x27;), ref(&#x27;hr_rule_credit_assoc&#x27;), ref(&#x27;hr_rule_campaign&#x27;), ref(&#x27;hr_rule_other_deductions&#x27;), ref(&#x27;hr_rule_ci_tax&#x27;), ref(&#x27;hr_rule_ci_to_acc&#x27;), ref(&#x27;hr_rule_net&#x27;)])]" />
         </record>
 
     </data>

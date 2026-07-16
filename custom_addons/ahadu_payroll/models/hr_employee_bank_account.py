@@ -2,7 +2,10 @@
 from odoo import models, fields, api, _
 import requests
 import logging
+import urllib3
 from odoo.exceptions import UserError
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 _logger = logging.getLogger(__name__)
 
@@ -11,6 +14,8 @@ class HrEmployeeBankAccount(models.Model):
     _rec_name = 'account_number'
 
     last_sync_date = fields.Datetime(string="Last Sync Date", readonly=True)
+    cbs_status = fields.Char(string="CBS Status", readonly=True, help="Status from Core Banking System (e.g., ACTIVE, BLOCKED)")
+    cbs_status_last_check = fields.Datetime(string="CBS Status Last Check", readonly=True)
 
     @api.depends('account_number', 'account_type')
     def _compute_display_name(self):
@@ -82,3 +87,52 @@ class HrEmployeeBankAccount(models.Model):
             except Exception as e:
                 _logger.error("Cron failed to sync balance for account %s: %s", acc.account_number, str(e))
         _logger.info("Automated balance sync completed")
+
+    def action_sync_cbs_status(self):
+        """Fetches the account status from the CBS Verify Account API."""
+        self.ensure_one()
+        if not self.account_number:
+            return
+
+        url = "https://10.20.1.22:8243/verifyAccount/1.0.0/verifyAccount"
+        headers = {
+            'accept': '*/*',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer null'
+        }
+        data = {
+            "account_number": self.account_number
+        }
+        
+        try:
+            response = requests.post(url, json=data, headers=headers, verify=False, timeout=10)
+            response.raise_for_status()
+            res_data = response.json()
+            
+            status = res_data.get('STATUS')
+            if status:
+                self.write({
+                    'cbs_status': status,
+                    'cbs_status_last_check': fields.Datetime.now()
+                })
+            else:
+                _logger.warning("STATUS is missing in response for account %s: %s", self.account_number, res_data)
+                
+        except requests.exceptions.RequestException as e:
+            _logger.error("Connection error while fetching status for account %s: %s", self.account_number, str(e))
+        except Exception as e:
+            _logger.error("Unexpected error while fetching status for account %s: %s", self.account_number, str(e))
+
+    @api.model
+    def cron_sync_salary_cbs_status(self):
+        """Automated sync for all salary accounts CBS status."""
+        accounts = self.search([('account_type', '=', 'salary')])
+        _logger.info("Starting automated CBS status sync for %s salary accounts", len(accounts))
+        for acc in accounts:
+            try:
+                acc.action_sync_cbs_status()
+                # Commit after each sync to ensure partial success is saved
+                self.env.cr.commit()
+            except Exception as e:
+                _logger.error("Cron failed to sync CBS status for account %s: %s", acc.account_number, str(e))
+        _logger.info("Automated CBS status sync completed")

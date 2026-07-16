@@ -97,6 +97,9 @@ class HrEmployee(models.Model):
             _logger.error("Annual Leave type not found. Skipping accrual.")
             return
 
+        # Fetch the Leave Without Pay (LWOP) status reference
+        lwop_type = self.env.ref('ahadu_hr_leave.ahadu_leave_type_lwop', raise_if_not_found=False)
+
         all_employees = self.search([('date_of_joining', '!=', False)])
         today = fields.Date.today()
 
@@ -139,6 +142,7 @@ class HrEmployee(models.Model):
                 '|', '|',
                 ('date_from', '=', service_year_start),
                 ('date_from', '=', accrual_launch_date),
+                ('notes', '!=', 'LEGACY_IMPORT'),
                 ('name', '=', f"Annual Leave {service_year_start.year} for {employee.name}"),
             ]
             all_potential_allocs = self.env['hr.leave.allocation'].search(search_domain, order='date_from asc')
@@ -189,7 +193,27 @@ class HrEmployee(models.Model):
             daily_rate = total_annual_entitlement / 365.25
             
             days_into_service_year = (today - accrual_start_point).days + 1
-            target_balance = days_into_service_year * daily_rate
+
+            # 4. Calculate validated LWOP days overlapping the current accrual window
+            lwop_days = 0
+            if lwop_type:
+                lwop_leaves = self.env['hr.leave'].search([
+                    ('employee_id', '=', employee.id),
+                    ('holiday_status_id', '=', lwop_type.id),
+                    ('state', '=', 'validate'),
+                    ('request_date_from', '<=', today),
+                    ('request_date_to', '>=', accrual_start_point)
+                ])
+                for leave in lwop_leaves:
+                    overlap_start = max(leave.request_date_from, accrual_start_point)
+                    overlap_end = min(leave.request_date_to, today)
+                    if overlap_start <= overlap_end:
+                        lwop_days += (overlap_end - overlap_start).days + 1
+
+            # Deduct the LWOP days from the active service year accrual calculation days
+            effective_accrual_days = max(0, days_into_service_year - lwop_days)
+
+            target_balance = effective_accrual_days * daily_rate
 
             # 4. Set the allocation's value directly to the correct target
             allocation.write({
@@ -206,6 +230,7 @@ class HrEmployee(models.Model):
                 ('holiday_status_id', '=', annual_leave_type.id),
                 ('is_pro_rata_allocation', '=', True),
                 ('date_from', '<', service_year_start),
+                ('notes', '!=', 'LEGACY_IMPORT'), # PROTECT HISTORICAL IMPORT
                 ('state', '=', 'validate'),
             ])
             for prev_alloc in prev_allocations:
@@ -217,16 +242,36 @@ class HrEmployee(models.Model):
                 p_accrual_start = max(accrual_launch_date, p_service_year_start) if accrual_launch_date else p_service_year_start
                 if p_service_year_end >= p_accrual_start:
                     p_days = (p_service_year_end - p_accrual_start).days + 1
+
+                    # Calculate validated LWOP days overlapping the previous service year accrual window
+                    p_lwop_days = 0
+                    if lwop_type:
+                        p_lwop_leaves = self.env['hr.leave'].search([
+                            ('employee_id', '=', employee.id),
+                            ('holiday_status_id', '=', lwop_type.id),
+                            ('state', '=', 'validate'),
+                            ('request_date_from', '<=', p_service_year_end),
+                            ('request_date_to', '>=', p_accrual_start)
+                        ])
+                        for leave in p_lwop_leaves:
+                            overlap_start = max(leave.request_date_from, p_accrual_start)
+                            overlap_end = min(leave.request_date_to, p_service_year_end)
+                            if overlap_start <= overlap_end:
+                                p_lwop_days += (overlap_end - overlap_start).days + 1
+                    
+                    effective_p_days = max(0, p_days - p_lwop_days)
+
+
                     # Entitlement logic for that specific year (DOJ-based)
                     p_years = p_service_year_start.year - doj.year
                     p_entitlement = min(base_entitlement + max(0, p_years), 30)
-                    p_final_balance = p_days * (p_entitlement / 365.25)
+                    p_final_balance = effective_p_days  * (p_entitlement / 365.25)
                     
                     if abs(prev_alloc.number_of_days - p_final_balance) > 0.0001:
                         prev_alloc.write({'number_of_days': p_final_balance})
-                        _logger.info(f"Finalized PREVIOUS year allocation ({p_service_year_start.year}) for {employee.name} at {p_final_balance:.4f} days.")
+                        _logger.info(f"Finalized PREVIOUS year allocation ({p_service_year_start.year}) for {employee.name} at {p_final_balance:.4f} days (LWOP days deducted: {p_lwop_days}).")
 
-        _logger.info("Simple, state-based daily accrual process finished.")
+        _logger.info("Daily accrual processing with LWOP deduction completed.")
     
     #
 

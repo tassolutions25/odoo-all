@@ -9,7 +9,6 @@
         - Custom reports and security groups for banking operations.
     """,
     'author': "ERP team",
-    'website': "https://www.yourcompany.com",
     'category': 'Human Resources/Attendances',
     'version': '18.0.1.0.0',
     'depends': [

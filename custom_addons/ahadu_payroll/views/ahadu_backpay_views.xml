@@ -33,10 +33,11 @@
                     <button name="action_draft" string="Set to Draft" type="object" invisible="state in ('draft', 'approved')"/>
                     
                     <!-- REPORTS -->
-                    <button name="action_print_excel" string="Export Excel (Preview)" type="object" class="btn-secondary" invisible="state == 'draft'"/>
-                    <button name="action_print_tax_declaration" string="Tax Declaration" type="object" class="btn-secondary" invisible="state != 'approved'"/>
-                    <button name="action_print_pension_report" string="Pension Report" type="object" class="btn-secondary" invisible="state != 'approved'"/>
-                    <button name="action_print_bank_transfer" string="Bank Transfer" type="object" class="btn-success" invisible="state != 'approved' or bank_transfer_done" groups="payroll.group_payroll_manager"/>
+                    <button name="action_print_excel" string="Export Excel (Preview)" type="object" class="oe_highlight" invisible="state == 'draft'"/>
+                    <button name="action_print_tax_declaration" string="Tax Declaration" type="object" class="oe_highlight" invisible="state != 'approved'"/>
+                    <button name="action_print_pension_report" string="Pension Report" type="object" class="oe_highlight" invisible="state != 'approved'"/>
+                    <!-- <button name="action_print_bank_transfer" string="Bank Transfer" type="object" class="oe_highlight" invisible="state != 'approved' or bank_transfer_done" groups="payroll.group_payroll_manager"/> -->
+                    <button name="action_batch_upload" string="Batch Upload" type="object" class="oe_highlight" invisible="state != 'approved'" groups="payroll.group_payroll_manager"/>
                     
                     <field name="state" widget="statusbar" statusbar_visible="draft,verified,approved"/>
                 </header>

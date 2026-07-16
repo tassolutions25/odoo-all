@@ -17,4 +17,5 @@ from . import report_backpay_tax
 from . import report_backpay_pension
 from . import report_ci_line_export
 from . import report_batch_upload
+from . import report_generation_logs
 

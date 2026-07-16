@@ -147,18 +147,39 @@ class CustomPayrollReport(AhaduReportCommon):
             ci_acc = bank_accounts.filtered(lambda a: a.account_type == 'cash_indemnity')[:1].account_number or ''
             
             # Loan account(s)
-            active_loans_adv = request.env['hr.loan'].sudo().search([
+            loans_adv = request.env['hr.loan'].sudo().search([
                 ('employee_id', '=', emp.id),
                 ('state', '=', 'approved'),
-                ('date_start', '<=', slip.date_to),
                 ('loan_type_id.name', '=', 'Emergency/Salary Advance Loan')
             ])
-            active_loans_pers = request.env['hr.loan'].sudo().search([
+            active_loans_adv = []
+            for loan in loans_adv:
+                is_active = False
+                if loan.is_external:
+                    if loan.remaining_amount > 0:
+                        is_active = True
+                elif loan.paid_installments < loan.installment_months:
+                    if slip.date_to >= loan.date_start:
+                        is_active = True
+                if is_active:
+                    active_loans_adv.append(loan)
+
+            loans_pers = request.env['hr.loan'].sudo().search([
                 ('employee_id', '=', emp.id),
                 ('state', '=', 'approved'),
-                ('date_start', '<=', slip.date_to),
                 ('loan_type_id.name', '=', 'Personal Staff Loan')
             ])
+            active_loans_pers = []
+            for loan in loans_pers:
+                is_active = False
+                if loan.is_external:
+                    if loan.remaining_amount > 0:
+                        is_active = True
+                elif loan.paid_installments < loan.installment_months:
+                    if slip.date_to >= loan.date_start:
+                        is_active = True
+                if is_active:
+                    active_loans_pers.append(loan)
             
             adv_loan_acc = active_loans_adv[0].bank_account_id.account_number if active_loans_adv and active_loans_adv[0].bank_account_id else ''
             pers_loan_acc = active_loans_pers[0].bank_account_id.account_number if active_loans_pers and active_loans_pers[0].bank_account_id else ''

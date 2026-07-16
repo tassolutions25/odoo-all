@@ -12,6 +12,8 @@
                 <field name="leave_days"/>
                 <field name="leave_pay_net" sum="Total Leave Pay"/>
                 <field name="net_payable" sum="Total Payable"/>
+                <field name="is_settled" widget="boolean_toggle"/>
+                <field name="settled_date" optional="hide"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'calculated'" decoration-success="state == 'done'"/>
             </list>
         </field>
@@ -39,6 +41,9 @@
                             <field name="run_id"/>
                             <field name="prepared_by_id"/>
                             <field name="approved_by_id"/>
+                            <field name="is_settled" readonly="1"/>
+                            <field name="settled_date" readonly="1"/>
+                            <field name="settled_by_id" readonly="1"/>
                         </group>
                         <group>
                             <field name="wage"/>
@@ -64,8 +69,10 @@
                                     <field name="unpaid_salary"/>
                                     <field name="representation_allowance"/>
                                     <field name="unpaid_transport"/>
+                                    <field name="fuel_rate" readonly="1"/>
                                     <field name="unpaid_housing"/>
                                     <field name="unpaid_mobile"/>
+                                    <field name="unpaid_hardship"/>
                                     <field name="gross_amount" class="oe_subtotal_footer_separator"/>
                                 </group>
                                 <group string="Taxes &amp; Deductions">
@@ -122,7 +129,8 @@
                 <header>
                     <button name="action_compute_sheet" string="Compute All" type="object" class="oe_highlight" invisible="state != 'draft'"/>
                     <button name="action_confirm" string="Confirm All" type="object" class="oe_highlight" invisible="state != 'calculated'" groups="payroll.group_payroll_manager"/>
-                    <button name="action_print_bank_transfer" string="Bank Transfer" type="object" class="oe_highlight" invisible="state not in ['calculated', 'done']"/>
+                    <!-- <button name="action_print_bank_transfer" string="Bank Transfer" type="object" class="oe_highlight" invisible="state not in ['calculated', 'done']"/> -->
+                    <button name="action_batch_upload" string="Batch Upload" type="object" class="oe_highlight" invisible="state not in ['done']" groups="payroll.group_payroll_manager"/>
                     <button name="action_generate_payslips" string="Generate Payslips" type="object" invisible="state != 'draft'"/>
                     <button name="action_print_excel" string="Print Report" type="object" icon="fa-download" invisible="state == 'draft'"/>
                     <button name="action_draft" string="Set to Draft" type="object" invisible="state in ('draft', 'done')"/>
@@ -153,7 +161,11 @@
                                     <field name="termination_date" readonly="1" force_save="1"/>
                                     <field name="wage" optional="show"/>
                                     <field name="leave_days" optional="show"/>
+                                    <field name="lost_id_card" optional="show"/>
+                                    <field name="credit_account_number" optional="show"/>
                                     <field name="net_payable" sum="Total"/>
+                                    <field name="is_settled" readonly="1" optional="show"/>
+                                    <field name="settled_date" readonly="1" optional="hide"/>
                                     <field name="state" readonly="1"/>
                                     <button name="compute_sheet" type="object" icon="fa-calculator" title="Compute"/>
                                 </list>

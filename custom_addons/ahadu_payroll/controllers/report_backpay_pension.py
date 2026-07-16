@@ -29,7 +29,9 @@ class BackpayPensionReport(AhaduReportCommon):
         section_fmt = workbook.add_format({'bold': True, 'bg_color': '#f2f2f2', 'border': 1, 'font_size': 10})
 
         # Header Section
-        worksheet.merge_range('A1:C3', "በአዲስ አበባ ከተማ አስተዳደር የአዲስ አበባ\nከፍተኛ ግብር ከፋዮች ቅርንጫፍ ጽሕፈት ቤት", title_fmt)
+        is_aa_region = any(line.employee_id.region_id.name == 'Addis Ababa' for line in batch.line_ids)
+        aa_header_text = "በአዲስ አበባ ከተማ አስተዳደር የአዲስ አበባ\nከፍተኛ ግብር ከፋዮች ቅርንጫፍ ጽሕፈት ቤት" if is_aa_region else ""
+        worksheet.merge_range('A1:C3', aa_header_text, title_fmt)
         worksheet.merge_range('D1:I3', "የግል ድርጅት ሠራተኞች የጡረታ መዋጮ ማሳወቂያ ቅጽ (Arrears/Backpay)\n(በግል ድርጅት ሠራተኞች የጡረታ አዋጅ ቁጥር 715/2003)\nቅጽ ቁጥር 2/2003 የተጨመረ ማሳወቂያ ቅጽ", title_fmt)
         
         worksheet.merge_range('A4:I4', "ክፍል -1 የጡረታ መዋጮውን የሚከፍለው ድርጅት ዝርዝር መረጃ", section_fmt)

@@ -63,7 +63,7 @@ class SlideSlide(models.Model):
                             file_id = match.group(1)
 
                     if file_id:
-                        embed_url = f"https://drive.google.com/file/d/{file_id}/preview"
+                        embed_url = f"drive.google.com/file/d/{file_id}/preview"
                         slide.embed_code = Markup(
                             '<iframe src="{url}" width="100%" height="500" frameborder="0" allow="autoplay" allowfullscreen></iframe>'
                         ).format(url=embed_url)

@@ -84,6 +84,10 @@ class AhaduOvertimeTracking(models.Model):
 
     @api.model
     def create(self, vals):
+        is_manager = self.env.user.has_group('ahadu_payroll.group_attendance_manager') or self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')
+        is_admin = self.env.user.has_group('base.group_system')
+        if is_manager and not is_admin and not self.env.su:
+            raise UserError(_("Attendance Managers are restricted from creating overtime tracking sheets. This action is reserved for Attendance Officers."))
         if vals.get('employee_id') and vals.get('date_from'):
             employee = self.env['hr.employee'].browse(vals['employee_id'])
             date_from = fields.Date.from_string(vals['date_from'])
@@ -92,8 +96,22 @@ class AhaduOvertimeTracking(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code('ahadu.overtime.tracking') or 'New'
         return super(AhaduOvertimeTracking, self).create(vals)
 
+    def write(self, vals):
+        is_manager = self.env.user.has_group('ahadu_payroll.group_attendance_manager') or self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')
+        is_admin = self.env.user.has_group('base.group_system')
+        if is_manager and not is_admin and not self.env.su:
+            allowed_keys = {'state', 'name', 'approved_by_id', 'approved_date', 'message_attachment_ids'}
+            blocked_keys = set(vals.keys()) - allowed_keys - {'message_follower_ids', 'activity_ids', 'message_ids'}
+            if blocked_keys:
+                raise UserError(_("Attendance Managers are restricted from editing overtime tracking sheets. They can only approve/reject them."))
+        return super(AhaduOvertimeTracking, self).write(vals)
+
     def action_verify(self):
         self.ensure_one()
+        is_manager = self.env.user.has_group('ahadu_payroll.group_attendance_manager') or self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')
+        is_admin = self.env.user.has_group('base.group_system')
+        if is_manager and not is_admin and not self.env.su:
+            raise UserError(_("Attendance Managers cannot verify overtime tracking sheets. This action is reserved for Attendance Officers."))
         self.write({
             'state': 'verified', 
             'verified_by_id': self.env.user.id
@@ -101,6 +119,9 @@ class AhaduOvertimeTracking(models.Model):
 
     def action_approve(self):
         self.ensure_one()
+        if not (self.env.user.has_group('ahadu_payroll.group_attendance_manager') or 
+                self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')):
+            raise UserError(_("Only Attendance Managers can approve overtime tracking sheets."))
         self.write({
             'state': 'approved', 
             'approved_by_id': self.env.user.id

@@ -52,6 +52,10 @@ class AhaduAttendanceSheet(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        is_manager = self.env.user.has_group('ahadu_payroll.group_attendance_manager') or self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')
+        is_admin = self.env.user.has_group('base.group_system')
+        if is_manager and not is_admin and not self.env.su:
+            raise UserError(_("Attendance Managers are restricted from creating attendance sheets. This action is reserved for Attendance Officers."))
         for vals in vals_list:
             if vals.get('name', _('New')) == _('New'):
                 vals['name'] = self.env['ir.sequence'].next_by_code('ahadu.attendance.sheet') or _('New')
@@ -59,7 +63,21 @@ class AhaduAttendanceSheet(models.Model):
             vals['prepared_on'] = fields.Datetime.now()
         return super(AhaduAttendanceSheet, self).create(vals_list)
 
+    def write(self, vals):
+        is_manager = self.env.user.has_group('ahadu_payroll.group_attendance_manager') or self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')
+        is_admin = self.env.user.has_group('base.group_system')
+        if is_manager and not is_admin and not self.env.su:
+            allowed_keys = {'state', 'name', 'approved_by_id', 'approved_on', 'message_attachment_ids'}
+            blocked_keys = set(vals.keys()) - allowed_keys - {'message_follower_ids', 'activity_ids', 'message_ids'}
+            if blocked_keys:
+                raise UserError(_("Attendance Managers are restricted from editing attendance sheets. They can only approve/reject them."))
+        return super(AhaduAttendanceSheet, self).write(vals)
+
     def action_verify(self):
+        is_manager = self.env.user.has_group('ahadu_payroll.group_attendance_manager') or self.env.user.has_group('ahadu_payroll.group_branch_attendance_manager')
+        is_admin = self.env.user.has_group('base.group_system')
+        if is_manager and not is_admin and not self.env.su:
+            raise UserError(_("Attendance Managers cannot verify attendance sheets. This action is reserved for Attendance Officers."))
         for sheet in self:
             sheet.write({
                 'state': 'verified',

@@ -102,9 +102,9 @@
                     </group>
                     <group>
                         <group string="Calculations">
-                            <field name="total_interest" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="total_repayment" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="monthly_installment" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_interest" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="is_external or not is_editable"/>
+                            <field name="total_repayment" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="is_external or not is_editable"/>
+                            <field name="monthly_installment" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="is_external or not is_editable"/>
                         </group>
                         <group string="External Information" invisible="not is_external">
                             <field name="is_external"/>

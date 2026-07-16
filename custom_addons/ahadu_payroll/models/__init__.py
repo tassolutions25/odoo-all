@@ -28,3 +28,5 @@ from . import ahadu_bonus_payment
 from . import ahadu_backpay
 from . import ahadu_attendance
 from . import hr_resignation_payslip
+from . import hr_resignation_run
+from . import ahadu_payroll_campaign

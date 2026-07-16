@@ -75,6 +75,9 @@ class PayrollSheetReport(AhaduReportCommon):
                 # 2. Pay Group filters
                 if batch.pay_group_ids:
                     filter_texts.append(f"Pay Groups: {', '.join(batch.pay_group_ids.mapped('name'))}")
+
+                if batch.department_ids:
+                    filter_texts.append(f"Departments: {', '.join(batch.department_ids.mapped('name'))}")
                 
                 # 3. Region filters
                 if batch.region_ids:
@@ -102,6 +105,9 @@ class PayrollSheetReport(AhaduReportCommon):
                 if batch.pay_group_ids:
                     filter_texts.append(f"Pay Groups: {', '.join(batch.pay_group_ids.mapped('name'))}")
 
+                if batch.department_ids:
+                    filter_texts.append(f"Departments: {', '.join(batch.department_ids.mapped('name'))}")
+
                 filter_info = " | ".join(filter_texts) if filter_texts else ""
                 worksheet.merge_range('A3:AK3', filter_info, branch_fmt)
         except Exception as e:
@@ -121,9 +127,17 @@ class PayrollSheetReport(AhaduReportCommon):
                 ('employee_id', 'in', employee_ids),
                 ('state', '=', 'approved'),
                 ('loan_type_id.is_payroll_deduction', '=', True),
-                ('date_start', '<=', batch.date_end)
             ])
-            loan_types.update(loans.mapped('loan_type_id.name'))
+            for loan in loans:
+                is_active = False
+                if loan.is_external:
+                    if loan.remaining_amount > 0:
+                        is_active = True
+                elif loan.paid_installments < loan.installment_months:
+                    if batch.date_end >= loan.date_start:
+                        is_active = True
+                if is_active:
+                    loan_types.add(loan.loan_type_id.name)
         
         sorted_loan_types = sorted(list(loan_types))
 
@@ -470,6 +484,34 @@ class PayrollSheetReport(AhaduReportCommon):
                 
         worksheet.merge_range(c_row, 6, c_row, 7, 'TOTAL CREDIT', workbook.add_format({'bold': True, 'border': 1, 'bg_color': '#f2f2f2'}))
         worksheet.write(c_row, 8, c_sum, workbook.add_format({'bold': True, 'border': 1, 'num_format': '#,##0.00', 'bg_color': '#f2f2f2'}))
+
+        month_label = batch.date_start.strftime('%B,%Y') if batch.date_start else ''
+        ticket_entries = []
+        for desc, gl, val in debits:
+            ticket_entries.append({
+                'side': 'debit',
+                'description': desc,
+                'account': gl,
+                'amount': val,
+                'period_label': month_label,
+            })
+        for desc, gl, val in credits:
+            ticket_entries.append({
+                'side': 'credit',
+                'description': desc,
+                'account': gl,
+                'amount': val,
+                'period_label': month_label,
+            })
+        ticket_branch_name = filter_info or 'All Branches / Departments'
+        ticket_processed_date = batch.approved_date or batch.date_end or batch.date_start
+        self._write_ticket_claim_sheet(
+            workbook,
+            ticket_entries,
+            period_label=month_label,
+            branch_name=ticket_branch_name,
+            processed_date=ticket_processed_date,
+        )
 
         # --- SHEET 2: PAYMENT TICKETS (CASH INDEMNITY) ---
         worksheet2 = workbook.add_worksheet('Payment Tickets')

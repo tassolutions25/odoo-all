@@ -9,6 +9,7 @@
                 <field name="name"/>
                 <field name="employee_id"/>
                 <field name="deduction_type"/>
+                <field name="campaign_id" optional="show" invisible="deduction_type != 'campaign'"/>
                 <field name="penalty_percentage" optional="show"/>
                 <field name="monthly_amount"/>
                 <field name="remaining_balance" optional="show"/>
@@ -40,6 +41,7 @@
                         <group string="Basic Information">
                             <field name="employee_id"/>
                             <field name="deduction_type"/>
+                            <field name="campaign_id" invisible="deduction_type != 'campaign'" required="deduction_type == 'campaign'"/>
                             <field name="monthly_amount" invisible="deduction_type == 'penalty'"/>
                         </group>
                         <group string="Duration">
@@ -70,6 +72,7 @@
             <list editable="bottom">
                 <field name="name"/>
                 <field name="deduction_type"/>
+                <field name="campaign_id" optional="show" invisible="deduction_type != 'campaign'" required="deduction_type == 'campaign'"/>
                 <field name="penalty_percentage" optional="show"/>
                 <field name="monthly_amount"/>
                 <field name="start_date"/>
@@ -109,7 +112,7 @@
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
-                <page string="Deductions &amp; Loans" name="deductions">
+                <page string="Deductions &amp; Loans" name="deductions" groups="payroll.group_payroll_user,payroll.group_payroll_manager,ahadu_payroll.group_loan_credit_committee">
                     <group string="External Loans (Synced)">
                         <field name="loan_ids" nolabel="1" readonly="1" domain="[('is_external', '=', True)]">
                             <list>
@@ -123,7 +126,7 @@
                             </list>
                         </field>
                     </group>
-                    <group string="Internal Loans">
+                    <!-- <group string="Internal Loans">
                         <field name="loan_ids" nolabel="1" context="{'default_employee_id': id}" domain="[('is_external', '=', False)]">
                             <list decoration-muted="state in ('refused', 'cancelled', 'completed')" decoration-success="state == 'approved'">
                                 <field name="name"/>
@@ -134,12 +137,13 @@
                                 <field name="state" widget="badge"/>
                             </list>
                         </field>
-                    </group>
+                    </group> -->
                     <group string="Savings &amp; Other Deductions">
                         <field name="deduction_ids" nolabel="1" context="{'default_employee_id': id}">
                             <list editable="bottom">
                                 <field name="name"/>
                                 <field name="deduction_type"/>
+                                <field name="campaign_id" optional="show" invisible="deduction_type != 'campaign'" required="deduction_type == 'campaign'"/>
                                 <field name="penalty_percentage" optional="show"/>
                                 <field name="monthly_amount" sum="Total"/>
                                 <field name="start_date"/>
