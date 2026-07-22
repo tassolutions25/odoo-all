@@ -5,7 +5,28 @@
         <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
         <field name="arch" type="xml">
            
-          <xpath expr="//field[@name='email_from']" position="before">
+           <xpath expr="//header" position="inside">
+               <field name="approval_state" invisible="1"/>
+               <field name="pending_stage_id" invisible="1"/>
+               <field name="is_checker" invisible="1"/>
+               <button name="action_request_approval" string="Request Approval" type="object" class="btn-primary" invisible="approval_state not in ('draft', 'rejected') or not pending_stage_id"/>
+               <button name="action_approve" string="Approve" type="object" class="btn-success" invisible="approval_state != 'pending' or not is_checker"/>
+               <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="approval_state != 'pending' or not is_checker"/>
+               <button name="action_reset_approval" string="Reset Approval" type="object" class="btn-secondary" invisible="approval_state != 'rejected'"/>
+           </xpath>
+
+           <xpath expr="//sheet" position="before">
+               <div class="alert alert-warning text-center fw-bold fs-6 mb-2" role="alert" invisible="approval_state != 'pending'">
+                   <i class="fa fa-clock-o me-2"/> Approval Requested: Stage change to "<field name="pending_stage_id" readonly="1" class="fw-bold"/>" is waiting for approval from Manager <field name="checker_id" readonly="1" class="fw-bold"/>.
+               </div>
+               <div class="alert alert-danger text-center fw-bold fs-6 mb-2" role="alert" invisible="approval_state != 'rejected'">
+                   <i class="fa fa-times-circle me-2"/> Approval Rejected: Stage change to "<field name="pending_stage_id" readonly="1" class="fw-bold"/>" was rejected by Manager <field name="checker_id" readonly="1" class="fw-bold"/>.
+               </div>
+               <widget name="web_ribbon" title="Waiting Approval" bg_color="bg-warning" invisible="approval_state != 'pending'"/>
+               <widget name="web_ribbon" title="Approval Rejected" bg_color="bg-danger" invisible="approval_state != 'rejected'"/>
+           </xpath>
+
+           <xpath expr="//field[@name='email_from']" position="before">
           <field name="employee_id"
            modifiers='{
                "invisible": [["stage_id.name", "!=", "Contract Signed"]],
@@ -27,6 +48,11 @@
             
             <!-- Add custom groups -->
             <xpath expr="//group[@name='recruitment_contract']" position="after">
+                <group string="Stage Approval Status" invisible="approval_state == 'draft' and not pending_stage_id">
+                    <field name="approval_state" readonly="1"/>
+                    <field name="pending_stage_id" readonly="1" invisible="not pending_stage_id"/>
+                    <field name="checker_id" readonly="1" invisible="not checker_id"/>
+                </group>
                 <group string="Educational Details">
                     <field name="educational_qualification"/>
                     <field name="institution_name"/>

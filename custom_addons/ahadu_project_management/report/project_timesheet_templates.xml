@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- QWeb PDF Report Action -->
+    <record id="action_report_project_timesheet" model="ir.actions.report">
+        <field name="name">Project Timesheet Report</field>
+        <field name="model">project.timesheet.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ahadu_project_management.report_timesheet_template</field>
+        <field name="report_file">ahadu_project_management.report_timesheet_template</field>
+        <field name="binding_model_id" eval="False"/>
+    </record>
+
+    <!-- QWeb PDF Template -->
+    <template id="report_timesheet_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                        <h2 style="color: #1F4E79; border-bottom: 2px solid #1F4E79; padding-bottom: 10px; margin-bottom: 25px;">
+                            Project Timesheet Report
+                        </h2>
+                        
+                        <!-- Filter Summary Block -->
+                        <div class="row mt16 mb24" style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 15px; margin: 0 0 25px 0;">
+                            <div class="col-6">
+                                <t t-if="o.start_date"><strong>Start Date: </strong> <span t-field="o.start_date"/><br/></t>
+                                <t t-if="o.end_date"><strong>End Date: </strong> <span t-field="o.end_date"/><br/></t>
+                                <t t-if="o.department_id"><strong>Department: </strong> <span t-field="o.department_id.name"/><br/></t>
+                            </div>
+                            <div class="col-6">
+                                <t t-if="o.project_id"><strong>Project: </strong> <span t-field="o.project_id.name"/><br/></t>
+                                <t t-if="o.employee_id"><strong>Employee: </strong> <span t-field="o.employee_id.name"/><br/></t>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <table class="table table-sm table-striped" style="width: 100%; border-collapse: collapse;">
+                            <thead style="background-color: #D9E1F2; color: #1F4E79;">
+                                <tr>
+                                    <th style="padding: 8px; border: 1px solid #dee2e6;">Date</th>
+                                    <th style="padding: 8px; border: 1px solid #dee2e6;">Employee</th>
+                                    <th style="padding: 8px; border: 1px solid #dee2e6;">Project</th>
+                                    <th style="padding: 8px; border: 1px solid #dee2e6;">Task</th>
+                                    <th style="padding: 8px; border: 1px solid #dee2e6;">Description</th>
+                                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Time (Hrs)</th>
+                                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">State</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="total_hours" t-value="0.0"/>
+                                <tr t-foreach="o._get_timesheet_lines()" t-as="line">
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;"><span t-field="line.date"/></td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;"><span t-field="line.employee_id.name"/></td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;"><span t-field="line.project_id.name"/></td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;"><span t-field="line.task_id.name"/></td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;"><span t-field="line.name"/></td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">
+                                        <span t-field="line.unit_amount" t-options='{"widget": "float_time"}'/>
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">
+                                        <span t-field="line.state"/>
+                                    </td>
+                                    <t t-set="total_hours" t-value="total_hours + line.unit_amount"/>
+                                </tr>
+                                <tr style="background-color: #E2EFDA; font-weight: bold; border-top: 2px solid #1F4E79;">
+                                    <td colspan="5" style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Total Hours Spent</td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">
+                                        <span t-esc="total_hours" t-options='{"widget": "float_time"}'/>
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

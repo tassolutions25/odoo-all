@@ -30,9 +30,9 @@
               <!-- Add Notebook Pages -->
             <xpath expr="//notebook" position="inside">
                 <page string="Job Description" name="job_description">
-                    <field name="job_description" widget="binary" filename="job_description_filename"/>
+                    <field name="job_description" widget="binary" filename="job_description_filename" invisible="1"/>
+                    <field name="job_description_ids" widget="many2many_binary"/>
                 </page>
-
              </xpath>    
 
               <xpath expr="//field[@name='contract_type_id']" position="after">

@@ -1,6 +1,15 @@
 # ahadu_recruitment/models/recruitment_inherit.py
 from odoo import models, fields, api
 
+class AhaduHrRecruitmentStage(models.Model):
+    _inherit = 'hr.recruitment.stage'
+
+    requires_manager_approval = fields.Boolean(
+        string="Requires Manager Approval",
+        default=False,
+        help="If checked, moving an applicant to this stage requires approval from the officer's direct manager."
+    )
+
 class AhaduHrJob(models.Model):
     _inherit = 'hr.job'
     _description = 'Ahadu Job Position'
@@ -16,6 +25,14 @@ class AhaduHrJob(models.Model):
     cost_per_hire = fields.Monetary(string='Cost Per Hire', currency_field='currency_id')
     job_description = fields.Binary(string="Job Description File", attachment=True)
     job_description_filename = fields.Char(string="Filename")
+    job_description_ids = fields.Many2many(
+        'ir.attachment',
+        'hr_job_attachment_rel',
+        'job_id',
+        'attachment_id',
+        string="Job Description Documents",
+        help="Upload multiple job description files."
+    )
     years_of_experience = fields.Integer(string='Years of Experience')
     currency_id = fields.Many2one(
         'res.currency',

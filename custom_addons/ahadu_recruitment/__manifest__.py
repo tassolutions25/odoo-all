@@ -18,6 +18,7 @@
         'hr_skills',
         'website',],
     'data': [
+        'security/recruitment_security.xml',
         'security/ir.model.access.csv',
         'views/recruitment_views_inherit.xml',
         'views/menu_views.xml',

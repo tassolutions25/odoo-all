@@ -26,6 +26,8 @@
         'views/project_views.xml',
         'views/task_views.xml',
         'views/timesheet_views.xml',
+        'wizard/project_timesheet_report_wizard_views.xml',
+        'report/project_timesheet_templates.xml',
         'views/project_budget_views.xml',
         'views/risk_issue_change_views.xml',
         'views/project_closure_views.xml',

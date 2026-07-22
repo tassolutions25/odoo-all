@@ -54,6 +54,32 @@
     </record>
 
     <!-- ============================================================
+         Record Rules for Timesheets (account.analytic.line)
+    ============================================================ -->
+
+    <record id="timesheet_rule_project_team" model="ir.rule">
+        <field name="name">Project Team: Respective Timesheets Only</field>
+        <field name="model_id" ref="analytic.model_account_analytic_line"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_project_team'))]"/>
+        <field name="domain_force">['|', '|', '|', ('user_id', '=', user.id), ('project_id.user_id', '=', user.id), ('employee_id.parent_id.user_id', '=', user.id), ('employee_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="timesheet_rule_pmo_admin" model="ir.rule">
+        <field name="name">PMO Admin: All Timesheets</field>
+        <field name="model_id" ref="analytic.model_account_analytic_line"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_pmo_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- ============================================================
          Record Rules for Budgets & Expenses
          ============================================================ -->
     <record id="budget_rule_project_team" model="ir.rule">

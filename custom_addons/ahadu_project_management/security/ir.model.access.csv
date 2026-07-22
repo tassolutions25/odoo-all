@@ -8,6 +8,8 @@ access_project_phase_pmo,project.phase.pmo,model_project_phase,group_pmo_admin,1
 access_project_category_team,project.category.team,model_project_category,group_project_team,1,0,0,0
 access_project_category_manager,project.category.manager,model_project_category,group_project_manager,1,1,1,0
 access_project_category_pmo,project.category.pmo,model_project_category,group_pmo_admin,1,1,1,1
+access_timesheet_rejection_wizard,timesheet.rejection.wizard.team,model_timesheet_rejection_wizard,group_project_team,1,1,1,1
+access_project_timesheet_report_wizard,project.timesheet.report.wizard.team,model_project_timesheet_report_wizard,group_project_team,1,1,1,1
 access_project_budget_category_team,project.budget.category.team,model_project_budget_category,group_project_team,1,0,0,0
 access_project_budget_category_mgr,project.budget.category.mgr,model_project_budget_category,group_project_manager,1,1,1,0
 access_project_budget_category_pmo,project.budget.category.pmo,model_project_budget_category,group_pmo_admin,1,1,1,1

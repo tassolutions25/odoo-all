@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Category for Recruitment Approvals -->
+        <record id="module_category_ahadu_recruitment" model="ir.module.category">
+            <field name="name">Recruitment Approvals</field>
+            <field name="description">User roles for Recruitment Maker/Checker Stage Approval Workflow.</field>
+            <field name="sequence">25</field>
+        </record>
+
+        <!-- Recruitment Maker Group -->
+        <record id="group_recruitment_maker" model="res.groups">
+            <field name="name">Recruitment Maker</field>
+            <field name="category_id" ref="ahadu_recruitment.module_category_ahadu_recruitment"/>
+            <field name="comment">Allows user to initiate candidate stage moves and request stage approvals.</field>
+        </record>
+
+        <!-- Recruitment Checker Group -->
+        <record id="group_recruitment_checker" model="res.groups">
+            <field name="name">Recruitment Checker</field>
+            <field name="category_id" ref="ahadu_recruitment.module_category_ahadu_recruitment"/>
+            <field name="comment">Allows manager to approve or reject candidate stage transition requests.</field>
+        </record>
+    </data>
+</odoo>

@@ -66,10 +66,14 @@
                        invisible="not project_id"/>
             </xpath>
 
-            <!-- 9. Add resource allocation after allocated_hours -->
+            <!-- 9. Add resource allocation after allocated_hours, then show per-employee summary -->
             <xpath expr="//field[@name='allocated_hours']" position="after">
                 <field name="resource_allocation" string="Workload Allocation (%)"
-                       help="Percentage of this assignee's capacity consumed by this task."/>
+                       help="Percentage of each assignee's standard capacity consumed by this task."/>
+                <field name="employee_allocation_info" widget="html"
+                       invisible="not resource_allocation or not user_ids"
+                       readonly="1"
+                       string="Employee Capacity Status"/>
             </xpath>
 
             <!-- 10. Replace Execution Tracking Page with customized date & roll-up display -->
@@ -89,8 +93,14 @@
                     <group>
                         <group string="Progress">
                             <field name="completion_percentage" widget="progressbar"/>
-                            <field name="effective_hours" string="Approved Hours Logged"/>
+                            <field name="total_timesheet_hours" string="Total Hours Logged"
+                                   help="All timesheet hours on this task regardless of approval state."
+                                   readonly="1"/>
+                            <field name="effective_hours" string="Approved Hours"
+                                   help="Only APPROVED or POSTED timesheet hours — these count toward project progress."
+                                   readonly="1"/>
                         </group>
+
                         <group string="WBS Reference">
                             <field name="task_number" readonly="1"/>
                             <field name="phase_id" readonly="1"
@@ -99,6 +109,49 @@
                         </group>
                     </group>
                 </page>
+            </xpath>
+
+            <!-- 11. Customize the timesheet list inside the task form:
+                     - open_form_view=1 means clicking a row opens the form
+                     - form_view_ref on the field context ensures our clean Ahadu
+                       form opens (not the native analytic/accounting form)
+                     - State badge + rejection comment shown in the list for quick overview
+            -->
+            <xpath expr="//field[@name='timesheet_ids']" position="attributes">
+                <attribute name="context">{'default_project_id': project_id, 'default_task_id': id, 'form_view_ref': 'ahadu_project_management.ahadu_timesheet_line_form'}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='timesheet_ids']/list" position="attributes">
+                <attribute name="editable"></attribute>
+                <attribute name="open_form_view">1</attribute>
+                <attribute name="create">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='timesheet_ids']/list/field[@name='unit_amount']" position="after">
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'submitted'"
+                       decoration-warning="state == 'approved'"
+                       decoration-success="state == 'posted'"/>
+                <field name="rejection_comment" optional="show" string="Rejection Reason"/>
+            </xpath>
+            <!-- 12. 'Submit My Timesheets' and 'Add Timesheet Line' buttons above the timesheet list -->
+            <xpath expr="//field[@name='timesheet_ids']" position="before">
+                <div class="mb-2" invisible="not id">
+                    <button name="action_submit_my_timesheets"
+                            string="Submit My Draft Timesheets"
+                            type="object"
+                            class="btn btn-primary btn-sm"
+                            icon="fa-paper-plane"
+                            groups="base.group_user"
+                            help="Submit all your draft timesheet lines on this task to your manager for approval."/>
+                    <button name="action_add_timesheet_line"
+                            string="Add Timesheet Line"
+                            type="object"
+                            class="btn btn-secondary btn-sm ms-2"
+                            icon="fa-plus"
+                            groups="base.group_user"
+                            help="Create a new timesheet line using the quick small form."/>
+                    <span class="ms-2 text-muted small">&#8594; Click a row to open it and Submit / Approve / Reject / Post.</span>
+                </div>
             </xpath>
         </field>
     </record>

@@ -109,6 +109,7 @@
         id="menu_ahadu_project_root"
         web_icon="project,static/description/icon.png"
         sequence="25"
+        groups="ahadu_project_management.group_project_team"
     />
 
     <!-- ============================================================
@@ -281,6 +282,15 @@
         parent="menu_ahadu_reporting_group"
         action="project.action_project_task_user_tree"
         sequence="10"
+    />
+
+    <!-- Timesheets Report -->
+    <menuitem
+        name="Timesheets Report"
+        id="menu_ahadu_timesheet_report_wizard"
+        parent="menu_ahadu_reporting_group"
+        action="action_project_timesheet_report_wizard"
+        sequence="20"
     />
 
 
