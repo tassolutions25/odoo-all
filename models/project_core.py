@@ -257,20 +257,110 @@ class ProjectProject(models.Model):
     @api.model
     def get_project_dashboard_data(self, filters=None):
         filters = filters or {}
+        user = self.env.user
+        employee = self.env['hr.employee'].search([('user_id', '=', user.id)], limit=1)
+
+        # 1. Determine User Role
+        user_role = filters.get('active_role')
+        if not user_role or user_role == 'auto':
+            if user.has_group('ahadu_project_management.group_pmo_admin'):
+                user_role = 'pmo'
+            elif employee and employee.job_id:
+                access = self.env['project.dashboard.access'].search([('job_id', '=', employee.job_id.id)], limit=1)
+                user_role = access.dashboard_scope if access else 'executive'
+            else:
+                user_role = 'executive'
+
+        # 2. Build 15-Filter Search Domain
         domain = []
 
+        # Filter 1: Project
+        if filters.get('project_id') and filters['project_id'] != 'all':
+            domain.append(('id', '=', int(filters['project_id'])))
+
+        # Filter 2: Program
+        if filters.get('program_id') and filters['program_id'] != 'all':
+            domain.append(('program_id', '=', int(filters['program_id'])))
+
+        # Filter 3: Directorate (Department)
+        if filters.get('department_id') and filters['department_id'] != 'all':
+            domain.append(('project_department_id', '=', int(filters['department_id'])))
+
+        # Filter 4: Division
+        if filters.get('division_id') and filters['division_id'] != 'all':
+            domain.append(('project_division_id', '=', int(filters['division_id'])))
+
+        # Filter 5: Sponsor
+        if filters.get('sponsor_id') and filters['sponsor_id'] != 'all':
+            domain.append(('project_sponsor_id', '=', int(filters['sponsor_id'])))
+
+        # Filter 6: PM
+        if filters.get('pm_id') and filters['pm_id'] != 'all':
+            domain.append(('user_id', '=', int(filters['pm_id'])))
+
+        # Filter 7: Category
+        if filters.get('category_id') and filters['category_id'] != 'all':
+            domain.append(('project_category_id', '=', int(filters['category_id'])))
+
+        # Filter 8: Status
         if filters.get('state') and filters['state'] != 'all':
             domain.append(('state', '=', filters['state']))
-        if filters.get('department') and filters['department'] != 'all':
-            domain.append(('project_department_id', '=', int(filters['department'])))
+
+        # Filter 9: Priority
         if filters.get('priority') and filters['priority'] != 'all':
             domain.append(('priority', '=', filters['priority']))
 
+        # Role-based Scoping
+        if user_role == 'sponsor' and employee:
+            domain.append(('project_sponsor_id', '=', employee.id))
+        elif user_role == 'pm':
+            domain.append(('user_id', '=', user.id))
+        elif user_role == 'team':
+            tasks = self.env['project.task'].search([('user_ids', 'in', [user.id])])
+            domain.append(('id', 'in', tasks.mapped('project_id').ids or [0]))
+
         projects = self.search(domain)
 
+        # Filter 10: Risk Level post-filter
+        if filters.get('risk_level') and filters['risk_level'] != 'all':
+            projects = projects.filtered(lambda p: any(r.rating_level == filters['risk_level'] for r in p.risk_ids))
+
+        # Filter 13: Date Range
+        if filters.get('date_from'):
+            projects = projects.filtered(lambda p: p.planned_start_date and p.planned_start_date >= fields.Date.from_string(filters['date_from']))
+        if filters.get('date_to'):
+            projects = projects.filtered(lambda p: p.planned_end_date and p.planned_end_date <= fields.Date.from_string(filters['date_to']))
+
+        # Filter 14: Budget Status
+        if filters.get('budget_status') and filters['budget_status'] != 'all':
+            projects = projects.filtered(lambda p: p.budget_status == filters['budget_status'])
+
+        # Filter 15: Health post-filter
         if filters.get('health') and filters['health'] != 'all':
             projects = projects.filtered(lambda p: p.project_health == filters['health'])
 
+        today = fields.Date.today()
+
+        # 3. Dynamic Filter Options Payload
+        all_projs = self.search([])
+        divisions_data = []
+        if 'hr.division' in self.env:
+            try:
+                divisions_data = self.env['hr.division'].search_read([], ['id', 'name'])
+            except Exception:
+                divisions_data = []
+        filters_lookup = {
+            'projects': self.search_read([], ['id', 'name']),
+            'programs': self.env['project.program'].search_read([], ['id', 'name']),
+            'departments': self.env['hr.department'].search_read([], ['id', 'name']),
+            'divisions': divisions_data,
+            'sponsors': self.env['hr.employee'].search_read([('id', 'in', all_projs.mapped('project_sponsor_id').ids)], ['id', 'name']),
+            'pms': self.env['res.users'].search_read([('id', 'in', all_projs.mapped('user_id').ids)], ['id', 'name']),
+            'categories': self.env['project.category'].search_read([], ['id', 'name']),
+            'resources': self.env['hr.employee'].search_read([], ['id', 'name']),
+        }
+
+        # 4. Global Baseline KPIs
         total_projects = len(projects)
         active_projects = len(projects.filtered(lambda p: p.state == 'active'))
         completed_projects = len(projects.filtered(lambda p: p.state == 'closed'))
@@ -282,126 +372,254 @@ class ProjectProject(models.Model):
         total_actual_cost = sum(projects.mapped('actual_cost'))
         budget_variance = total_budget - total_actual_cost
 
-        open_risks = sum(projects.mapped('open_risks_count'))
-        open_issues = sum(projects.mapped('critical_issues_count'))
-        overdue_tasks = sum(projects.mapped('overdue_tasks_count'))
-
-        by_health = {
-            'labels': ['On Track', 'At Risk', 'Critical'],
-            'data': [on_track, at_risk, critical]
-        }
-
-        states_count = {}
-        for p in projects:
-            st = dict(self._fields['state'].selection).get(p.state, p.state)
-            states_count[st] = states_count.get(st, 0) + 1
-        by_state = {
-            'labels': list(states_count.keys()),
-            'data': list(states_count.values())
-        }
-
-        depts_count = {}
-        for p in projects:
-            dept = p.project_department_id.name or 'Unassigned'
-            depts_count[dept] = depts_count.get(dept, 0) + 1
-        by_department = {
-            'labels': list(depts_count.keys()),
-            'data': list(depts_count.values())
-        }
-
-        prio_count = {}
-        for p in projects:
-            pr = dict(self._fields['priority'].selection).get(p.priority, p.priority)
-            prio_count[pr] = prio_count.get(pr, 0) + 1
-        by_priority = {
-            'labels': list(prio_count.keys()),
-            'data': list(prio_count.values())
-        }
-
-        dept_budget = {}
-        for p in projects:
-            dept = p.project_department_id.name or 'Unassigned'
-            if dept not in dept_budget:
-                dept_budget[dept] = {'planned': 0.0, 'actual': 0.0}
-            dept_budget[dept]['planned'] += p.budget_amount
-            dept_budget[dept]['actual'] += p.actual_cost
-
-        budget_by_dept = {
-            'labels': list(dept_budget.keys()),
-            'planned': [v['planned'] for v in dept_budget.values()],
-            'actual': [v['actual'] for v in dept_budget.values()]
-        }
-
-        var_labels = [p.name for p in projects[:10]]
-        var_data = [p.budget_variance for p in projects[:10]]
-        budget_variance_chart = {
-            'labels': var_labels,
-            'data': var_data
-        }
-
-        all_risks = projects.mapped('risk_ids').filtered(lambda r: r.state == 'open')
-        risk_levels = {}
-        for r in all_risks:
-            lvl = (r.rating_level or 'low').capitalize()
-            risk_levels[lvl] = risk_levels.get(lvl, 0) + 1
-        risk_by_level = {
-            'labels': list(risk_levels.keys()) or ['Low'],
-            'data': list(risk_levels.values()) or [0]
-        }
-
-        all_issues = projects.mapped('issue_ids').filtered(lambda i: i.state in ('draft', 'open'))
-        issue_sevs = {}
-        for i in all_issues:
-            sev = (i.severity or 'low').capitalize()
-            issue_sevs[sev] = issue_sevs.get(sev, 0) + 1
-        issues_by_severity = {
-            'labels': list(issue_sevs.keys()) or ['Low'],
-            'data': list(issue_sevs.values()) or [0]
-        }
-
         all_tasks = projects.mapped('task_ids')
-        task_stats = {'Completed': 0, 'In Progress': 0, 'Overdue': 0, 'Not Started': 0}
-        today = fields.Date.today()
-        for t in all_tasks:
-            if t.task_status == 'completed':
-                task_stats['Completed'] += 1
-            elif t.planned_end_date and t.planned_end_date < today:
-                task_stats['Overdue'] += 1
-            elif t.task_status == 'in_progress':
-                task_stats['In Progress'] += 1
-            else:
-                task_stats['Not Started'] += 1
-        task_completion = {
-            'labels': list(task_stats.keys()),
-            'data': list(task_stats.values())
-        }
+        all_risks = projects.mapped('risk_ids')
+        all_issues = projects.mapped('issue_ids')
+        all_changes = self.env['project.change_request'].search([('project_id', 'in', projects.ids)])
 
-        bins = {'0-25%': 0, '26-50%': 0, '51-75%': 0, '76-100%': 0}
+        overdue_tasks = len(all_tasks.filtered(lambda t: t.planned_end_date and t.planned_end_date < today and t.task_status != 'completed'))
+        open_risks = len(all_risks.filtered(lambda r: r.state == 'open'))
+        critical_issues_count = len(all_issues.filtered(lambda i: i.severity == 'critical' and i.state in ('draft', 'open')))
+        open_issues = len(all_issues.filtered(lambda i: i.state in ('draft', 'open')))
+        pending_changes = len(all_changes.filtered(lambda c: c.state == 'submitted'))
+
+        by_health = {'labels': ['On Track', 'At Risk', 'Critical'], 'data': [on_track, at_risk, critical]}
+
+        dept_counts = {}
         for p in projects:
-            if p.project_progress <= 25:
-                bins['0-25%'] += 1
-            elif p.project_progress <= 50:
-                bins['26-50%'] += 1
-            elif p.project_progress <= 75:
-                bins['51-75%'] += 1
-            else:
-                bins['76-100%'] += 1
-        progress_distribution = {
-            'labels': list(bins.keys()),
-            'data': list(bins.values())
+            d = p.project_department_id.name or 'Unassigned'
+            dept_counts[d] = dept_counts.get(d, 0) + 1
+        by_department = {'labels': list(dept_counts.keys()), 'data': list(dept_counts.values())}
+
+        div_counts = {}
+        for p in projects:
+            d = p.project_division_id.name or 'Unassigned'
+            div_counts[d] = div_counts.get(d, 0) + 1
+        by_division = {'labels': list(div_counts.keys()), 'data': list(div_counts.values())}
+
+        sponsor_counts = {}
+        for p in projects:
+            s = p.project_sponsor_id.name or 'Unassigned'
+            sponsor_counts[s] = sponsor_counts.get(s, 0) + 1
+        by_sponsor = {'labels': list(sponsor_counts.keys()), 'data': list(sponsor_counts.values())}
+
+        # Extended data processing for comprehensive dashboards
+        cat_counts = {}
+        for p in projects:
+            c = p.project_category_id.name or 'Unassigned'
+            cat_counts[c] = cat_counts.get(c, 0) + 1
+        by_category = {'labels': list(cat_counts.keys()), 'data': list(cat_counts.values())}
+
+        budget_by_dept_labels = list(dept_counts.keys())
+        budget_by_dept_chart = {
+            'labels': budget_by_dept_labels,
+            'planned': [sum(projects.filtered(
+                lambda p, d=d: (p.project_department_id.name or 'Unassigned') == d
+            ).mapped('budget_amount')) for d in budget_by_dept_labels],
+            'actual': [sum(projects.filtered(
+                lambda p, d=d: (p.project_department_id.name or 'Unassigned') == d
+            ).mapped('actual_cost')) for d in budget_by_dept_labels],
         }
 
-        on_time = len(projects.filtered(lambda p: not p.is_delayed and p.project_health == 'green'))
-        delayed = len(projects.filtered(lambda p: p.is_delayed))
-        at_risk_time = len(projects.filtered(lambda p: not p.is_delayed and p.project_health != 'green'))
-        timeline_status = {
-            'labels': ['On Time', 'Delayed', 'At Risk'],
-            'data': [on_time, delayed, at_risk_time]
+        budget_variance_chart = {
+            'labels': [p.name[:20] for p in projects[:10]],
+            'data': [p.budget_variance for p in projects[:10]],
         }
 
-        departments = self.env['hr.department'].search_read([], ['id', 'name'])
+        # Risk by level
+        risk_levels = {'critical': 0, 'high': 0, 'medium': 0, 'low': 0}
+        for r in all_risks.filtered(lambda r: r.state == 'open'):
+            lvl = r.rating_level or 'low'
+            if lvl in risk_levels:
+                risk_levels[lvl] += 1
+        risk_by_level_chart = {
+            'labels': ['Critical', 'High', 'Medium', 'Low'],
+            'data': [risk_levels['critical'], risk_levels['high'], risk_levels['medium'], risk_levels['low']],
+        }
+
+        # Task status chart
+        task_statuses = {}
+        for t in all_tasks:
+            s = t.task_status or 'not_started'
+            task_statuses[s] = task_statuses.get(s, 0) + 1
+        task_status_chart = {'labels': list(task_statuses.keys()), 'data': list(task_statuses.values())}
+
+        # Schedule performance by project
+        sched_labels = [p.name[:15] for p in projects[:8]]
+        sched_data = []
+        for p in projects[:8]:
+            total_p = len(p.task_ids)
+            done_p = len(p.task_ids.filtered(lambda t: t.task_status in ('in_progress', 'completed')))
+            sched_data.append(round((done_p / total_p * 100) if total_p else 0, 1))
+        schedule_perf_chart = {'labels': sched_labels, 'data': sched_data}
+
+        # WBS progress by project
+        wbs_chart = {
+            'labels': [p.name[:15] for p in projects[:8]],
+            'data': [round(p.project_progress, 1) for p in projects[:8]],
+        }
+
+        # Milestone progress chart
+        milestones_sample = self.env['project.milestone'].search(
+            [('project_id', 'in', projects.ids)], limit=8)
+        milestone_chart = {
+            'labels': [m.name[:15] for m in milestones_sample],
+            'data': [100 if m.is_reached else 0 for m in milestones_sample],
+        }
+
+        # Timesheet hours by weekday (current user)
+        from datetime import timedelta
+        week_start = today - timedelta(days=today.weekday())
+        timesheet_lines = self.env['account.analytic.line'].search([
+            ('employee_id', '=', employee.id if employee else 0),
+            ('date', '>=', week_start), ('date', '<=', today),
+        ])
+        weekday_hrs = {i: 0.0 for i in range(7)}
+        for line in timesheet_lines:
+            if line.date:
+                weekday_hrs[line.date.weekday()] += line.unit_amount
+        timesheet_chart = {
+            'labels': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            'data': [round(weekday_hrs[i], 1) for i in range(7)],
+        }
+        timesheet_hours_week = round(sum(timesheet_lines.mapped('unit_amount')), 1)
+
+        # Delayed projects
+        delayed_projects_qs = projects.filtered(
+            lambda p: p.planned_end_date and p.planned_end_date < today and p.state in ('active', 'approved'))
+
+        # Delayed projects count
+        delayed_count = len(delayed_projects_qs)
+
+        # Programs count
+        programs_count = self.env['project.program'].search_count([])
+
+        # WBS completion avg
+        wbs_completion = round(
+            sum(p.project_progress for p in projects) / total_projects if total_projects else 0, 1)
+
+        # Schedule performance index
+        schedule_performance = round(
+            (on_track / total_projects * 100) if total_projects else 100.0, 1)
+
+        # Resource utilization
+        assigned_emp_ids = set()
+        for t in all_tasks.filtered(lambda t: t.task_status not in ('completed', 'cancelled')):
+            for emp in t.user_ids.mapped('employee_id'):
+                assigned_emp_ids.add(emp.id)
+        total_employees = self.env['hr.employee'].search_count([('active', '=', True)])
+        resource_utilization = round(
+            (len(assigned_emp_ids) / total_employees * 100) if total_employees else 0, 1)
+
+        # Compliance rate
+        compliance_rate = round(
+            ((on_track + at_risk) / total_projects * 100) if total_projects else 100.0, 1)
+
+        # Team member specific
+        user_tasks = all_tasks.filtered(lambda t: user.id in t.user_ids.ids)
+        my_completed_tasks = len(user_tasks.filtered(lambda t: t.task_status == 'completed'))
+        my_projects_count = len(user_tasks.mapped('project_id'))
+
+        # My task status chart (for team role)
+        my_task_statuses = {}
+        for t in user_tasks:
+            s = t.task_status or 'not_started'
+            my_task_statuses[s] = my_task_statuses.get(s, 0) + 1
+        my_task_status_chart = {'labels': list(my_task_statuses.keys()), 'data': list(my_task_statuses.values())}
+
+        # Tables
+        pending_approvals_list = []
+        for p in projects.filtered(lambda pr: pr.state == 'submitted'):
+            pending_approvals_list.append({
+                'id': p.id, 'name': p.name, 'code': p.project_code,
+                'sponsor': p.project_sponsor_id.name or '',
+                'pm': p.user_id.name or '',
+                'type': 'Project Onboarding',
+                'date': p.create_date.strftime('%Y-%m-%d') if p.create_date else '',
+            })
+        for c in all_changes.filtered(lambda ch: ch.state == 'submitted'):
+            pending_approvals_list.append({
+                'id': c.project_id.id if c.project_id else 0,
+                'name': c.name,
+                'code': '',
+                'sponsor': c.project_id.project_sponsor_id.name if c.project_id and c.project_id.project_sponsor_id else '',
+                'pm': c.project_id.user_id.name if c.project_id and c.project_id.user_id else '',
+                'type': 'Change Request',
+                'date': c.create_date.strftime('%Y-%m-%d') if c.create_date else '',
+            })
+
+        strategic_milestones_list = []
+        milestones = self.env['project.milestone'].search(
+            [('project_id', 'in', projects.ids)], limit=10, order='deadline asc')
+        for m in milestones:
+            strategic_milestones_list.append({
+                'id': m.id, 'name': m.name, 'project': m.project_id.name,
+                'deadline': m.deadline.strftime('%Y-%m-%d') if m.deadline else '',
+                'is_reached': m.is_reached,
+            })
+
+        high_risk_list = []
+        for r in all_risks.filtered(lambda ri: ri.rating_level in ('high', 'critical') and ri.state == 'open'):
+            high_risk_list.append({
+                'id': r.id, 'name': r.name, 'project': r.project_id.name,
+                'rating': (r.rating_level or 'high').upper(),
+                'owner': r.owner_id.name if r.owner_id else 'Unassigned',
+            })
+
+        critical_issues_list = []
+        for i in all_issues.filtered(lambda is_: is_.severity == 'critical' and is_.state in ('draft', 'open')):
+            critical_issues_list.append({
+                'id': i.id, 'name': i.name, 'project': i.project_id.name,
+                'severity': (i.severity or 'critical').upper(),
+                'assigned_to': i.owner_id.name if i.owner_id else 'Unassigned',
+            })
+
+        my_tasks_list = []
+        for t in user_tasks[:20]:
+            my_tasks_list.append({
+                'id': t.id, 'name': t.name, 'project': t.project_id.name,
+                'priority': t.priority,
+                'deadline': t.planned_end_date.strftime('%Y-%m-%d') if t.planned_end_date else '',
+                'progress': round(t.completion_percentage, 0),
+                'status': t.task_status or 'not_started',
+            })
+
+        delayed_list = []
+        for p in delayed_projects_qs[:15]:
+            delayed_list.append({
+                'id': p.id, 'name': p.name,
+                'pm': p.user_id.name or '',
+                'end_date': p.planned_end_date.strftime('%Y-%m-%d') if p.planned_end_date else '',
+                'health': p.project_health or 'red',
+            })
+
+        project_list = []
+        for p in projects[:20]:
+            project_list.append({
+                'id': p.id, 'name': p.name,
+                'pm': p.user_id.name or '',
+                'state': p.state,
+                'progress': round(p.project_progress, 0),
+                'budget': '{:,.0f} ETB'.format(p.budget_amount) if p.budget_amount else '0 ETB',
+                'actual': '{:,.0f} ETB'.format(p.actual_cost) if p.actual_cost else '0 ETB',
+                'health': p.project_health or '',
+            })
+
+        change_requests_list = []
+        for c in all_changes.filtered(lambda ch: ch.state == 'submitted')[:15]:
+            change_requests_list.append({
+                'id': c.id, 'name': c.name,
+                'project': c.project_id.name if c.project_id else '',
+                'type': c.change_type_id.name if c.change_type_id else 'General',
+                'date': c.create_date.strftime('%Y-%m-%d') if c.create_date else '',
+            })
+
+        is_pmo_admin = user.has_group('ahadu_project_management.group_pmo_admin')
 
         return {
+            'user_role': user_role,
+            'is_pmo_admin': is_pmo_admin,
+            'filters_lookup': filters_lookup,
             'kpis': {
                 'total_projects': total_projects,
                 'active_projects': active_projects,
@@ -412,26 +630,47 @@ class ProjectProject(models.Model):
                 'total_budget': total_budget,
                 'total_actual_cost': total_actual_cost,
                 'budget_variance': budget_variance,
-                'open_risks': open_risks,
-                'open_issues': open_issues,
                 'overdue_tasks': overdue_tasks,
+                'open_risks': open_risks,
+                'critical_issues': critical_issues_count,
+                'open_issues': open_issues,
+                'pending_changes': pending_changes,
+                'success_rate': round((completed_projects / total_projects * 100), 1) if total_projects > 0 else 0.0,
+                'delayed_projects': delayed_count,
+                'resource_utilization': resource_utilization,
+                'schedule_performance': schedule_performance,
+                'programs_count': programs_count,
+                'compliance_rate': compliance_rate,
+                'wbs_completion': wbs_completion,
+                'my_completed_tasks': my_completed_tasks,
+                'my_projects': my_projects_count,
+                'timesheet_hours': timesheet_hours_week,
             },
             'charts': {
                 'by_health': by_health,
-                'by_state': by_state,
                 'by_department': by_department,
-                'by_priority': by_priority,
-                'budget_by_dept': budget_by_dept,
+                'by_division': by_division,
+                'by_sponsor': by_sponsor,
+                'by_category': by_category,
+                'budget_by_dept': budget_by_dept_chart,
                 'budget_variance': budget_variance_chart,
-                'risk_by_level': risk_by_level,
-                'issues_by_severity': issues_by_severity,
-                'task_completion': task_completion,
-                'progress_distribution': progress_distribution,
-                'timeline_status': timeline_status,
+                'risk_by_level': risk_by_level_chart,
+                'task_status': my_task_status_chart if user_role == 'team' else task_status_chart,
+                'schedule_performance': schedule_perf_chart,
+                'wbs_progress': wbs_chart,
+                'milestone_progress': milestone_chart,
+                'timesheet_hours': timesheet_chart,
             },
-            'filters': {
-                'departments': departments,
-            }
+            'tables': {
+                'pending_approvals': pending_approvals_list,
+                'strategic_milestones': strategic_milestones_list,
+                'high_risks': high_risk_list,
+                'critical_issues': critical_issues_list,
+                'my_tasks': my_tasks_list,
+                'delayed_projects': delayed_list,
+                'project_list': project_list,
+                'change_requests': change_requests_list,
+            },
         }
 
 
