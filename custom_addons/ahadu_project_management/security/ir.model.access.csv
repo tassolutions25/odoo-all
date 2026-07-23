@@ -37,5 +37,10 @@ access_project_dashboard_report_team,project.dashboard.report.team,model_project
 access_project_change_request_type_team,project.change_request.type.team,model_project_change_request_type,group_project_team,1,0,0,0
 access_project_change_request_type_mgr,project.change_request.type.mgr,model_project_change_request_type,group_project_manager,1,1,1,0
 access_project_change_request_type_pmo,project.change_request.type.pmo,model_project_change_request_type,group_pmo_admin,1,1,1,1
+access_project_dashboard_access_team,project.dashboard.access.team,model_project_dashboard_access,group_project_team,1,0,0,0
+access_project_dashboard_access_mgr,project.dashboard.access.mgr,model_project_dashboard_access,group_project_manager,1,0,0,0
+access_project_dashboard_access_pmo,project.dashboard.access.pmo,model_project_dashboard_access,group_pmo_admin,1,1,1,1
+access_project_report_wizard_team,project.report.wizard.team,model_project_report_wizard,group_project_team,1,1,1,1
+
 
 

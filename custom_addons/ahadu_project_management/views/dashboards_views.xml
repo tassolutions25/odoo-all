@@ -68,4 +68,10 @@
             </p>
         </field>
     </record>
+
+    <!-- Client Action for OWL Chart Dashboard -->
+    <record id="action_project_dashboard_client" model="ir.actions.client">
+        <field name="name">Project Dashboard</field>
+        <field name="tag">ahadu_project_management.project_dashboard</field>
+    </record>
 </odoo>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_project_report_wizard_form" model="ir.ui.view">
+        <field name="name">project.report.wizard.form</field>
+        <field name="model">project.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Project Portfolio Report">
+                <sheet>
+                    <group>
+                        <group string="Report Configuration">
+                            <field name="report_type"/>
+                            <field name="export_format"/>
+                        </group>
+                        <group string="Filters &amp; Timelines">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                    </group>
+                    <group string="Projects selection">
+                        <field name="project_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="generate_report" string="Generate Report" type="object" class="btn-primary oe_highlight"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_report_wizard" model="ir.actions.act_window">
+        <field name="name">Export Project Reports</field>
+        <field name="res_model">project.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

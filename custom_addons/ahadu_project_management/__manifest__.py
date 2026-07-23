@@ -12,6 +12,7 @@
     'depends': [
         'project',
         'hr',
+        'ahadu_hr',
         'hr_timesheet',
         'mail',
     ],
@@ -32,8 +33,19 @@
         'views/risk_issue_change_views.xml',
         'views/project_closure_views.xml',
         'views/dashboards_views.xml',
+        'views/project_dashboard_access_views.xml',
+        'views/project_report_wizard_views.xml',
+        'views/project_qweb_reports.xml',
         'views/menu_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'ahadu_hr/static/src/lib/chart.umd.js',
+            'ahadu_project_management/static/src/css/project_dashboard.css',
+            'ahadu_project_management/static/src/js/project_dashboard.js',
+            'ahadu_project_management/static/src/xml/project_dashboard.xml',
+        ],
+    },
     'installable': True,
     'application': True,
     'license': 'LGPL-3',

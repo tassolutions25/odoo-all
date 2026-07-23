@@ -6,3 +6,5 @@ from . import risk_issue_change
 from . import project_closure
 from . import project_document
 from . import dashboards
+from . import project_dashboard_access
+from . import project_report_wizard

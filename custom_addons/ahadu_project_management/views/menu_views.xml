@@ -263,16 +263,35 @@
         id="menu_ahadu_reporting_group"
         parent="menu_ahadu_project_root"
         sequence="50"
-        groups="ahadu_project_management.group_project_manager"
+        groups="ahadu_project_management.group_project_team"
     />
 
-    <!-- Executive Dashboard -->
+    <!-- Project Dashboard (Interactive Charts) -->
     <menuitem
-        name="Executive Dashboard"
+        name="Project Dashboard"
+        id="menu_ahadu_project_chart_dashboard"
+        parent="menu_ahadu_reporting_group"
+        action="action_project_dashboard_client"
+        sequence="1"
+    />
+
+    <!-- Executive Dashboard (Pivot/Graph) -->
+    <menuitem
+        name="Executive Pivot &amp; Graph"
         id="menu_ahadu_portfolio_dashboard"
         parent="menu_ahadu_reporting_group"
         action="action_project_dashboard_report"
         sequence="5"
+        groups="ahadu_project_management.group_project_manager"
+    />
+
+    <!-- Export Reports -->
+    <menuitem
+        name="Export Reports"
+        id="menu_ahadu_export_reports"
+        parent="menu_ahadu_reporting_group"
+        action="action_project_report_wizard"
+        sequence="8"
     />
 
     <!-- Task Analysis -->
@@ -366,6 +385,16 @@
         parent="menu_ahadu_config_group"
         action="action_project_change_request_type"
         sequence="39"
+    />
+
+    <!-- Dashboard & Report Access -->
+    <menuitem
+        name="Dashboard Access Control"
+        id="menu_ahadu_config_dashboard_access"
+        parent="menu_ahadu_config_group"
+        action="action_project_dashboard_access"
+        sequence="40"
+        groups="ahadu_project_management.group_pmo_admin"
     />
 
 
