@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Project Form View Customization -->
+    <record id="edit_project_inherit_ahadu" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.ahadu</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <!-- 1. Position project_code badge above the project title -->
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <div invisible="project_code == '/'">
+                    <span class="badge rounded-pill text-bg-secondary" style="font-size: 14px; margin-bottom: 8px;">
+                        <field name="project_code" readonly="1"/>
+                    </span>
+                </div>
+            </xpath>
+
+            <!-- 2. Inject header buttons and status bar before sheet -->
+            <xpath expr="//header" position="inside">
+                <button name="action_submit" string="Submit for Approval" type="object" invisible="state != 'draft'" class="oe_highlight" groups="ahadu_project_management.group_project_team"/>
+                <button name="action_approve" string="Approve" type="object" invisible="state != 'submitted'" class="oe_highlight" groups="ahadu_project_management.group_project_manager"/>
+                <button name="action_activate" string="Activate" type="object" invisible="state != 'approved'" class="oe_highlight" groups="ahadu_project_management.group_project_manager"/>
+                <button name="action_close" string="Close Project" type="object" invisible="state != 'active'" class="oe_highlight" groups="ahadu_project_management.group_project_manager"/>
+                <button name="action_reject" string="Reject" type="object" invisible="state != 'submitted'" groups="ahadu_project_management.group_project_manager"/>
+                <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,active,closed"/>
+            </xpath>
+
+            <!-- 3. Replace default dates with our custom mandatory dates below Project Manager -->
+            <xpath expr="//field[@name='date_start']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='date']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!-- Explicitly ensure Customer (partner_id) is visible -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="planned_start_date" required="1"/>
+                <field name="planned_end_date" required="1"/>
+            </xpath>
+
+            <!-- 4. Inject Project Charter and WBS tabs BEFORE Settings tab -->
+            <xpath expr="//notebook/page[@name='settings']" position="before">
+                <page string="Project Charter" name="project_charter">
+                    <group>
+                        <group string="Basic Configuration">
+                            <field name="project_category_id" options="{'no_create': True, 'no_edit': True}"/>
+                            <field name="priority"/>
+                            <field name="program_id"/>
+                        </group>
+                        <group string="Governance &amp; Schedule">
+                            <field name="project_sponsor_id" widget="many2one_avatar" required="1"/>
+                            <field name="project_department_id"/>
+                            <field name="project_progress" widget="progressbar"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="WBS Phases" name="project_phases">
+                    <field name="phase_ids">
+                        <list>
+                            <field name="name"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="progress" widget="progressbar"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Milestones" name="project_milestones">
+                    <field name="milestone_ids">
+                        <list>
+                            <field name="name"/>
+                            <field name="deadline"/>
+                            <field name="phase_id"/>
+                            <field name="is_reached"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Project List View Customization -->
+    <record id="view_project_inherit_ahadu" model="ir.ui.view">
+        <field name="name">project.project.list.inherit.ahadu</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='display_name']" position="after">
+                <field name="project_code" optional="show"/>
+                <field name="project_category_id" optional="show"/>
+                <field name="project_sponsor_id" optional="show" widget="many2one_avatar"/>
+                <field name="state" optional="show" widget="badge" decoration-info="state == 'submitted'" decoration-warning="state == 'approved'" decoration-success="state == 'active'" decoration-muted="state == 'draft'"/>
+                <field name="project_progress" widget="progressbar" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Disable quick creation on project kanban view -->
+    <record id="view_project_kanban_inherit_ahadu" model="ir.ui.view">
+        <field name="name">project.project.kanban.inherit.ahadu</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="quick_create">false</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Milestone Form Customization with Task List navigation -->
+    <record id="project_milestone_view_form_inherit_ahadu" model="ir.ui.view">
+        <field name="name">project.milestone.view.form.inherit.ahadu</field>
+        <field name="model">project.milestone</field>
+        <field name="inherit_id" ref="project.project_milestone_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_reached']" position="after">
+                <field name="phase_id" domain="[('project_id', '=', project_id)]"/>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page name="tasks" string="Tasks &amp; Sub-tasks">
+                        <field name="task_ids" readonly="1">
+                            <list>
+                                <field name="task_number"/>
+                                <field name="name"/>
+                                <field name="user_ids" widget="many2many_tags"/>
+                                <field name="planned_start_date"/>
+                                <field name="planned_end_date"/>
+                                <field name="task_status" widget="badge"/>
+                                <field name="completion_percentage"/>
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Program Form View -->
+    <record id="view_project_program_form" model="ir.ui.view">
+        <field name="name">project.program.form</field>
+        <field name="model">project.program</field>
+        <field name="arch" type="xml">
+            <form string="Project Program">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Program Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="manager_id" widget="many2one_avatar"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="description" string="Description">
+                            <field name="description" placeholder="Program details..."/>
+                        </page>
+                        <page name="projects" string="Linked Projects">
+                            <field name="project_ids" readonly="1">
+                                <list>
+                                    <field name="project_code"/>
+                                    <field name="name"/>
+                                    <field name="project_category_id"/>
+                                    <field name="user_id"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Program List View -->
+    <record id="view_project_program_list" model="ir.ui.view">
+        <field name="name">project.program.list</field>
+        <field name="model">project.program</field>
+        <field name="arch" type="xml">
+            <list string="Project Programs">
+                <field name="name"/>
+                <field name="manager_id"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Phase Form View -->
+    <record id="view_project_phase_form" model="ir.ui.view">
+        <field name="name">project.phase.form</field>
+        <field name="model">project.phase</field>
+        <field name="arch" type="xml">
+            <form string="Project Phase">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Phase Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="project_id"/>
+                            <field name="progress" widget="progressbar"/>
+                        </group>
+                        <group>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="tasks" string="Tasks">
+                            <field name="task_ids" readonly="1">
+                                <list>
+                                    <field name="task_number"/>
+                                    <field name="name"/>
+                                    <field name="user_ids" widget="many2many_tags"/>
+                                    <field name="planned_start_date"/>
+                                    <field name="planned_end_date"/>
+                                    <field name="task_status" widget="badge"/>
+                                    <field name="completion_percentage"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="milestones" string="Milestones">
+                            <field name="milestone_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="deadline"/>
+                                    <field name="is_reached"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Phase List View -->
+    <record id="view_project_phase_list" model="ir.ui.view">
+        <field name="name">project.phase.list</field>
+        <field name="model">project.phase</field>
+        <field name="arch" type="xml">
+            <list string="Project Phases">
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="progress" widget="progressbar"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Project Category Form View -->
+    <record id="view_project_category_form" model="ir.ui.view">
+        <field name="name">project.category.form</field>
+        <field name="model">project.category</field>
+        <field name="arch" type="xml">
+            <form string="Project Category">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Project Category List View -->
+    <record id="view_project_category_list" model="ir.ui.view">
+        <field name="name">project.category.list</field>
+        <field name="model">project.category</field>
+        <field name="arch" type="xml">
+            <list string="Project Categories">
+                <field name="name"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+</odoo>

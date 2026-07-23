@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Budget Category Views -->
+    <record id="view_project_budget_category_tree" model="ir.ui.view">
+        <field name="name">project.budget.category.tree</field>
+        <field name="model">project.budget.category</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_project_budget_category_form" model="ir.ui.view">
+        <field name="name">project.budget.category.form</field>
+        <field name="model">project.budget.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Budget Views -->
+    <record id="view_project_budget_tree" model="ir.ui.view">
+        <field name="name">project.budget.tree</field>
+        <field name="model">project.budget</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="planned_amount" sum="Total Planned"/>
+                <field name="actual_amount" sum="Total Actual"/>
+                <field name="variance" sum="Total Variance"/>
+                <field name="utilization_rate" widget="progressbar"/>
+                <field name="state" widget="badge" decoration-info="state == 'submitted'" decoration-success="state == 'approved'" decoration-danger="state == 'rejected'" decoration-muted="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_project_budget_form" model="ir.ui.view">
+        <field name="name">project.budget.form</field>
+        <field name="model">project.budget</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" string="Submit for Approval" type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                    <button name="action_approve" string="Approve" type="object" invisible="state != 'submitted'" class="oe_highlight" groups="ahadu_project_management.group_project_manager,ahadu_project_management.group_pmo_admin"/>
+                    <button name="action_reject" string="Reject" type="object" invisible="state != 'submitted'" groups="ahadu_project_management.group_project_manager,ahadu_project_management.group_pmo_admin"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state not in ['submitted', 'rejected']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Budget Title (e.g. Phase 1 IT Dev Budget)"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="project_id" options="{'no_create': True, 'no_edit': True}" readonly="state != 'draft'"/>
+                            <field name="currency_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="planned_amount"/>
+                            <field name="actual_amount"/>
+                            <field name="variance"/>
+                            <field name="utilization_rate" widget="progressbar"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Budget Lines" name="budget_lines">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="category_id" options="{'no_create': True}"/>
+                                    <field name="planned_amount"/>
+                                    <field name="actual_amount"/>
+                                    <field name="variance"/>
+                                    <field name="utilization_rate" widget="progressbar"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes &amp; Description" name="notes">
+                            <field name="description" placeholder="Provide details about the budget scope..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_project_budget_search" model="ir.ui.view">
+        <field name="name">project.budget.search</field>
+        <field name="model">project.budget</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="project_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Submitted" name="submitted" domain="[('state', '=', 'submitted')]"/>
+                <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Project" name="group_by_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Expense Views -->
+    <record id="view_project_expense_tree" model="ir.ui.view">
+        <field name="name">project.expense.tree</field>
+        <field name="model">project.expense</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="project_id"/>
+                <field name="category_id"/>
+                <field name="amount" sum="Total Expense"/>
+                <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-danger="state == 'rejected'" decoration-muted="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_project_expense_form" model="ir.ui.view">
+        <field name="name">project.expense.form</field>
+        <field name="model">project.expense</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_approve" string="Approve Expense" type="object" invisible="state != 'draft'" class="oe_highlight" groups="ahadu_project_management.group_project_manager,ahadu_project_management.group_pmo_admin"/>
+                    <button name="action_reject" string="Reject Expense" type="object" invisible="state != 'draft'" groups="ahadu_project_management.group_project_manager,ahadu_project_management.group_pmo_admin"/>
+                    <button name="action_draft" string="Set to Draft" type="object" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="project_id" options="{'no_create': True, 'no_edit': True}" readonly="state != 'draft'"/>
+                            <field name="category_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="amount" readonly="state != 'draft'"/>
+                            <field name="currency_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <group string="Expense Details">
+                        <field name="description" placeholder="Description of the expenditure item..."/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_project_expense_search" model="ir.ui.view">
+        <field name="name">project.expense.search</field>
+        <field name="model">project.expense</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="category_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Project" name="group_by_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Category" name="group_by_category" context="{'group_by': 'category_id'}"/>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Project Form View Extension -->
+    <record id="edit_project_inherit_budget" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.budget</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="ahadu_project_management.edit_project_inherit_ahadu"/>
+        <field name="arch" type="xml">
+            <!-- Add budget summaries and tabs inside the notebook -->
+            <xpath expr="//notebook/page[@name='project_milestones']" position="after">
+                <page string="Financial Budgets" name="project_budgets">
+                    <group>
+                        <group string="Budget Aggregates">
+                            <field name="budget_amount" string="Total Approved Budget"/>
+                            <field name="actual_cost" string="Total Actual Cost"/>
+                            <field name="budget_variance" string="Budget Variance"/>
+                        </group>
+                        <group string="Active Budget Details">
+                            <field name="active_budget_id" readonly="1" options="{'no_open': False}"/>
+                        </group>
+                    </group>
+                    <field name="budget_ids" context="{'default_project_id': id}">
+                        <list>
+                            <field name="name"/>
+                            <field name="planned_amount"/>
+                            <field name="actual_amount"/>
+                            <field name="variance"/>
+                            <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-muted="state == 'draft'"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Project Expenses" name="project_expenses">
+                    <field name="expense_ids" context="{'default_project_id': id}">
+                        <list editable="bottom">
+                            <field name="name" readonly="1"/>
+                            <field name="date"/>
+                            <field name="category_id" options="{'no_create': True}"/>
+                            <field name="amount"/>
+                            <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-muted="state == 'draft'"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

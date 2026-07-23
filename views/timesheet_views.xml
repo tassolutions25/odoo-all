@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         STANDALONE Timesheet Entry Form View (Primary)
+         Clean view showing ONLY timesheet fields — no accounting clutter.
+         Opens when clicking any timesheet row inside the task form,
+         or when opening a line from the Timesheet Approvals list.
+    ============================================================ -->
+    <record id="ahadu_timesheet_line_form" model="ir.ui.view">
+        <field name="name">account.analytic.line.form.ahadu.primary</field>
+        <field name="model">account.analytic.line</field>
+        <field name="priority">0</field>
+        <field name="arch" type="xml">
+            <form string="Timesheet Entry">
+                <header>
+                    <!-- MAKER: Employee submits their own draft timesheet -->
+                    <button name="action_submit"
+                            string="Submit for Approval"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'draft'"
+                            groups="base.group_user"/>
+                    <!-- CHECKER: Manager/PM approves a submitted timesheet -->
+                    <button name="action_approve"
+                            string="Approve"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'submitted'"
+                            groups="ahadu_project_management.group_project_manager"/>
+                    <!-- CHECKER: Manager/PM rejects a submitted timesheet -->
+                    <button name="action_reject"
+                            string="Reject"
+                            type="object"
+                            invisible="state != 'submitted'"
+                            groups="ahadu_project_management.group_project_manager"/>
+                    <!-- ADMIN: PMO Admin posts an approved timesheet (final/locked state) -->
+                    <button name="action_post"
+                            string="Post"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'approved'"
+                            groups="ahadu_project_management.group_pmo_admin"/>
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,submitted,approved,posted"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Describe the work done..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Task Information">
+                            <field name="project_id" required="1"/>
+                            <field name="task_id"
+                                   domain="[('project_id', '=', project_id)]"
+                                   context="{'default_project_id': project_id}"/>
+                            <field name="employee_id" required="1" widget="many2one_avatar_employee"/>
+                            <field name="date" required="1"/>
+                        </group>
+                        <group string="Time Logged">
+                            <field name="unit_amount"
+                                   string="Hours Spent"
+                                   widget="timesheet_uom"/>
+                            <field name="rejection_comment"
+                                   string="Rejection Reason"
+                                   readonly="1"
+                                   invisible="not rejection_comment"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Timesheet LIST View Inheritance
+         Adds: state badge column to the default timesheet list
+    ============================================================ -->
+    <record id="hr_timesheet_line_tree_inherit_ahadu" model="ir.ui.view">
+        <field name="name">account.analytic.line.list.inherit.ahadu</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='unit_amount']" position="after">
+                <field name="state" widget="badge" optional="show"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'submitted'"
+                       decoration-warning="state == 'approved'"
+                       decoration-success="state == 'posted'"/>
+            </xpath>
+        </field>
+    </record>
+
+     <!-- ============================================================
+         Ahadu Timesheet Approval Manager List View
+         Dedicated view for managers: shows all timesheets with states
+         and inline Approve / Reject / Post buttons
+    ============================================================ -->
+     <record id="hr_timesheet_approval_list_ahadu" model="ir.ui.view">
+        <field name="name">account.analytic.line.approval.list.ahadu</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.timesheet_view_tree_user"/>
+        <field name="mode">primary</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="string">Timesheet Approvals</attribute>
+                <attribute name="decoration-info">state == 'submitted'</attribute>
+                <attribute name="decoration-muted">state == 'draft'</attribute>
+                <attribute name="decoration-success">state == 'posted'</attribute>
+                <attribute name="open_form_view">1</attribute>
+                <attribute name="editable"></attribute>
+            </xpath>
+            <xpath expr="//field[@name='unit_amount']" position="after">
+                <field name="state" widget="badge" optional="show"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'submitted'"
+                       decoration-warning="state == 'approved'"
+                       decoration-success="state == 'posted'"/>
+                <!-- CHECKER buttons inline in the approval list -->
+                <button name="action_approve" string="Approve" type="object"
+                        icon="fa-check"
+                        invisible="state != 'submitted'"
+                        groups="ahadu_project_management.group_project_manager"/>
+                <button name="action_reject" string="Reject" type="object"
+                        icon="fa-times"
+                        invisible="state != 'submitted'"
+                        groups="ahadu_project_management.group_project_manager"/>
+                <!-- PMO Admin post button — only visible after approval -->
+                <button name="action_post" string="Post" type="object"
+                        icon="fa-lock"
+                        invisible="state != 'approved'"
+                        groups="ahadu_project_management.group_pmo_admin"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Timesheet Approval Action
+         Default domain: project timesheets only.
+         Default filter: Submitted (pending approval) entries.
+         Form view explicitly set to our clean standalone form.
+    ============================================================ -->
+    <record id="action_ahadu_timesheet_approval" model="ir.actions.act_window">
+        <field name="name">Timesheet Approvals</field>
+        <field name="res_model">account.analytic.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="hr_timesheet_approval_list_ahadu"/>
+        <field name="views" eval="[(ref('hr_timesheet_approval_list_ahadu'), 'list'), (ref('ahadu_timesheet_line_form'), 'form')]"/>
+        <field name="domain">[('project_id', '!=', False)]</field>
+        <field name="context">{'search_default_filter_submitted': 1, 'form_view_ref': 'ahadu_project_management.ahadu_timesheet_line_form'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No timesheets pending approval.
+            </p>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Search View: state filters
+    ============================================================ -->
+    <record id="hr_timesheet_line_search_inherit_ahadu" model="ir.ui.view">
+        <field name="name">account.analytic.line.search.inherit.ahadu</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='mine']" position="after">
+                <separator/>
+                <filter name="filter_draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_submitted" string="Submitted (Pending Approval)"
+                        domain="[('state', '=', 'submitted')]"/>
+                <filter name="filter_approved" string="Approved"
+                        domain="[('state', '=', 'approved')]"/>
+                <filter name="filter_posted" string="Posted"
+                        domain="[('state', '=', 'posted')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

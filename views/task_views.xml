@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         Task Form View Customization
+         ============================================================ -->
+    <record id="view_task_form2_inherit_ahadu" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.ahadu</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+
+            <!-- 1. Hide native personal stages widget in the header -->
+            <xpath expr="//field[@name='personal_stage_type_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- 2. Hide native stage duration widget in the header -->
+            <xpath expr="//field[@name='stage_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- 3. Add custom clickable status bar for task_status in the header -->
+            <xpath expr="//header" position="inside">
+                <field name="task_status" widget="statusbar" options="{'clickable': '1'}"
+                       statusbar_visible="not_started,assigned,in_progress,pending,completed,cancelled"/>
+            </xpath>
+
+            <!-- 4. Hide native state selection widget next to title -->
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- 5. Replace title div to make ID and Name fields standard size and show priority -->
+            <xpath expr="//div[hasclass('oe_title')]" position="replace">
+                <group>
+                    <group>
+                        <field name="task_number" readonly="1" string="Task ID"/>
+                        <field name="name" string="Task Name" required="1"/>
+                    </group>
+                    <group>
+                        <field name="priority" string="Priority"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- 6. Hide native deadline label and field -->
+            <xpath expr="//label[@for='date_deadline']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//div[@id='date_deadline_and_recurring_task']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- 7. Add Planned Dates right after Assignees (user_ids) -->
+            <xpath expr="//field[@name='user_ids']" position="after">
+                <field name="planned_start_date" required="1"/>
+                <field name="planned_end_date" required="1" string="Planned End Date"/>
+            </xpath>
+
+            <!-- 8. Inject WBS Phase selection right after milestone_id -->
+            <xpath expr="//field[@name='milestone_id']" position="after">
+                <field name="phase_id"
+                       domain="[('project_id', '=', project_id)]"
+                       context="{'default_project_id': project_id}"
+                       placeholder="Select Phase..."
+                       invisible="not project_id"/>
+            </xpath>
+
+            <!-- 9. Add resource allocation after allocated_hours, then show per-employee summary -->
+            <xpath expr="//field[@name='allocated_hours']" position="after">
+                <field name="resource_allocation" string="Workload Allocation (%)"
+                       help="Percentage of each assignee's standard capacity consumed by this task."/>
+                <field name="employee_allocation_info" widget="html"
+                       invisible="not resource_allocation or not user_ids"
+                       readonly="1"
+                       string="Employee Capacity Status"/>
+            </xpath>
+
+            <!-- 10. Replace Execution Tracking Page with customized date & roll-up display -->
+            <xpath expr="//notebook" position="inside">
+                <page name="execution_tracking" string="Execution Tracking">
+                    <group>
+                        <group string="Planned Timeline">
+                            <field name="planned_start_date" readonly="1"/>
+                            <field name="planned_end_date" string="Planned End Date" readonly="1"/>
+                            <field name="is_overdue" readonly="1"/>
+                        </group>
+                        <group string="Actual Execution">
+                            <field name="actual_start_date"/>
+                            <field name="actual_end_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Progress">
+                            <field name="completion_percentage" widget="progressbar"/>
+                            <field name="total_timesheet_hours" string="Total Hours Logged"
+                                   help="All timesheet hours on this task regardless of approval state."
+                                   readonly="1"/>
+                            <field name="effective_hours" string="Approved Hours"
+                                   help="Only APPROVED or POSTED timesheet hours — these count toward project progress."
+                                   readonly="1"/>
+                        </group>
+
+                        <group string="WBS Reference">
+                            <field name="task_number" readonly="1"/>
+                            <field name="phase_id" readonly="1"
+                                   domain="[('project_id', '=', project_id)]"
+                                   invisible="not project_id"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+            <!-- 11. Customize the timesheet list inside the task form:
+                     - open_form_view=1 means clicking a row opens the form
+                     - form_view_ref on the field context ensures our clean Ahadu
+                       form opens (not the native analytic/accounting form)
+                     - State badge + rejection comment shown in the list for quick overview
+            -->
+            <xpath expr="//field[@name='timesheet_ids']" position="attributes">
+                <attribute name="context">{'default_project_id': project_id, 'default_task_id': id, 'form_view_ref': 'ahadu_project_management.ahadu_timesheet_line_form'}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='timesheet_ids']/list" position="attributes">
+                <attribute name="editable"></attribute>
+                <attribute name="open_form_view">1</attribute>
+                <attribute name="create">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='timesheet_ids']/list/field[@name='unit_amount']" position="after">
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'submitted'"
+                       decoration-warning="state == 'approved'"
+                       decoration-success="state == 'posted'"/>
+                <field name="rejection_comment" optional="show" string="Rejection Reason"/>
+            </xpath>
+            <!-- 12. 'Submit My Timesheets' and 'Add Timesheet Line' buttons above the timesheet list -->
+            <xpath expr="//field[@name='timesheet_ids']" position="before">
+                <div class="mb-2" invisible="not id">
+                    <button name="action_submit_my_timesheets"
+                            string="Submit My Draft Timesheets"
+                            type="object"
+                            class="btn btn-primary btn-sm"
+                            icon="fa-paper-plane"
+                            groups="base.group_user"
+                            help="Submit all your draft timesheet lines on this task to your manager for approval."/>
+                    <button name="action_add_timesheet_line"
+                            string="Add Timesheet Line"
+                            type="object"
+                            class="btn btn-secondary btn-sm ms-2"
+                            icon="fa-plus"
+                            groups="base.group_user"
+                            help="Create a new timesheet line using the quick small form."/>
+                    <span class="ms-2 text-muted small">&#8594; Click a row to open it and Submit / Approve / Reject / Post.</span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Task List View Customization
+         ============================================================ -->
+    <record id="view_task_tree2_inherit_ahadu" model="ir.ui.view">
+        <field name="name">project.task.list.inherit.ahadu</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
+        <field name="arch" type="xml">
+            <!-- Set entire row red if the task is overdue -->
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-danger">is_overdue == True</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="task_number" optional="show" readonly="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='date_deadline']" position="replace">
+                <field name="planned_start_date" optional="show"/>
+                <field name="planned_end_date" string="Planned End Date" optional="show"/>
+                <field name="is_overdue" column_invisible="True"/>
+            </xpath>
+
+            <xpath expr="//field[@name='planned_end_date']" position="after">
+                <field name="phase_id" optional="show"/>
+                <field name="task_status" optional="show" widget="badge"
+                       decoration-info="task_status == 'assigned'"
+                       decoration-warning="task_status == 'in_progress'"
+                       decoration-danger="task_status == 'pending'"
+                       decoration-success="task_status == 'completed'"
+                       decoration-muted="task_status in ['cancelled', 'not_started']"/>
+                <field name="completion_percentage" optional="show" widget="progressbar"/>
+                <field name="actual_start_date" optional="hide"/>
+                <field name="actual_end_date" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

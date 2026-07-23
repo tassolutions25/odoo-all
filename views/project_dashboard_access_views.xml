@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_project_dashboard_access_tree" model="ir.ui.view">
+        <field name="name">project.dashboard.access.tree</field>
+        <field name="model">project.dashboard.access</field>
+        <field name="arch" type="xml">
+            <list string="Dashboard &amp; Report Access Rules">
+                <field name="dashboard_type"/>
+                <field name="job_ids" widget="many2many_tags"/>
+                <field name="note"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_project_dashboard_access_form" model="ir.ui.view">
+        <field name="name">project.dashboard.access.form</field>
+        <field name="model">project.dashboard.access</field>
+        <field name="arch" type="xml">
+            <form string="Dashboard &amp; Report Access Rule">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="dashboard_type"/>
+                        </group>
+                        <group>
+                            <field name="note" placeholder="Optional notes..."/>
+                        </group>
+                    </group>
+                    <group string="Authorized Job Positions">
+                        <field name="job_ids" placeholder="Select job positions allowed to access this dashboard..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_dashboard_access" model="ir.actions.act_window">
+        <field name="name">Dashboard Access Configuration</field>
+        <field name="res_model">project.dashboard.access</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configure Job Positions allowed to view dashboards and generate reports.
+            </p>
+            <p>
+                Configure mapping of roles (Executive, Sponsor, PMO, EPAD, PM, Team Member) to HR Job Positions.
+            </p>
+        </field>
+    </record>
+</odoo>

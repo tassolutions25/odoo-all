@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- ============================================================
+         Record Rules for Tasks
+         (noupdate="1" on <odoo> root — no <data> wrapper inside)
+    ============================================================ -->
+
+    <record id="task_rule_project_team" model="ir.rule">
+        <field name="name">Project Team: Write Own Tasks</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_project_team'))]"/>
+        <field name="domain_force">['|', ('user_ids', 'in', user.id), ('project_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="task_rule_pmo_admin" model="ir.rule">
+        <field name="name">PMO Admin: Access All Tasks</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_pmo_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- ============================================================
+         Record Rules for Projects
+    ============================================================ -->
+
+    <record id="project_rule_project_team" model="ir.rule">
+        <field name="name">Project Team: Own Projects Only</field>
+        <field name="model_id" ref="project.model_project_project"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_project_team'))]"/>
+        <field name="domain_force">['|', '|', ('user_id', '=', user.id), ('task_ids.user_ids', 'in', user.id), ('project_sponsor_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="project_rule_pmo_admin" model="ir.rule">
+        <field name="name">PMO Admin: All Projects</field>
+        <field name="model_id" ref="project.model_project_project"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_pmo_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- ============================================================
+         Record Rules for Timesheets (account.analytic.line)
+    ============================================================ -->
+
+    <record id="timesheet_rule_project_team" model="ir.rule">
+        <field name="name">Project Team: Respective Timesheets Only</field>
+        <field name="model_id" ref="analytic.model_account_analytic_line"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_project_team'))]"/>
+        <field name="domain_force">['|', '|', '|', ('user_id', '=', user.id), ('project_id.user_id', '=', user.id), ('employee_id.parent_id.user_id', '=', user.id), ('employee_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="timesheet_rule_pmo_admin" model="ir.rule">
+        <field name="name">PMO Admin: All Timesheets</field>
+        <field name="model_id" ref="analytic.model_account_analytic_line"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_pmo_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- ============================================================
+         Record Rules for Budgets & Expenses
+         ============================================================ -->
+    <record id="budget_rule_project_team" model="ir.rule">
+        <field name="name">Project Team: Own Budgets Only</field>
+        <field name="model_id" ref="model_project_budget"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_project_team'))]"/>
+        <field name="domain_force">['|', '|', ('project_id.user_id', '=', user.id), ('project_id.task_ids.user_ids', 'in', user.id), ('project_id.project_sponsor_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="budget_rule_pmo_admin" model="ir.rule">
+        <field name="name">PMO Admin: All Budgets</field>
+        <field name="model_id" ref="model_project_budget"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_pmo_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="expense_rule_project_team" model="ir.rule">
+        <field name="name">Project Team: Own Expenses Only</field>
+        <field name="model_id" ref="model_project_expense"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_project_team'))]"/>
+        <field name="domain_force">['|', '|', ('project_id.user_id', '=', user.id), ('project_id.task_ids.user_ids', 'in', user.id), ('project_id.project_sponsor_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="expense_rule_pmo_admin" model="ir.rule">
+        <field name="name">PMO Admin: All Expenses</field>
+        <field name="model_id" ref="model_project_expense"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_pmo_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- ============================================================
+         Record Rules for Risks, Issues, Change Requests
+         ============================================================ -->
+    <record id="risk_rule_project_team" model="ir.rule">
+        <field name="name">Project Team: Own Risks Only</field>
+        <field name="model_id" ref="model_project_risk"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_project_team'))]"/>
+        <field name="domain_force">['|', '|', ('project_id.user_id', '=', user.id), ('project_id.task_ids.user_ids', 'in', user.id), ('project_id.project_sponsor_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="risk_rule_pmo_admin" model="ir.rule">
+        <field name="name">PMO Admin: All Risks</field>
+        <field name="model_id" ref="model_project_risk"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_pmo_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="issue_rule_project_team" model="ir.rule">
+        <field name="name">Project Team: Own Issues Only</field>
+        <field name="model_id" ref="model_project_issue"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_project_team'))]"/>
+        <field name="domain_force">['|', '|', ('project_id.user_id', '=', user.id), ('project_id.task_ids.user_ids', 'in', user.id), ('project_id.project_sponsor_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="issue_rule_pmo_admin" model="ir.rule">
+        <field name="name">PMO Admin: All Issues</field>
+        <field name="model_id" ref="model_project_issue"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_pmo_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="change_request_rule_project_team" model="ir.rule">
+        <field name="name">Project Team: Own CRs Only</field>
+        <field name="model_id" ref="model_project_change_request"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_project_team'))]"/>
+        <field name="domain_force">['|', '|', ('project_id.user_id', '=', user.id), ('project_id.task_ids.user_ids', 'in', user.id), ('project_id.project_sponsor_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="change_request_rule_pmo_admin" model="ir.rule">
+        <field name="name">PMO Admin: All CRs</field>
+        <field name="model_id" ref="model_project_change_request"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_pmo_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- ============================================================
+         Record Rules for Documents (ir.attachment)
+         ============================================================ -->
+    <record id="document_rule_restricted_project_team" model="ir.rule">
+        <field name="name">Project Team: Restricted Documents Access</field>
+        <field name="model_id" ref="base.model_ir_attachment"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_project_team'))]"/>
+        <field name="domain_force">['|', ('is_restricted', '=', False), '|', ('project_id.user_id', '=', user.id), ('project_id.project_sponsor_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="document_rule_restricted_pmo_admin" model="ir.rule">
+        <field name="name">PMO Admin: All Restricted Documents</field>
+        <field name="model_id" ref="base.model_ir_attachment"/>
+        <field name="groups" eval="[(4, ref('ahadu_project_management.group_pmo_admin'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+</odoo>
+

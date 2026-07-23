@@ -1,0 +1,52 @@
+{
+    'name': 'Ahadu Bank Project Management',
+    'version': '1.0',
+    'category': 'Project',
+    'summary': 'Core Project Management engine for Ahadu Bank',
+    'description': """
+        Core Engine, Execution, and Scheduling customizations for Ahadu Bank.
+        Defines project states, maker-checker approvals, WBS hierarchy (Programs & Phases),
+        task validation rules, timesheet approvals, and security rules.
+    """,
+    'author': 'Ahadu Bank ERP Implementation Project Team & DevTeam',
+    'depends': [
+        'project',
+        'hr',
+        'ahadu_hr',
+        'hr_timesheet',
+        'mail',
+    ],
+    'data': [
+        'security/security_groups.xml',
+        'security/ir.model.access.csv',
+        'security/security_rules.xml',
+        'data/ir_sequence_data.xml',
+        'data/project_budget_category_data.xml',
+        'data/project_change_request_type_data.xml',
+        'data/ir_cron_data.xml',
+        'views/project_views.xml',
+        'views/task_views.xml',
+        'views/timesheet_views.xml',
+        'wizard/project_timesheet_report_wizard_views.xml',
+        'report/project_timesheet_templates.xml',
+        'views/project_budget_views.xml',
+        'views/risk_issue_change_views.xml',
+        'views/project_closure_views.xml',
+        'views/dashboards_views.xml',
+        'views/project_dashboard_access_views.xml',
+        'views/project_report_wizard_views.xml',
+        'views/project_qweb_reports.xml',
+        'views/menu_views.xml',
+    ],
+    'assets': {
+        'web.assets_backend': [
+            'ahadu_hr/static/src/lib/chart.umd.js',
+            'ahadu_project_management/static/src/css/project_dashboard.css',
+            'ahadu_project_management/static/src/js/project_dashboard.js',
+            'ahadu_project_management/static/src/xml/project_dashboard.xml',
+        ],
+    },
+    'installable': True,
+    'application': True,
+    'license': 'LGPL-3',
+}

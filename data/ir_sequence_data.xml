@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Sequence for Project Code: PRJ-0001 -->
+    <record id="seq_project_project_code" model="ir.sequence">
+        <field name="name">Project Reference Code</field>
+        <field name="code">project.project.code</field>
+        <field name="prefix">PRJ-</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Sequence for Task Number: TSK-0001 -->
+    <record id="seq_project_task_number" model="ir.sequence">
+        <field name="name">Task Unique Number</field>
+        <field name="code">project.task.number</field>
+        <field name="prefix">TSK-</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Sequence for Project Expense: EXP-0001 -->
+    <record id="seq_project_expense_number" model="ir.sequence">
+        <field name="name">Project Expense Sequence</field>
+        <field name="code">project.expense.seq</field>
+        <field name="prefix">EXP-</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Sequence for Change Request: CR-0001 -->
+    <record id="seq_project_change_request_number" model="ir.sequence">
+        <field name="name">Project Change Request Sequence</field>
+        <field name="code">project.change_request.seq</field>
+        <field name="prefix">CR-</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>
+

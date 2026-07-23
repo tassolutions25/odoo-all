@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="cat_it_infra" model="project.budget.category">
+        <field name="name">IT Infrastructure</field>
+        <field name="description">Network, servers, hosting, cloud resources, and datacenter hardware/cabling.</field>
+    </record>
+
+    <record id="cat_hardware" model="project.budget.category">
+        <field name="name">Hardware Purchases</field>
+        <field name="description">Laptops, desktops, monitors, printers, and other end-user hardware.</field>
+    </record>
+
+    <record id="cat_personnel" model="project.budget.category">
+        <field name="name">Personnel &amp; Staffing</field>
+        <field name="description">Salaries, contractor costs, freelancers, and project team wages.</field>
+    </record>
+
+    <record id="cat_software" model="project.budget.category">
+        <field name="name">Software Licenses</field>
+        <field name="description">SaaS subscriptions, software purchase licenses, database licenses, and tools.</field>
+    </record>
+
+    <record id="cat_consulting" model="project.budget.category">
+        <field name="name">Consultancy &amp; Advisory</field>
+        <field name="description">External consultants, legal advice, audits, and professional service fees.</field>
+    </record>
+
+    <record id="cat_operations" model="project.budget.category">
+        <field name="name">Operations &amp; Travel</field>
+        <field name="description">Project-related travel, training, logistics, meetings, and office supplies.</field>
+    </record>
+
+    <record id="cat_other" model="project.budget.category">
+        <field name="name">Other Expenses</field>
+        <field name="description">Miscellaneous expenditures and contingency reserves.</field>
+    </record>
+</odoo>
