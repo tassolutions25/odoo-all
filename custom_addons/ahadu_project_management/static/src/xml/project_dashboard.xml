@@ -2,359 +2,1501 @@
 <templates xml:space="preserve">
     <t t-name="ahadu_project_management.ProjectDashboard" owl="1">
         <div class="proj_dashboard_container">
+
+            <!-- LOADING SPINNER -->
             <div t-if="state.loading" class="proj_loading_spinner">
                 <div class="proj_spinner"></div>
-                <p class="mt-3">Loading dashboard data...</p>
+                <p class="mt-3 text-muted">Loading role-based dashboard data...</p>
             </div>
 
-            <div t-if="state.error" class="alert alert-warning mx-4 mt-3">
+            <!-- ERROR NOTICE -->
+            <div t-if="state.error and !state.loading" class="alert alert-warning mx-4 mt-3">
                 <i class="fa fa-exclamation-triangle me-2"></i>
-                <strong>Notice:</strong> Using sample data. <span t-esc="state.error"></span>
+                <strong>Notice:</strong> <span t-esc="state.error"></span>
             </div>
 
             <div t-if="!state.loading">
-                <!-- Header -->
-                <div class="proj_dashboard_header">
-                    <h1 class="proj_dashboard_title">
-                        <i class="fa fa-project-diagram me-2"></i>
-                        Project Portfolio Dashboard
-                    </h1>
-                </div>
 
-                <!-- Filter Bar -->
-                <div class="proj_filter_bar">
-                    <h5 class="proj_filter_label">
-                        <i class="fa fa-filter me-2"></i>Filters
-                    </h5>
-                    <div class="proj_filters">
-                        <select class="form-select" name="state" t-on-change="onFilterChange">
-                            <option value="all" t-att-selected="state.filters.state === 'all'">All States</option>
-                            <option value="draft" t-att-selected="state.filters.state === 'draft'">Draft</option>
-                            <option value="submitted" t-att-selected="state.filters.state === 'submitted'">Submitted</option>
-                            <option value="approved" t-att-selected="state.filters.state === 'approved'">Approved</option>
-                            <option value="active" t-att-selected="state.filters.state === 'active'">Active</option>
-                            <option value="closed" t-att-selected="state.filters.state === 'closed'">Closed</option>
-                        </select>
-                        <select class="form-select" name="department" t-on-change="onFilterChange">
-                            <option value="all" t-att-selected="state.filters.department === 'all'">All Departments</option>
-                            <t t-foreach="state.availableFilters.departments || []" t-as="dept" t-key="dept.id">
-                                <option t-att-value="dept.id" t-esc="dept.name" t-att-selected="state.filters.department == dept.id"></option>
-                            </t>
-                        </select>
-                        <select class="form-select" name="health" t-on-change="onFilterChange">
-                            <option value="all" t-att-selected="state.filters.health === 'all'">All Health Status</option>
-                            <option value="green" t-att-selected="state.filters.health === 'green'">On Track</option>
-                            <option value="amber" t-att-selected="state.filters.health === 'amber'">At Risk</option>
-                            <option value="red" t-att-selected="state.filters.health === 'red'">Critical</option>
-                        </select>
-                        <select class="form-select" name="priority" t-on-change="onFilterChange">
-                            <option value="all" t-att-selected="state.filters.priority === 'all'">All Priorities</option>
-                            <option value="high" t-att-selected="state.filters.priority === 'high'">High</option>
-                            <option value="medium" t-att-selected="state.filters.priority === 'medium'">Medium</option>
-                            <option value="low" t-att-selected="state.filters.priority === 'low'">Low</option>
-                        </select>
-                        <select class="form-select" name="date_range" t-on-change="onFilterChange">
-                            <option value="all" t-att-selected="state.filters.date_range === 'all'">All Time</option>
-                            <option value="this_year" t-att-selected="state.filters.date_range === 'this_year'">This Year</option>
-                            <option value="last_year" t-att-selected="state.filters.date_range === 'last_year'">Last Year</option>
-                            <option value="q1" t-att-selected="state.filters.date_range === 'q1'">Q1</option>
-                            <option value="q2" t-att-selected="state.filters.date_range === 'q2'">Q2</option>
-                            <option value="q3" t-att-selected="state.filters.date_range === 'q3'">Q3</option>
-                            <option value="q4" t-att-selected="state.filters.date_range === 'q4'">Q4</option>
+                <!-- ==================== HEADER ==================== -->
+                <div class="proj_dashboard_header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h2 class="proj_dashboard_title">
+                            <i class="fa fa-chart-bar me-2"></i>
+                            <t t-if="state.activeRole === 'executive'">1.1 Executive Management Dashboard (CEO / CIO)</t>
+                            <t t-elif="state.activeRole === 'sponsor'">1.2 Project Sponsor Dashboard</t>
+                            <t t-elif="state.activeRole === 'pmo'">1.3 IT Program Management &amp; Innovation Directorate Dashboard</t>
+                            <t t-elif="state.activeRole === 'division'">1.4 Enterprise Program &amp; Architecture Division (EPAD) Dashboard</t>
+                            <t t-elif="state.activeRole === 'pm'">1.5 Project Manager Dashboard</t>
+                            <t t-elif="state.activeRole === 'team'">1.6 Project Team Member Dashboard</t>
+                        </h2>
+                        <small class="text-muted">
+                            <i class="fa fa-sync me-1"></i> Live portfolio data · Role: <strong t-esc="state.activeRole"></strong>
+                        </small>
+                    </div>
+
+                    <!-- Role Switcher — PMO Admin Only -->
+                    <div t-if="state.isPmoAdmin" class="d-flex align-items-center bg-white p-2 rounded border shadow-sm">
+                        <span class="fw-bold me-2 text-danger" style="font-size: 0.85rem; white-space: nowrap;">
+                            <i class="fa fa-user-shield me-1"></i>PMO Admin – Switch View:
+                        </span>
+                        <select class="form-select form-select-sm border-0 bg-light" name="active_role" t-on-change="onFilterChange" style="font-weight: 600; width: 280px;">
+                            <option value="executive" t-att-selected="state.activeRole === 'executive'">1.1 Executive Management (CEO / CIO)</option>
+                            <option value="sponsor" t-att-selected="state.activeRole === 'sponsor'">1.2 Project Sponsor</option>
+                            <option value="pmo" t-att-selected="state.activeRole === 'pmo'">1.3 IT Program Mgmt &amp; Innovation</option>
+                            <option value="division" t-att-selected="state.activeRole === 'division'">1.4 EPAD Division</option>
+                            <option value="pm" t-att-selected="state.activeRole === 'pm'">1.5 Project Manager</option>
+                            <option value="team" t-att-selected="state.activeRole === 'team'">1.6 Project Team Member</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="proj_dashboard_body">
-                    <!-- Tabs -->
-                    <ul class="nav nav-tabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button t-att-class="'nav-link' + (state.activeTab === 'overview' ? ' active' : '')"
-                                    t-on-click="() => this.setActiveTab('overview')" type="button">
-                                <i class="fa fa-tachometer-alt me-2"></i>Portfolio Overview
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button t-att-class="'nav-link' + (state.activeTab === 'budget' ? ' active' : '')"
-                                    t-on-click="() => this.setActiveTab('budget')" type="button">
-                                <i class="fa fa-dollar-sign me-2"></i>Budget Analysis
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button t-att-class="'nav-link' + (state.activeTab === 'risks' ? ' active' : '')"
-                                    t-on-click="() => this.setActiveTab('risks')" type="button">
-                                <i class="fa fa-exclamation-triangle me-2"></i>Risks &amp; Issues
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button t-att-class="'nav-link' + (state.activeTab === 'timeline' ? ' active' : '')"
-                                    t-on-click="() => this.setActiveTab('timeline')" type="button">
-                                <i class="fa fa-calendar-alt me-2"></i>Progress &amp; Timeline
-                            </button>
-                        </li>
-                    </ul>
+                <!-- ==================== 15-PARAMETER FILTER BAR ==================== -->
+                <div class="proj_filter_bar mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <h6 class="proj_filter_label mb-0 me-3">
+                            <i class="fa fa-filter me-2"></i>Portfolio Filters (15 Parameters)
+                        </h6>
+                    </div>
+                    <div class="row g-2">
+                        <!-- 1. Project -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="project_id" t-on-change="onFilterChange">
+                                <option value="all">1. All Projects</option>
+                                <t t-foreach="state.lookup.projects || []" t-as="p" t-key="p.id">
+                                    <option t-att-value="p.id" t-esc="p.name" t-att-selected="state.filters.project_id == p.id"></option>
+                                </t>
+                            </select>
+                        </div>
+                        <!-- 2. Program -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="program_id" t-on-change="onFilterChange">
+                                <option value="all">2. All Programs</option>
+                                <t t-foreach="state.lookup.programs || []" t-as="prog" t-key="prog.id">
+                                    <option t-att-value="prog.id" t-esc="prog.name" t-att-selected="state.filters.program_id == prog.id"></option>
+                                </t>
+                            </select>
+                        </div>
+                        <!-- 3. Directorate -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="department_id" t-on-change="onFilterChange">
+                                <option value="all">3. All Directorates</option>
+                                <t t-foreach="state.lookup.departments || []" t-as="d" t-key="d.id">
+                                    <option t-att-value="d.id" t-esc="d.name" t-att-selected="state.filters.department_id == d.id"></option>
+                                </t>
+                            </select>
+                        </div>
+                        <!-- 4. Division -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="division_id" t-on-change="onFilterChange">
+                                <option value="all">4. All Divisions</option>
+                                <t t-foreach="state.lookup.divisions || []" t-as="dv" t-key="dv.id">
+                                    <option t-att-value="dv.id" t-esc="dv.name" t-att-selected="state.filters.division_id == dv.id"></option>
+                                </t>
+                            </select>
+                        </div>
+                        <!-- 5. Sponsor -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="sponsor_id" t-on-change="onFilterChange">
+                                <option value="all">5. All Sponsors</option>
+                                <t t-foreach="state.lookup.sponsors || []" t-as="sp" t-key="sp.id">
+                                    <option t-att-value="sp.id" t-esc="sp.name" t-att-selected="state.filters.sponsor_id == sp.id"></option>
+                                </t>
+                            </select>
+                        </div>
+                        <!-- 6. Project Manager -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="pm_id" t-on-change="onFilterChange">
+                                <option value="all">6. All PMs</option>
+                                <t t-foreach="state.lookup.pms || []" t-as="pm" t-key="pm.id">
+                                    <option t-att-value="pm.id" t-esc="pm.name" t-att-selected="state.filters.pm_id == pm.id"></option>
+                                </t>
+                            </select>
+                        </div>
+                        <!-- 7. Category -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="category_id" t-on-change="onFilterChange">
+                                <option value="all">7. All Categories</option>
+                                <t t-foreach="state.lookup.categories || []" t-as="cat" t-key="cat.id">
+                                    <option t-att-value="cat.id" t-esc="cat.name" t-att-selected="state.filters.category_id == cat.id"></option>
+                                </t>
+                            </select>
+                        </div>
+                        <!-- 8. Status -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="state" t-on-change="onFilterChange">
+                                <option value="all">8. All Statuses</option>
+                                <option value="draft">Draft</option>
+                                <option value="submitted">Submitted</option>
+                                <option value="approved">Approved</option>
+                                <option value="active">Active</option>
+                                <option value="closed">Closed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <!-- 9. Priority -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="priority" t-on-change="onFilterChange">
+                                <option value="all">9. All Priorities</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <!-- 10. Risk Level -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="risk_level" t-on-change="onFilterChange">
+                                <option value="all">10. All Risk Levels</option>
+                                <option value="critical">Critical Risk</option>
+                                <option value="high">High Risk</option>
+                                <option value="medium">Medium Risk</option>
+                                <option value="low">Low Risk</option>
+                            </select>
+                        </div>
+                        <!-- 11. Resource -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="resource_id" t-on-change="onFilterChange">
+                                <option value="all">11. All Resources</option>
+                                <t t-foreach="state.lookup.resources || []" t-as="res" t-key="res.id">
+                                    <option t-att-value="res.id" t-esc="res.name" t-att-selected="state.filters.resource_id == res.id"></option>
+                                </t>
+                            </select>
+                        </div>
+                        <!-- 12. Date From -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <input type="date" class="form-control form-control-sm" name="date_from" placeholder="12. Date From"
+                                   t-att-value="state.filters.date_from" t-on-change="onFilterChange"/>
+                        </div>
+                        <!-- 13. Date To -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <input type="date" class="form-control form-control-sm" name="date_to" placeholder="13. Date To"
+                                   t-att-value="state.filters.date_to" t-on-change="onFilterChange"/>
+                        </div>
+                        <!-- 14. Budget Status -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="budget_status" t-on-change="onFilterChange">
+                                <option value="all">14. Budget Status</option>
+                                <option value="on_track">Within Budget</option>
+                                <option value="exceeded">Budget Exceeded</option>
+                            </select>
+                        </div>
+                        <!-- 15. Health Status -->
+                        <div class="col-xl-2 col-md-3 col-sm-4">
+                            <select class="form-select form-select-sm" name="health" t-on-change="onFilterChange">
+                                <option value="all">15. All Health</option>
+                                <option value="green">On Track (Green)</option>
+                                <option value="amber">At Risk (Amber)</option>
+                                <option value="red">Critical (Red)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-                    <div class="tab-content pt-4">
-
-                        <!-- ==================== OVERVIEW TAB ==================== -->
-                        <div t-att-class="'tab-pane fade' + (state.activeTab === 'overview' ? ' show active' : '')">
-                            <!-- KPI Cards Row 1: Project Status -->
-                            <div class="row proj_kpi_section mb-4">
-                                <div class="col-lg col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-total-proj">
-                                        <div class="proj_kpi_icon"><i class="fa fa-folder-open"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="state.kpis.total_projects"></div>
-                                            <div class="proj_kpi_label">Total Projects</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-active-proj">
-                                        <div class="proj_kpi_icon"><i class="fa fa-play-circle"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="state.kpis.active_projects"></div>
-                                            <div class="proj_kpi_label">Active Projects</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-on-track">
-                                        <div class="proj_kpi_icon"><i class="fa fa-check-circle"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="state.kpis.on_track"></div>
-                                            <div class="proj_kpi_label">On Track</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-at-risk">
-                                        <div class="proj_kpi_icon"><i class="fa fa-exclamation-circle"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="state.kpis.at_risk"></div>
-                                            <div class="proj_kpi_label">At Risk</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-critical-proj">
-                                        <div class="proj_kpi_icon"><i class="fa fa-times-circle"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="state.kpis.critical"></div>
-                                            <div class="proj_kpi_label">Critical</div>
-                                        </div>
-                                    </div>
+                <!-- ================================================================= -->
+                <!-- 1.1 EXECUTIVE MANAGEMENT DASHBOARD (CEO / CIO)                    -->
+                <!-- ================================================================= -->
+                <t t-if="state.activeRole === 'executive'">
+                    <!-- KPI Cards -->
+                    <div class="row proj_kpi_section mb-4">
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3"
+                             t-on-click="() => this.openFilteredList('project.project', [], 'All Projects')">
+                            <div class="proj_kpi_card card-total-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-building"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.total_projects"></div>
+                                    <div class="proj_kpi_label">Enterprise Portfolio</div>
                                 </div>
                             </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3"
+                             t-on-click="() => this.openFilteredList('project.project', [['state','=','active']], 'Active Projects')">
+                            <div class="proj_kpi_card card-active-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-play-circle"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.active_projects"></div>
+                                    <div class="proj_kpi_label">Active Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3"
+                             t-on-click="() => this.openFilteredList('project.project', [['project_health','=','green']], 'On Track Projects')">
+                            <div class="proj_kpi_card card-on-track">
+                                <div class="proj_kpi_icon"><i class="fa fa-check-circle"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.on_track"></div>
+                                    <div class="proj_kpi_label">On Track (Green)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3"
+                             t-on-click="() => this.openFilteredList('project.project', [['project_health','=','amber']], 'At Risk Projects')">
+                            <div class="proj_kpi_card card-at-risk">
+                                <div class="proj_kpi_icon"><i class="fa fa-exclamation-triangle"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.at_risk"></div>
+                                    <div class="proj_kpi_label">At Risk (Amber)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3"
+                             t-on-click="() => this.openFilteredList('project.project', [['project_health','=','red']], 'Critical Projects')">
+                            <div class="proj_kpi_card card-critical-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-times-circle"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.critical"></div>
+                                    <div class="proj_kpi_label">Critical / Interventions</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-total">
+                                <div class="proj_kpi_icon"><i class="fa fa-coins"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.total_budget)"></div>
+                                    <div class="proj_kpi_label">Total Approved Budget</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-actual">
+                                <div class="proj_kpi_icon"><i class="fa fa-file-invoice-dollar"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.total_actual_cost)"></div>
+                                    <div class="proj_kpi_label">Actual Expenditure</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-variance">
+                                <div class="proj_kpi_icon"><i class="fa fa-balance-scale"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.budget_variance)"></div>
+                                    <div class="proj_kpi_label">Budget Variance</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3"
+                             t-on-click="() => this.openFilteredList('project.project', [['project_health','=','red']], 'Delayed / High Risk')">
+                            <div class="proj_kpi_card card-critical-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-clock"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.delayed_projects"></div>
+                                    <div class="proj_kpi_label">Delayed Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-on-track">
+                                <div class="proj_kpi_icon"><i class="fa fa-trophy"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value"><t t-esc="state.kpis.success_rate"></t>%</div>
+                                    <div class="proj_kpi_label">Success / Completion Rate</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3"
+                             t-on-click="() => this.openFilteredList('project.project', [['state','=','submitted']], 'Pending Approvals')">
+                            <div class="proj_kpi_card card-at-risk">
+                                <div class="proj_kpi_icon"><i class="fa fa-gavel"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.tables.pending_approvals.length"></div>
+                                    <div class="proj_kpi_label">Pending Approvals</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-active-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-users"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value"><t t-esc="state.kpis.resource_utilization"></t>%</div>
+                                    <div class="proj_kpi_label">Resource Utilization</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                            <!-- Charts Row -->
-                            <div class="row">
-                                <div class="col-lg-6 col-md-6 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-heartbeat me-2"></i>Project Health Status
-                                        </h5>
-                                        <div class="proj_chart_container">
-                                            <canvas t-ref="healthStatusChart"></canvas>
-                                        </div>
-                                    </div>
+                    <!-- Charts Row 1 -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-heartbeat me-2"></i>Portfolio Health Status</h5>
+                                <div class="proj_chart_container"><canvas t-ref="exec_health"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-building me-2"></i>Distribution by Directorate</h5>
+                                <div class="proj_chart_container"><canvas t-ref="exec_byDept"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-6 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-tags me-2"></i>By Project Category</h5>
+                                <div class="proj_chart_container"><canvas t-ref="exec_byCategory"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-user-tie me-2"></i>By Project Sponsor</h5>
+                                <div class="proj_chart_container"><canvas t-ref="exec_bySponsor"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 2 -->
+                    <div class="row mb-4">
+                        <div class="col-lg-6 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-dollar-sign me-2"></i>Budget Utilization by Directorate (Planned vs Actual)</h5>
+                                <div class="proj_chart_container"><canvas t-ref="exec_budgetByDept"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-chart-bar me-2"></i>Budget Variance by Project (Top 10)</h5>
+                                <div class="proj_chart_container"><canvas t-ref="exec_budgetVariance"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tables Row -->
+                    <div class="row mb-4">
+                        <!-- High Risks & Critical Issues -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-danger">
+                                        <i class="fa fa-exclamation-triangle me-2"></i>High-Risk Projects &amp; Critical Issues
+                                    </h6>
                                 </div>
-                                <div class="col-lg-6 col-md-6 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-tasks me-2"></i>Projects by Status
-                                        </h5>
-                                        <div class="proj_chart_container">
-                                            <canvas t-ref="byStateChart"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 col-md-6 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-building me-2"></i>Projects by Department
-                                        </h5>
-                                        <div class="proj_chart_container">
-                                            <canvas t-ref="byDepartmentChart"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 col-md-6 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-flag me-2"></i>Priority Breakdown
-                                        </h5>
-                                        <div class="proj_chart_container">
-                                            <canvas t-ref="byPriorityChart"></canvas>
-                                        </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Title</th><th>Project</th><th>Rating</th><th>Owner</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.high_risks" t-as="r" t-key="r.id">
+                                                    <tr>
+                                                        <td><strong t-esc="r.name"></strong></td>
+                                                        <td t-esc="r.project"></td>
+                                                        <td><span class="badge bg-danger" t-esc="r.rating"></span></td>
+                                                        <td t-esc="r.owner"></td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.high_risks.length">
+                                                    <tr><td colspan="4" class="text-center text-muted py-3">No active high risks</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ==================== BUDGET TAB ==================== -->
-                        <div t-att-class="'tab-pane fade' + (state.activeTab === 'budget' ? ' show active' : '')">
-                            <!-- Budget KPI Cards -->
-                            <div class="row proj_kpi_section mb-4">
-                                <div class="col-lg-4 col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-budget-total">
-                                        <div class="proj_kpi_icon"><i class="fa fa-money-bill-wave"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.total_budget)"></div>
-                                            <div class="proj_kpi_label">Total Planned Budget</div>
-                                        </div>
-                                    </div>
+                        <!-- Pending Executive Approvals -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-primary">
+                                        <i class="fa fa-gavel me-2"></i>Pending Executive Approvals
+                                    </h6>
                                 </div>
-                                <div class="col-lg-4 col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-budget-actual">
-                                        <div class="proj_kpi_icon"><i class="fa fa-receipt"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.total_actual_cost)"></div>
-                                            <div class="proj_kpi_label">Total Actual Cost</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-4 col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-budget-variance">
-                                        <div class="proj_kpi_icon"><i class="fa fa-chart-line"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.budget_variance)"></div>
-                                            <div class="proj_kpi_label">Budget Remaining</div>
-                                        </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Project / Request</th><th>Sponsor</th><th>Type</th><th>Submitted</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.pending_approvals" t-as="app" t-key="app.id">
+                                                    <tr t-on-click="() => this.openRecord('project.project', app.id)" style="cursor: pointer;">
+                                                        <td><strong t-esc="app.name"></strong></td>
+                                                        <td t-esc="app.sponsor"></td>
+                                                        <td><span class="badge bg-warning text-dark" t-esc="app.type"></span></td>
+                                                        <td t-esc="app.date"></td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.pending_approvals.length">
+                                                    <tr><td colspan="4" class="text-center text-muted py-3">No pending approvals</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
-                            <div class="row">
-                                <div class="col-lg-8 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-chart-bar me-2"></i>Budget: Planned vs Actual by Department
-                                        </h5>
-                                        <div class="proj_chart_container large">
-                                            <canvas t-ref="budgetByDeptChart"></canvas>
-                                        </div>
+                    <!-- Strategic Milestones + Delayed Projects -->
+                    <div class="row mb-4">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-success">
+                                        <i class="fa fa-flag me-2"></i>Upcoming Strategic Milestones
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Milestone</th><th>Project</th><th>Deadline</th><th>Status</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.strategic_milestones" t-as="m" t-key="m.id">
+                                                    <tr>
+                                                        <td><strong t-esc="m.name"></strong></td>
+                                                        <td t-esc="m.project"></td>
+                                                        <td t-esc="m.deadline"></td>
+                                                        <td>
+                                                            <span t-if="m.is_reached" class="badge bg-success">Reached</span>
+                                                            <span t-else="" class="badge bg-secondary">Pending</span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.strategic_milestones.length">
+                                                    <tr><td colspan="4" class="text-center text-muted py-3">No upcoming milestones</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                                <div class="col-lg-4 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-chart-pie me-2"></i>Budget Utilization
-                                        </h5>
-                                        <div class="proj_chart_container large">
-                                            <canvas t-ref="budgetUtilizationChart"></canvas>
-                                        </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-warning">
+                                        <i class="fa fa-clock me-2"></i>Delayed Projects Requiring Intervention
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Project</th><th>Manager</th><th>End Date</th><th>Health</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.delayed_projects" t-as="dp" t-key="dp.id">
+                                                    <tr t-on-click="() => this.openRecord('project.project', dp.id)" style="cursor: pointer;">
+                                                        <td><strong t-esc="dp.name"></strong></td>
+                                                        <td t-esc="dp.pm"></td>
+                                                        <td t-esc="dp.end_date"></td>
+                                                        <td><span class="badge bg-danger">Delayed</span></td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.delayed_projects.length">
+                                                    <tr><td colspan="4" class="text-center text-muted py-3">No significantly delayed projects</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                                <div class="col-lg-12 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-balance-scale me-2"></i>Budget Variance by Project
-                                            <small class="text-muted ms-2" style="font-size:0.8rem;">(Green = Under Budget, Red = Over Budget)</small>
-                                        </h5>
-                                        <div class="proj_chart_container">
-                                            <canvas t-ref="budgetVarianceChart"></canvas>
-                                        </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ================================================================= -->
+                <!-- 1.2 PROJECT SPONSOR DASHBOARD                                    -->
+                <!-- ================================================================= -->
+                <t t-elif="state.activeRole === 'sponsor'">
+                    <div class="row proj_kpi_section mb-4">
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-total-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-user-check"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.total_projects"></div>
+                                    <div class="proj_kpi_label">Sponsored Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-on-track">
+                                <div class="proj_kpi_icon"><i class="fa fa-check-circle"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.on_track"></div>
+                                    <div class="proj_kpi_label">On Track Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-at-risk">
+                                <div class="proj_kpi_icon"><i class="fa fa-exclamation-triangle"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.at_risk"></div>
+                                    <div class="proj_kpi_label">At Risk Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-total">
+                                <div class="proj_kpi_icon"><i class="fa fa-wallet"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.total_budget)"></div>
+                                    <div class="proj_kpi_label">Total Approved Budget</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-actual">
+                                <div class="proj_kpi_icon"><i class="fa fa-file-invoice-dollar"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.total_actual_cost)"></div>
+                                    <div class="proj_kpi_label">Actual Expenditure</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-at-risk">
+                                <div class="proj_kpi_icon"><i class="fa fa-tasks"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.pending_changes"></div>
+                                    <div class="proj_kpi_label">Pending Change Requests</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-variance">
+                                <div class="proj_kpi_icon"><i class="fa fa-balance-scale"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.budget_variance)"></div>
+                                    <div class="proj_kpi_label">Budget Variance</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-critical-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-shield-alt"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.open_risks"></div>
+                                    <div class="proj_kpi_label">Open Risks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-active-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-percentage"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value"><t t-esc="state.kpis.schedule_performance"></t>%</div>
+                                    <div class="proj_kpi_label">Schedule Performance Index</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-on-track">
+                                <div class="proj_kpi_icon"><i class="fa fa-flag"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.tables.strategic_milestones.length"></div>
+                                    <div class="proj_kpi_label">Upcoming Milestones</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="row mb-4">
+                        <div class="col-lg-4 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-heartbeat me-2"></i>Sponsored Portfolio Health</h5>
+                                <div class="proj_chart_container"><canvas t-ref="sponsor_health"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-dollar-sign me-2"></i>Budget Utilization (Planned vs Actual)</h5>
+                                <div class="proj_chart_container"><canvas t-ref="sponsor_budgetUtil"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-chart-line me-2"></i>Schedule Performance by Project</h5>
+                                <div class="proj_chart_container"><canvas t-ref="sponsor_schedPerf"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tables -->
+                    <div class="row mb-4">
+                        <!-- Project Portfolio Table -->
+                        <div class="col-lg-8 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-primary">
+                                        <i class="fa fa-folder-open me-2"></i>Sponsored Projects Portfolio
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Project</th><th>Manager</th><th>Status</th><th>Progress</th><th>Budget</th><th>Health</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.project_list" t-as="proj" t-key="proj.id">
+                                                    <tr t-on-click="() => this.openRecord('project.project', proj.id)" style="cursor: pointer;">
+                                                        <td><strong t-esc="proj.name"></strong></td>
+                                                        <td t-esc="proj.pm"></td>
+                                                        <td><span class="badge bg-info text-dark" t-esc="proj.state"></span></td>
+                                                        <td>
+                                                            <div class="progress" style="height: 8px; width: 100px;">
+                                                                <div class="progress-bar bg-primary" t-att-style="'width:' + proj.progress + '%'"></div>
+                                                            </div>
+                                                            <small><t t-esc="proj.progress"></t>%</small>
+                                                        </td>
+                                                        <td t-esc="proj.budget"></td>
+                                                        <td>
+                                                            <span t-if="proj.health === 'green'" class="badge bg-success">On Track</span>
+                                                            <span t-elif="proj.health === 'amber'" class="badge bg-warning text-dark">At Risk</span>
+                                                            <span t-else="" class="badge bg-danger">Critical</span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.project_list.length">
+                                                    <tr><td colspan="6" class="text-center text-muted py-3">No sponsored projects found</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ==================== RISKS &amp; ISSUES TAB ==================== -->
-                        <div t-att-class="'tab-pane fade' + (state.activeTab === 'risks' ? ' show active' : '')">
-                            <!-- Risk KPI Cards -->
-                            <div class="row proj_kpi_section mb-4">
-                                <div class="col-lg-4 col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-risk">
-                                        <div class="proj_kpi_icon"><i class="fa fa-shield-alt"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="state.kpis.open_risks"></div>
-                                            <div class="proj_kpi_label">Open Risks</div>
-                                        </div>
-                                    </div>
+                        <!-- Pending Sponsor Approvals -->
+                        <div class="col-lg-4 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-warning">
+                                        <i class="fa fa-clipboard-check me-2"></i>Pending Sponsor Approvals
+                                    </h6>
                                 </div>
-                                <div class="col-lg-4 col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-issue">
-                                        <div class="proj_kpi_icon"><i class="fa fa-bug"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="state.kpis.open_issues"></div>
-                                            <div class="proj_kpi_label">Open Issues</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-4 col-md-6 mb-3">
-                                    <div class="proj_kpi_card card-overdue">
-                                        <div class="proj_kpi_icon"><i class="fa fa-clock"></i></div>
-                                        <div class="proj_kpi_data">
-                                            <div class="proj_kpi_value" t-esc="state.kpis.overdue_tasks"></div>
-                                            <div class="proj_kpi_label">Overdue Tasks</div>
-                                        </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Project</th><th>Type</th><th>Action</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.pending_approvals" t-as="app" t-key="app.id">
+                                                    <tr>
+                                                        <td><strong t-esc="app.name"></strong></td>
+                                                        <td><span class="badge bg-info text-dark" t-esc="app.type"></span></td>
+                                                        <td><button class="btn btn-sm btn-outline-primary py-0"
+                                                            t-on-click="() => this.openRecord('project.project', app.id)">Review</button></td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.pending_approvals.length">
+                                                    <tr><td colspan="3" class="text-center text-muted py-3">No pending approvals</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </t>
 
-                            <div class="row">
-                                <div class="col-lg-6 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-shield-alt me-2"></i>Risks by Level
-                                        </h5>
-                                        <div class="proj_chart_container">
-                                            <canvas t-ref="riskByLevelChart"></canvas>
-                                        </div>
+                <!-- ================================================================= -->
+                <!-- 1.3 IT PROGRAM MANAGEMENT &amp; INNOVATION DIRECTORATE DASHBOARD  -->
+                <!-- ================================================================= -->
+                <t t-elif="state.activeRole === 'pmo'">
+                    <div class="row proj_kpi_section mb-4">
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-total-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-sitemap"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.total_projects"></div>
+                                    <div class="proj_kpi_label">Bank-Wide Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-active-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-layer-group"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.active_projects"></div>
+                                    <div class="proj_kpi_label">Active Execution</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-total">
+                                <div class="proj_kpi_icon"><i class="fa fa-chart-line"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.total_budget)"></div>
+                                    <div class="proj_kpi_label">Portfolio Budget</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-on-track">
+                                <div class="proj_kpi_icon"><i class="fa fa-check-circle"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.on_track"></div>
+                                    <div class="proj_kpi_label">On Track Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-critical-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-gavel"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.critical_issues"></div>
+                                    <div class="proj_kpi_label">Governance Interventions</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-at-risk">
+                                <div class="proj_kpi_icon"><i class="fa fa-shield-alt"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.open_risks"></div>
+                                    <div class="proj_kpi_label">Open Risks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-variance">
+                                <div class="proj_kpi_icon"><i class="fa fa-tasks"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.pending_changes"></div>
+                                    <div class="proj_kpi_label">Change Requests</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-active-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-project-diagram"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.programs_count"></div>
+                                    <div class="proj_kpi_label">Programs</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-on-track">
+                                <div class="proj_kpi_icon"><i class="fa fa-percentage"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value"><t t-esc="state.kpis.compliance_rate"></t>%</div>
+                                    <div class="proj_kpi_label">Governance Compliance</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-actual">
+                                <div class="proj_kpi_icon"><i class="fa fa-users"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value"><t t-esc="state.kpis.resource_utilization"></t>%</div>
+                                    <div class="proj_kpi_label">Resource Utilization</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="row mb-4">
+                        <div class="col-lg-4 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-code-branch me-2"></i>Projects by Division</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pmo_byDivision"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-dollar-sign me-2"></i>Budget vs Actual by Directorate</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pmo_budgetByDept"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-shield-alt me-2"></i>Risk Distribution</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pmo_riskByLevel"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-tags me-2"></i>By Category</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pmo_byCategory"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-lg-6 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-chart-line me-2"></i>Schedule Performance by Project</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pmo_schedPerf"></canvas></div>
+                            </div>
+                        </div>
+                        <!-- Change Requests Table -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3 h-100">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-primary">
+                                        <i class="fa fa-exchange-alt me-2"></i>Pending Change Requests (Governance)
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Title</th><th>Project</th><th>Type</th><th>Submitted</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.change_requests" t-as="cr" t-key="cr.id">
+                                                    <tr>
+                                                        <td><strong t-esc="cr.name"></strong></td>
+                                                        <td t-esc="cr.project"></td>
+                                                        <td><span class="badge bg-info text-dark" t-esc="cr.type"></span></td>
+                                                        <td t-esc="cr.date"></td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.change_requests.length">
+                                                    <tr><td colspan="4" class="text-center text-muted py-3">No pending change requests</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-bug me-2"></i>Issues by Severity
-                                        </h5>
-                                        <div class="proj_chart_container">
-                                            <canvas t-ref="issuesBySeverityChart"></canvas>
-                                        </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- High Risks & Critical Issues for PMO -->
+                    <div class="row mb-4">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-danger">
+                                        <i class="fa fa-exclamation-triangle me-2"></i>High Risks Portfolio-Wide
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Risk</th><th>Project</th><th>Level</th><th>Owner</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.high_risks" t-as="r" t-key="r.id">
+                                                    <tr>
+                                                        <td><strong t-esc="r.name"></strong></td>
+                                                        <td t-esc="r.project"></td>
+                                                        <td><span class="badge bg-danger" t-esc="r.rating"></span></td>
+                                                        <td t-esc="r.owner"></td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.high_risks.length">
+                                                    <tr><td colspan="4" class="text-center text-muted py-3">No active high risks</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                                <div class="col-lg-12 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-tasks me-2"></i>Task Status Breakdown
-                                        </h5>
-                                        <div class="proj_chart_container">
-                                            <canvas t-ref="taskCompletionChart"></canvas>
-                                        </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-warning">
+                                        <i class="fa fa-clock me-2"></i>Delayed Projects
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Project</th><th>Manager</th><th>End Date</th><th>Health</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.delayed_projects" t-as="dp" t-key="dp.id">
+                                                    <tr t-on-click="() => this.openRecord('project.project', dp.id)" style="cursor: pointer;">
+                                                        <td><strong t-esc="dp.name"></strong></td>
+                                                        <td t-esc="dp.pm"></td>
+                                                        <td t-esc="dp.end_date"></td>
+                                                        <td><span class="badge bg-danger">Delayed</span></td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.delayed_projects.length">
+                                                    <tr><td colspan="4" class="text-center text-muted py-3">No significantly delayed projects</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ================================================================= -->
+                <!-- 1.4 ENTERPRISE PROGRAM &amp; ARCHITECTURE DIVISION (EPAD) DASHBOARD -->
+                <!-- ================================================================= -->
+                <t t-elif="state.activeRole === 'division'">
+                    <div class="row proj_kpi_section mb-4">
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-total-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-tasks"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.total_projects"></div>
+                                    <div class="proj_kpi_label">Division Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-at-risk">
+                                <div class="proj_kpi_icon"><i class="fa fa-clock"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.overdue_tasks"></div>
+                                    <div class="proj_kpi_label">Overdue Tasks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-critical-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-exclamation-triangle"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.open_risks"></div>
+                                    <div class="proj_kpi_label">Escalations / Open Risks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-on-track">
+                                <div class="proj_kpi_icon"><i class="fa fa-check-double"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value"><t t-esc="state.kpis.wbs_completion"></t>%</div>
+                                    <div class="proj_kpi_label">WBS Completion Rate</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-total">
+                                <div class="proj_kpi_icon"><i class="fa fa-coins"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.total_budget)"></div>
+                                    <div class="proj_kpi_label">Division Budget</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-variance">
+                                <div class="proj_kpi_icon"><i class="fa fa-balance-scale"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.budget_variance)"></div>
+                                    <div class="proj_kpi_label">Budget Variance</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-active-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-percentage"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value"><t t-esc="state.kpis.success_rate"></t>%</div>
+                                    <div class="proj_kpi_label">Portfolio Success Rate</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-critical-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-bug"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.critical_issues"></div>
+                                    <div class="proj_kpi_label">Critical Issues</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-heartbeat me-2"></i>Portfolio Health</h5>
+                                <div class="proj_chart_container"><canvas t-ref="div_health"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-tags me-2"></i>By Project Category</h5>
+                                <div class="proj_chart_container"><canvas t-ref="div_byCategory"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-chart-bar me-2"></i>WBS Progress by Project</h5>
+                                <div class="proj_chart_container"><canvas t-ref="div_wbsProgress"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-balance-scale me-2"></i>Budget Variance by Project</h5>
+                                <div class="proj_chart_container"><canvas t-ref="div_budgetVar"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tables -->
+                    <div class="row mb-4">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-primary">
+                                        <i class="fa fa-folder-open me-2"></i>Division Project Portfolio
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Project</th><th>Manager</th><th>Status</th><th>Progress</th><th>Health</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.project_list" t-as="proj" t-key="proj.id">
+                                                    <tr t-on-click="() => this.openRecord('project.project', proj.id)" style="cursor: pointer;">
+                                                        <td><strong t-esc="proj.name"></strong></td>
+                                                        <td t-esc="proj.pm"></td>
+                                                        <td><span class="badge bg-info text-dark" t-esc="proj.state"></span></td>
+                                                        <td>
+                                                            <div class="progress" style="height: 8px; width: 100px;">
+                                                                <div class="progress-bar bg-primary" t-att-style="'width:' + proj.progress + '%'"></div>
+                                                            </div>
+                                                            <small><t t-esc="proj.progress"></t>%</small>
+                                                        </td>
+                                                        <td>
+                                                            <span t-if="proj.health === 'green'" class="badge bg-success">On Track</span>
+                                                            <span t-elif="proj.health === 'amber'" class="badge bg-warning text-dark">At Risk</span>
+                                                            <span t-else="" class="badge bg-danger">Critical</span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.project_list.length">
+                                                    <tr><td colspan="5" class="text-center text-muted py-3">No division projects found</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-danger">
+                                        <i class="fa fa-exclamation-triangle me-2"></i>Escalations / High Risks
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Risk / Issue</th><th>Project</th><th>Level</th><th>Owner</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.high_risks" t-as="r" t-key="r.id">
+                                                    <tr>
+                                                        <td><strong t-esc="r.name"></strong></td>
+                                                        <td t-esc="r.project"></td>
+                                                        <td><span class="badge bg-danger" t-esc="r.rating"></span></td>
+                                                        <td t-esc="r.owner"></td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.high_risks.length">
+                                                    <tr><td colspan="4" class="text-center text-muted py-3">No active escalations</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ================================================================= -->
+                <!-- 1.5 PROJECT MANAGER DASHBOARD                                    -->
+                <!-- ================================================================= -->
+                <t t-elif="state.activeRole === 'pm'">
+                    <div class="row proj_kpi_section mb-4">
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-total-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-folder"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.total_projects"></div>
+                                    <div class="proj_kpi_label">My Managed Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-at-risk">
+                                <div class="proj_kpi_icon"><i class="fa fa-clock"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.overdue_tasks"></div>
+                                    <div class="proj_kpi_label">Overdue Tasks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-total">
+                                <div class="proj_kpi_icon"><i class="fa fa-dollar-sign"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.total_budget)"></div>
+                                    <div class="proj_kpi_label">Total Budget</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-actual">
+                                <div class="proj_kpi_icon"><i class="fa fa-file-invoice-dollar"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.total_actual_cost)"></div>
+                                    <div class="proj_kpi_label">Actual Cost</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-critical-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-bug"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.critical_issues"></div>
+                                    <div class="proj_kpi_label">Critical Issues</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-at-risk">
+                                <div class="proj_kpi_icon"><i class="fa fa-shield-alt"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.open_risks"></div>
+                                    <div class="proj_kpi_label">Open Risks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-on-track">
+                                <div class="proj_kpi_icon"><i class="fa fa-check-circle"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.on_track"></div>
+                                    <div class="proj_kpi_label">On Track Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-variance">
+                                <div class="proj_kpi_icon"><i class="fa fa-tasks"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.pending_changes"></div>
+                                    <div class="proj_kpi_label">Pending Changes</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-active-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-flag"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.tables.strategic_milestones.length"></div>
+                                    <div class="proj_kpi_label">Upcoming Milestones</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-variance">
+                                <div class="proj_kpi_icon"><i class="fa fa-balance-scale"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="this.formatCurrency(state.kpis.budget_variance)"></div>
+                                    <div class="proj_kpi_label">Budget Variance</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-tasks me-2"></i>Task Status Distribution</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pm_taskStatus"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-shield-alt me-2"></i>Risk by Level</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pm_riskLevel"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-dollar-sign me-2"></i>Budget vs Actual</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pm_budgetUtil"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-flag me-2"></i>Milestone Progress</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pm_milestoneProg"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-lg-12 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-chart-line me-2"></i>Schedule Performance by Project</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pm_schedPerf"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tables -->
+                    <div class="row mb-4">
+                        <!-- My Projects -->
+                        <div class="col-lg-7 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3">
+                                    <h6 class="fw-bold mb-0 text-primary">
+                                        <i class="fa fa-folder me-2"></i>My Projects
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Project</th><th>Status</th><th>Progress</th><th>Budget</th><th>Actual</th><th>Health</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.project_list" t-as="proj" t-key="proj.id">
+                                                    <tr t-on-click="() => this.openRecord('project.project', proj.id)" style="cursor: pointer;">
+                                                        <td><strong t-esc="proj.name"></strong></td>
+                                                        <td><span class="badge bg-info text-dark" t-esc="proj.state"></span></td>
+                                                        <td>
+                                                            <div class="progress" style="height: 8px; width: 80px;">
+                                                                <div class="progress-bar bg-primary" t-att-style="'width:' + proj.progress + '%'"></div>
+                                                            </div>
+                                                            <small><t t-esc="proj.progress"></t>%</small>
+                                                        </td>
+                                                        <td t-esc="proj.budget"></td>
+                                                        <td t-esc="proj.actual"></td>
+                                                        <td>
+                                                            <span t-if="proj.health === 'green'" class="badge bg-success">On Track</span>
+                                                            <span t-elif="proj.health === 'amber'" class="badge bg-warning text-dark">At Risk</span>
+                                                            <span t-else="" class="badge bg-danger">Critical</span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.project_list.length">
+                                                    <tr><td colspan="6" class="text-center text-muted py-3">No projects found</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ==================== TIMELINE TAB ==================== -->
-                        <div t-att-class="'tab-pane fade' + (state.activeTab === 'timeline' ? ' show active' : '')">
-                            <div class="row">
-                                <div class="col-lg-5 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-calendar-check me-2"></i>Timeline Status
-                                        </h5>
-                                        <div class="proj_chart_container">
-                                            <canvas t-ref="timelineStatusChart"></canvas>
-                                        </div>
+                        <!-- Upcoming Milestones + Risks -->
+                        <div class="col-lg-5 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3 mb-3">
+                                <div class="card-header bg-white py-2">
+                                    <h6 class="fw-bold mb-0 text-success" style="font-size: 0.88rem;">
+                                        <i class="fa fa-flag me-2"></i>Upcoming Milestones
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.82rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Milestone</th><th>Project</th><th>Deadline</th><th>Reached</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.strategic_milestones.slice(0, 6)" t-as="m" t-key="m.id">
+                                                    <tr>
+                                                        <td t-esc="m.name"></td>
+                                                        <td t-esc="m.project"></td>
+                                                        <td t-esc="m.deadline"></td>
+                                                        <td>
+                                                            <span t-if="m.is_reached" class="badge bg-success">Yes</span>
+                                                            <span t-else="" class="badge bg-secondary">No</span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.strategic_milestones.length">
+                                                    <tr><td colspan="4" class="text-center text-muted py-2">No milestones</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                                <div class="col-lg-7 mb-4">
-                                    <div class="proj_chart_card">
-                                        <h5 class="proj_chart_title">
-                                            <i class="fa fa-chart-bar me-2"></i>Progress Distribution
-                                        </h5>
-                                        <div class="proj_chart_container">
-                                            <canvas t-ref="progressDistributionChart"></canvas>
-                                        </div>
+                            </div>
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-2">
+                                    <h6 class="fw-bold mb-0 text-danger" style="font-size: 0.88rem;">
+                                        <i class="fa fa-exclamation-triangle me-2"></i>Critical Issues
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.82rem;">
+                                            <thead class="table-light">
+                                                <tr><th>Issue</th><th>Severity</th><th>Assigned To</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.critical_issues" t-as="i" t-key="i.id">
+                                                    <tr>
+                                                        <td t-esc="i.name"></td>
+                                                        <td><span class="badge bg-danger" t-esc="i.severity"></span></td>
+                                                        <td t-esc="i.assigned_to"></td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.critical_issues.length">
+                                                    <tr><td colspan="3" class="text-center text-muted py-2">No critical issues</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </t>
 
-                    </div><!-- /tab-content -->
-                </div><!-- /proj_dashboard_body -->
+                <!-- ================================================================= -->
+                <!-- 1.6 PROJECT TEAM MEMBER DASHBOARD                                -->
+                <!-- ================================================================= -->
+                <t t-elif="state.activeRole === 'team'">
+                    <div class="row proj_kpi_section mb-4">
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-total-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-tasks"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.tables.my_tasks.length"></div>
+                                    <div class="proj_kpi_label">My Assigned Tasks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-at-risk">
+                                <div class="proj_kpi_icon"><i class="fa fa-calendar-times"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.overdue_tasks"></div>
+                                    <div class="proj_kpi_label">Overdue Deadlines</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-on-track">
+                                <div class="proj_kpi_icon"><i class="fa fa-check"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.my_completed_tasks"></div>
+                                    <div class="proj_kpi_label">Completed Tasks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-total-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-folder"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.my_projects"></div>
+                                    <div class="proj_kpi_label">My Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-budget-total">
+                                <div class="proj_kpi_icon"><i class="fa fa-clock"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value" t-esc="state.kpis.timesheet_hours"></div>
+                                    <div class="proj_kpi_label">Logged Hours (This Week)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="proj_kpi_card card-active-proj">
+                                <div class="proj_kpi_icon"><i class="fa fa-history"></i></div>
+                                <div class="proj_kpi_data">
+                                    <div class="proj_kpi_value">Submitted</div>
+                                    <div class="proj_kpi_label">Timesheet Status</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="row mb-4">
+                        <div class="col-lg-4 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-tasks me-2"></i>My Task Status</h5>
+                                <div class="proj_chart_container"><canvas t-ref="team_taskProgress"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8 mb-4">
+                            <div class="proj_chart_card">
+                                <h5 class="proj_chart_title"><i class="fa fa-clock me-2"></i>Timesheet Hours by Day (This Week)</h5>
+                                <div class="proj_chart_container"><canvas t-ref="team_timesheetHrs"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Tasks Worklist -->
+                    <div class="row mb-4">
+                        <div class="col-12 mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+                                    <h6 class="fw-bold mb-0 text-primary">
+                                        <i class="fa fa-list me-2"></i>My Assigned Task Worklist
+                                    </h6>
+                                    <button class="btn btn-sm btn-success"
+                                        t-on-click="() => this.openFilteredList('account.analytic.line', [], 'My Timesheets')">
+                                        <i class="fa fa-plus me-1"></i>Submit Timesheet
+                                    </button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Task Name</th>
+                                                    <th>Project</th>
+                                                    <th>Priority</th>
+                                                    <th>Deadline</th>
+                                                    <th>Progress</th>
+                                                    <th>Status</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.tables.my_tasks" t-as="t" t-key="t.id">
+                                                    <tr>
+                                                        <td><strong t-esc="t.name"></strong></td>
+                                                        <td t-esc="t.project"></td>
+                                                        <td>
+                                                            <span t-if="t.priority == '1'" class="badge bg-danger">High</span>
+                                                            <span t-else="" class="badge bg-secondary">Normal</span>
+                                                        </td>
+                                                        <td t-esc="t.deadline"></td>
+                                                        <td style="width: 140px;">
+                                                            <div class="progress" style="height: 8px;">
+                                                                <div class="progress-bar bg-primary" role="progressbar" t-att-style="'width: ' + t.progress + '%'"></div>
+                                                            </div>
+                                                            <small class="text-muted"><t t-esc="t.progress"></t>%</small>
+                                                        </td>
+                                                        <td><span class="badge bg-info text-dark" t-esc="t.status"></span></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary py-0"
+                                                                t-on-click="() => this.openRecord('project.task', t.id)">Open</button>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="!state.tables.my_tasks.length">
+                                                    <tr><td colspan="7" class="text-center text-muted py-4">No tasks currently assigned</td></tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
             </div>
         </div>
     </t>
