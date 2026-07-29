@@ -286,9 +286,6 @@ class ProjectProject(models.Model):
         if filters.get('department_id') and filters['department_id'] != 'all':
             domain.append(('project_department_id', '=', int(filters['department_id'])))
 
-        # Filter 4: Division
-        if filters.get('division_id') and filters['division_id'] != 'all':
-            domain.append(('project_division_id', '=', int(filters['division_id'])))
 
         # Filter 5: Sponsor
         if filters.get('sponsor_id') and filters['sponsor_id'] != 'all':
@@ -343,17 +340,10 @@ class ProjectProject(models.Model):
 
         # 3. Dynamic Filter Options Payload
         all_projs = self.search([])
-        divisions_data = []
-        if 'hr.division' in self.env:
-            try:
-                divisions_data = self.env['hr.division'].search_read([], ['id', 'name'])
-            except Exception:
-                divisions_data = []
         filters_lookup = {
             'projects': self.search_read([], ['id', 'name']),
             'programs': self.env['project.program'].search_read([], ['id', 'name']),
             'departments': self.env['hr.department'].search_read([], ['id', 'name']),
-            'divisions': divisions_data,
             'sponsors': self.env['hr.employee'].search_read([('id', 'in', all_projs.mapped('project_sponsor_id').ids)], ['id', 'name']),
             'pms': self.env['res.users'].search_read([('id', 'in', all_projs.mapped('user_id').ids)], ['id', 'name']),
             'categories': self.env['project.category'].search_read([], ['id', 'name']),
@@ -391,11 +381,8 @@ class ProjectProject(models.Model):
             dept_counts[d] = dept_counts.get(d, 0) + 1
         by_department = {'labels': list(dept_counts.keys()), 'data': list(dept_counts.values())}
 
-        div_counts = {}
-        for p in projects:
-            d = p.project_division_id.name or 'Unassigned'
-            div_counts[d] = div_counts.get(d, 0) + 1
-        by_division = {'labels': list(div_counts.keys()), 'data': list(div_counts.values())}
+
+
 
         sponsor_counts = {}
         for p in projects:
@@ -649,7 +636,6 @@ class ProjectProject(models.Model):
             'charts': {
                 'by_health': by_health,
                 'by_department': by_department,
-                'by_division': by_division,
                 'by_sponsor': by_sponsor,
                 'by_category': by_category,
                 'budget_by_dept': budget_by_dept_chart,
