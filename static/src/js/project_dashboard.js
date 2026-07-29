@@ -56,7 +56,6 @@ class AhaduProjectDashboard extends Component {
         project_id: "all",
         program_id: "all",
         department_id: "all",
-        division_id: "all",
         sponsor_id: "all",
         pm_id: "all",
         category_id: "all",
@@ -73,7 +72,6 @@ class AhaduProjectDashboard extends Component {
         projects: [],
         programs: [],
         departments: [],
-        divisions: [],
         sponsors: [],
         pms: [],
         categories: [],
@@ -113,7 +111,7 @@ class AhaduProjectDashboard extends Component {
       sponsor_budgetUtil: useRef("sponsor_budgetUtil"),
       sponsor_schedPerf: useRef("sponsor_schedPerf"),
       // PMO
-      pmo_byDivision: useRef("pmo_byDivision"),
+      pmo_byDept: useRef("pmo_byDept"),
       pmo_budgetByDept: useRef("pmo_budgetByDept"),
       pmo_riskByLevel: useRef("pmo_riskByLevel"),
       pmo_schedPerf: useRef("pmo_schedPerf"),
@@ -216,7 +214,7 @@ class AhaduProjectDashboard extends Component {
       this._renderGroupedBarChart("sponsor_budgetUtil", this.chartRefs.sponsor_budgetUtil.el, charts.budget_by_dept);
       this._renderBarChart("sponsor_schedPerf", this.chartRefs.sponsor_schedPerf.el, charts.schedule_performance, "Schedule Performance", false);
     } else if (role === "pmo") {
-      this._renderBarChart("pmo_byDivision", this.chartRefs.pmo_byDivision.el, charts.by_division, "Projects by Division", true);
+      this._renderBarChart("pmo_byDept", this.chartRefs.pmo_byDept.el, charts.by_department, "Projects by Department", true);
       this._renderGroupedBarChart("pmo_budgetByDept", this.chartRefs.pmo_budgetByDept.el, charts.budget_by_dept);
       this._renderDoughnutChart("pmo_riskByLevel", this.chartRefs.pmo_riskByLevel.el, charts.risk_by_level, "Risk by Level");
       this._renderBarChart("pmo_schedPerf", this.chartRefs.pmo_schedPerf.el, charts.schedule_performance, "Schedule Performance", false);

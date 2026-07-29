@@ -85,15 +85,7 @@
                                 </t>
                             </select>
                         </div>
-                        <!-- 4. Division -->
-                        <div class="col-xl-2 col-md-3 col-sm-4">
-                            <select class="form-select form-select-sm" name="division_id" t-on-change="onFilterChange">
-                                <option value="all">4. All Divisions</option>
-                                <t t-foreach="state.lookup.divisions || []" t-as="dv" t-key="dv.id">
-                                    <option t-att-value="dv.id" t-esc="dv.name" t-att-selected="state.filters.division_id == dv.id"></option>
-                                </t>
-                            </select>
-                        </div>
+
                         <!-- 5. Sponsor -->
                         <div class="col-xl-2 col-md-3 col-sm-4">
                             <select class="form-select form-select-sm" name="sponsor_id" t-on-change="onFilterChange">
@@ -798,8 +790,8 @@
                     <div class="row mb-4">
                         <div class="col-lg-4 mb-4">
                             <div class="proj_chart_card">
-                                <h5 class="proj_chart_title"><i class="fa fa-code-branch me-2"></i>Projects by Division</h5>
-                                <div class="proj_chart_container"><canvas t-ref="pmo_byDivision"></canvas></div>
+                                <h5 class="proj_chart_title"><i class="fa fa-building me-2"></i>Projects by Department</h5>
+                                <div class="proj_chart_container"><canvas t-ref="pmo_byDept"></canvas></div>
                             </div>
                         </div>
                         <div class="col-lg-4 mb-4">
